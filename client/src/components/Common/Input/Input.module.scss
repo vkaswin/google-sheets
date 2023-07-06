@@ -1,0 +1,86 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  .input_field:has(input:focus, input:not(:placeholder-shown)),
+  .input_field[aria-invalid="true"] {
+    label {
+      top: 0px;
+      left: 7px;
+      transform: translateY(-10px);
+      color: #1a73e8;
+      font-size: 12px;
+      background-color: white;
+    }
+    input {
+      outline: 2px solid #1a73e8;
+    }
+  }
+  .input_field[aria-invalid="true"] {
+    label {
+      color: #d93025 !important;
+    }
+    input {
+      outline: 2px solid #d50000 !important;
+    }
+  }
+  .input_field {
+    position: relative;
+    label {
+      position: absolute;
+      padding: 0px 5px;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      top: 50%;
+      left: 10px;
+      transform: translateY(-50%);
+      background-color: transparent;
+      color: #5f6368;
+      font-size: 14px;
+    }
+    input {
+      background-color: #fff;
+      outline: 1px solid #dadce0;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      width: 100%;
+      height: 36px;
+      padding: 0px 10px;
+      transition: outline 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      &::placeholder {
+        color: transparent;
+      }
+    }
+    input[type="password"] {
+      padding: 5px 35px 5px 10px;
+    }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .icon {
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      i {
+        color: #606368;
+        font-size: 20px;
+        cursor: pointer;
+      }
+    }
+  }
+  .error_msg {
+    display: flex;
+    gap: 5px;
+    color: #d93025;
+    i {
+      font-size: 16px;
+      margin-top: 2px;
+    }
+    span {
+      font-size: 14px;
+    }
+  }
+}

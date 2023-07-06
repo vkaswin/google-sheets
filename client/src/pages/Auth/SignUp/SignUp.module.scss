@@ -1,0 +1,92 @@
+.container {
+  display: grid;
+  grid-template-columns: 0.6fr 0.4fr;
+  gap: 15px;
+  background-color: #fff;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 768px;
+  padding: 30px;
+  margin: 30px 0px;
+  .logo {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    span {
+      color: #202124;
+      font-size: 24px;
+    }
+  }
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    margin-top: 30px;
+    .wrap_field {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+    .password_field {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      .password_note {
+        color: #5f6368;
+        font-size: 14px;
+      }
+      .show_field {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+        input {
+          accent-color: #1a73e8;
+          width: 15px;
+          height: 15px;
+          cursor: pointer;
+        }
+        label {
+          color: #202124;
+          font-size: 14px;
+          cursor: pointer;
+        }
+      }
+    }
+    .cta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-top: 40px;
+      a {
+        color: #1a73e8;
+        font-size: 14px;
+        font-family: "Poppins-Medium", sans-serif;
+      }
+      button {
+        background-color: #1a73e8;
+        color: white;
+        width: 150px;
+        height: 36px;
+        font-family: "Poppins-Medium", sans-serif;
+        border: none;
+        border-radius: 4px;
+      }
+    }
+  }
+  .poster {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 15px;
+    img {
+      display: block;
+      margin: 0px auto;
+      max-width: 100%;
+      height: auto;
+      object-fit: contain;
+    }
+  }
+}
