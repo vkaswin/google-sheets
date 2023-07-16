@@ -61,7 +61,10 @@ export type IRenderGridCell = (
   props: ICellProps
 ) => void;
 
-export type IGridCells = Map<string, Map<string, ICellRect>>;
+export type IGridCells = Map<
+  string,
+  { rowRect: Pick<ICellRect, "x" | "y">; cellsRect: Map<string, ICellRect> }
+>;
 
 export type ICellRect = {
   cellId: string;
@@ -70,3 +73,13 @@ export type ICellRect = {
   width: number;
   height: number;
 };
+
+export type IClearCanvas = (
+  ctx: CanvasRenderingContext2D,
+  virtualCtx: CanvasRenderingContext2D
+) => void;
+
+export type IRenderGridYAxisDownWard = (
+  ctx: CanvasRenderingContext2D,
+  virtualCtx: CanvasRenderingContext2D
+) => void;

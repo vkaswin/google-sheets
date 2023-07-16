@@ -1,4 +1,11 @@
-import { useEffect, useRef, WheelEvent, MouseEvent, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  WheelEvent,
+  MouseEvent,
+  useState,
+  useCallback,
+} from "react";
 import { sheetData } from "./data";
 import { throttle } from "@/utils";
 import {
@@ -12,6 +19,8 @@ import {
   IGridCells,
   ICellRect,
   IGridCellStyle,
+  IClearCanvas,
+  IRenderGridYAxisDownWard,
 } from "@/types/Sheets";
 
 import styles from "./Grid.module.scss";
@@ -24,8 +33,14 @@ let cell = {
 const Grid = () => {
   let gridRef = useRef<HTMLDivElement | null>(null);
   let canvasRef = useRef<HTMLCanvasElement | null>(null);
-  let contextRef = useRef<CanvasRenderingContext2D | null>(null);
+  let ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+  let virtualCanvasRef = useRef({} as HTMLCanvasElement);
+  let virtualCtxRef = useRef({} as CanvasRenderingContext2D);
   let cellsList = useRef<IGridCells>(new Map());
+  let cellsInView = useRef({
+    row: { start: 0, end: 0 },
+    column: { start: 0, end: 0 },
+  });
 
   let [scroll, setScroll] = useState<IScrollPosition>({ x: 0, y: 0 });
 
@@ -156,9 +171,23 @@ const Grid = () => {
 
     if (!ctx) return;
 
-    contextRef.current = ctx;
+    ctxRef.current = ctx;
     canvas.width = clientWidth;
     canvas.height = clientHeight;
+
+    let virtualCanvas = document.createElement("canvas");
+    virtualCanvas.width = canvas.width;
+    virtualCanvas.height = canvas.height;
+    virtualCtxRef.current = virtualCanvas.getContext("2d")!;
+    virtualCanvasRef.current = virtualCanvas;
+
+    // Draw column lines
+    renderGridColumns(ctx);
+
+    // Draw top line
+    setGridRowStyle(ctx);
+    renderGridRow(ctx, { x: 0, y: 1, height: cell.height });
+    unsetGridRowStyle(ctx);
 
     let canvasWidth = ctx.canvas.width;
     let canvasHeight = ctx.canvas.height;
@@ -171,21 +200,13 @@ const Grid = () => {
       cells,
     } = sheetData;
 
-    // Draw column lines
-    renderGridColumns(ctx);
-
-    // Draw top line
-    setGridRowStyle(ctx);
-    renderGridRow(ctx, { x: 0, y: 1, height: cell.height });
-    unsetGridRowStyle(ctx);
-
     // Draw row lines and cells
     for (let row = 1; row <= totalRows && y < canvasHeight; row++) {
       let rowId = row.toString();
       let height = rows[row]?.height || cell.height;
-      let cellRects = new Map<string, ICellRect>();
+      let cellsRect = new Map<string, ICellRect>();
       let x = cell.width / 2;
-      cellsList.current.set(rowId, cellRects);
+      cellsList.current.set(rowId, { rowRect: { x, y }, cellsRect });
 
       setGridRowStyle(ctx);
       renderGridRow(ctx, {
@@ -213,13 +234,14 @@ const Grid = () => {
           cellId,
         };
 
-        cellRects.set(cellId, rect);
+        cellsRect.set(cellId, rect);
 
         if (props) renderGridCell(ctx, rect, props);
 
         x += width;
       }
 
+      cellsInView.current.row.end = row;
       y += height;
     }
   };
@@ -228,26 +250,77 @@ const Grid = () => {
     event.preventDefault();
   };
 
-  const handleScroll = (event: WheelEvent, key: keyof IScrollPosition) => {
-    let { deltaY } = event;
-    let coordinates = { ...scroll };
-
-    if (deltaY > 0) {
-      coordinates[key] += 3 * cell.height;
-    } else {
-      coordinates[key] = Math.max(0, coordinates[key] - 3 * cell.height);
-    }
-
-    setScroll(coordinates);
+  let clearCanvas: IClearCanvas = (ctx, virtualCtx) => {
+    virtualCtx.drawImage(ctx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   };
 
-  let handleScrollY = throttle((e: WheelEvent) => handleScroll(e, "y"), 1000);
+  let renderGridYAxisDownWard: IRenderGridYAxisDownWard = (ctx, virtualCtx) => {
+    //   Draw cells column
+    let canvasWidth = ctx.canvas.width;
+    let canvasHeight = ctx.canvas.height;
+
+    ctx.drawImage(
+      virtualCtx.canvas,
+      0,
+      0,
+      canvasWidth,
+      cell.height,
+      0,
+      0,
+      canvasWidth,
+      cell.height
+    );
+
+    //   Draw top cells
+    ctx.drawImage(
+      virtualCtx.canvas,
+      0,
+      cell.height * 4,
+      canvasWidth,
+      canvasHeight,
+      0,
+      cell.height,
+      canvasWidth,
+      canvasHeight
+    );
+  };
+
+  const handleScroll = (event: WheelEvent, key: keyof IScrollPosition) => {
+    let ctx = ctxRef.current;
+    let virtualCtx = virtualCtxRef.current;
+
+    if (!ctx || !virtualCtx) return;
+
+    let { deltaY } = event;
+    let scrollPosition = { ...scroll };
+
+    if (deltaY > 0) {
+      scrollPosition[key] += 3 * cell.height;
+      if (key === "y") {
+        clearCanvas(ctx, virtualCtx);
+        renderGridYAxisDownWard(ctx, virtualCtx);
+      }
+    } else {
+      scrollPosition[key] = Math.max(0, scrollPosition[key] - 3 * cell.height);
+    }
+
+    setScroll(scrollPosition);
+  };
+
+  let handleVerticalScroll = throttle(
+    (event: WheelEvent) => handleScroll(event, "y"),
+    500
+  );
+
+  console.log(scroll);
 
   return (
     <div
       ref={gridRef}
       className={styles.container}
       onContextMenu={handleContextMenu}
+      onWheel={handleVerticalScroll}
     >
       <canvas ref={canvasRef} />
     </div>

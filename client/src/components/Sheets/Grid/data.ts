@@ -93,5 +93,8 @@ export const sheetData: ISheetData = {
       text: "Loreum Ispum",
       backgroundColor: "#B7B7B7",
     },
+    C9: {
+      text: "Loreum Ispum",
+    },
   },
 };
