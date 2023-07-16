@@ -38,32 +38,30 @@ export const debounce = <T>(
   };
 };
 
-export const clickOutside = <T extends HTMLElement>({
-  ref,
-  onClose,
-  doNotClose = () => false,
-}: {
-  ref: T;
-  onClose?: () => void;
-  doNotClose?: (element: T) => boolean | undefined;
-}): Function => {
-  const removeEventListener = () => {
-    document.removeEventListener("click", handleClickOutside);
+export const throttle = (fn: Function, t: number) => {
+  let wait = false;
+  let pendingArgs: any[] | null = null;
+
+  let timerFunc = () => {
+    if (pendingArgs) {
+      fn(...pendingArgs);
+      pendingArgs = null;
+      setTimeout(timerFunc, t);
+    } else {
+      wait = false;
+    }
   };
 
-  const handleClickOutside = (event: MouseEvent) => {
-    let { target } = event;
-    if (ref.contains(target as T) || doNotClose(target as T)) return;
+  return (...args: any[]) => {
+    if (wait) {
+      pendingArgs = args;
+      return;
+    }
 
-    onClose?.();
-    removeEventListener();
+    fn(...args);
+    wait = true;
+    setTimeout(timerFunc, t);
   };
-
-  setTimeout(() => {
-    document.addEventListener("click", handleClickOutside);
-  }, 0);
-
-  return removeEventListener;
 };
 
 export const getStaticUrl = (path: string) => {

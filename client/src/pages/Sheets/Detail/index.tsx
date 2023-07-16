@@ -1,8 +1,9 @@
 import { Fragment } from "react";
-import GridTable from "@/components/Sheets/GridTable";
 import Header from "@/components/Sheets/Header";
 import Toolbar from "@/components/Sheets/Toolbar";
 import TypingBar from "@/components/Sheets/TypingBar";
+import Grid from "@/components/Sheets/Grid";
+import BottomBar from "@/components/Sheets/BottomBar";
 
 const Detail = () => {
   return (
@@ -10,7 +11,8 @@ const Detail = () => {
       <Header />
       <Toolbar />
       <TypingBar />
-      <GridTable />
+      <Grid />
+      <BottomBar />
     </Fragment>
   );
 };

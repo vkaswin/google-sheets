@@ -1,0 +1,9 @@
+.container {
+  height: calc(
+    100% -
+      calc(
+        var(--toolbar-height) + var(--header-height) + var(--bottom-bar-height) +
+          var(--typing-bar-height)
+      )
+  );
+}

@@ -1,8 +1,7 @@
-import React from "react";
-import styles from "./Toobar.module.scss";
+import styles from "./Toolbar.module.scss";
 
 const Toolbar = () => {
-  return <div>Toolbar</div>;
+  return <div className={styles.container}>Toolbar</div>;
 };
 
 export default Toolbar;

@@ -2,6 +2,13 @@ html {
   height: 100%;
 }
 
+:root {
+  --toolbar-height: 45px;
+  --header-height: 65px;
+  --bottom-bar-height: 45px;
+  --typing-bar-height: 30px;
+}
+
 body {
   background-color: #fff;
   font-size: 16px;
