@@ -1,26 +1,19 @@
-import {
-  useEffect,
-  useRef,
-  WheelEvent,
-  MouseEvent,
-  useState,
-  useCallback,
-} from "react";
+import { useEffect, useRef, WheelEvent, MouseEvent, useState } from "react";
 import { sheetData } from "./data";
 import { throttle } from "@/utils";
 import {
-  IGridColumnStyle,
-  IGridRowStyle,
   IRenderGridColumn,
   IScrollPosition,
-  IRenderGridColumns,
   IRenderGridRow,
   IRenderGridCell,
   IGridCells,
   ICellRect,
   IGridCellStyle,
   IClearCanvas,
-  IRenderGridYAxisDownWard,
+  IRenderGridYAxisDownWards,
+  IGridLineStyle,
+  IRenderGridCellLine,
+  IRenderGrid,
 } from "@/types/Sheets";
 
 import styles from "./Grid.module.scss";
@@ -36,133 +29,34 @@ const Grid = () => {
   let ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   let virtualCanvasRef = useRef({} as HTMLCanvasElement);
   let virtualCtxRef = useRef({} as CanvasRenderingContext2D);
-  let cellsList = useRef<IGridCells>(new Map());
-  let cellsInView = useRef({
-    row: { start: 0, end: 0 },
-    column: { start: 0, end: 0 },
-  });
+  let cellsList = useRef<IGridCells>([]);
 
   let [scroll, setScroll] = useState<IScrollPosition>({ x: 0, y: 0 });
 
   useEffect(() => {
-    renderGrid();
+    initCanvas();
+    if (!ctxRef.current) return;
+    renderBox(ctxRef.current);
+    renderGrid(ctxRef.current, {
+      offsetX: 0,
+      offsetY: cell.height,
+      rowStart: 0,
+      colStart: 0,
+    });
   }, []);
 
-  let setGridColumnStyle: IGridColumnStyle = (ctx) => {
-    ctx.strokeStyle = "silver";
-    ctx.fillStyle = "#566164";
-    ctx.font = "14px Poppins";
-    ctx.textBaseline = "middle";
-  };
-
-  let unsetGridColumnStyle: IGridColumnStyle = (ctx) => {
-    ctx.strokeStyle = "#000000";
-    ctx.fillStyle = "#000000";
-    ctx.font = "10px sans-serif";
-    ctx.textBaseline = "alphabetic";
-  };
-
-  let renderGridColumn: IRenderGridColumn = (ctx, { x, y, width, text }) => {
+  let renderBox = (ctx: CanvasRenderingContext2D) => {
+    setGridLineStyle(ctx);
     ctx.beginPath();
-    ctx.moveTo(x + width, y);
-    ctx.lineTo(x + width, ctx.canvas.width);
-    if (text) ctx.fillText(text, x + width / 2, cell.height / 2);
+    ctx.moveTo(0, cell.height);
+    ctx.lineTo(cell.width / 2, cell.height + 1);
+    ctx.lineTo(cell.width / 2, 1);
+    ctx.lineTo(0, 1);
     ctx.stroke();
+    unsetGridLineStyle(ctx);
   };
 
-  let renderGridColumns: IRenderGridColumns = (ctx) => {
-    let x = 0;
-    let y = 0;
-    let width = cell.width / 2;
-    let canvasWidth = ctx.canvas.width;
-    let {
-      meta: { columnIds },
-      columns,
-    } = sheetData;
-
-    setGridColumnStyle(ctx);
-
-    renderGridColumn(ctx, {
-      x,
-      y,
-      width,
-    });
-
-    x += width;
-
-    for (let columnId of columnIds) {
-      if (x > canvasWidth) break;
-
-      let width = columns[columnId]?.width || cell.width;
-
-      renderGridColumn(ctx, {
-        x,
-        y,
-        width,
-        text: columnId,
-      });
-
-      x += width;
-    }
-
-    unsetGridColumnStyle(ctx);
-  };
-
-  let setGridRowStyle: IGridRowStyle = (ctx) => {
-    ctx.strokeStyle = "silver";
-    ctx.fillStyle = "#566164";
-    ctx.font = "14px Poppins";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-  };
-
-  let unsetGridRowStyle: IGridRowStyle = (ctx) => {
-    ctx.strokeStyle = "#000000";
-    ctx.fillStyle = "#000000";
-    ctx.font = "10px sans-serif";
-    ctx.textAlign = "start";
-    ctx.textBaseline = "alphabetic";
-  };
-
-  let renderGridRow: IRenderGridRow = (ctx, { x, y, height, text }) => {
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(ctx.canvas.width, y);
-    if (text) ctx.fillText(text, cell.width / 4, y + height / 2);
-    ctx.stroke();
-  };
-
-  let unsetGridCellStyle: IGridCellStyle = (ctx) => {
-    ctx.fillStyle = "#000000";
-    ctx.font = "10px sans-serif";
-    ctx.textAlign = "start";
-    ctx.textBaseline = "alphabetic";
-  };
-
-  let renderGridCell: IRenderGridCell = (
-    ctx,
-    { x, y, width, height },
-    { text, color, backgroundColor }
-  ) => {
-    ctx.font = "14px Poppins";
-    ctx.textBaseline = "middle";
-
-    if (backgroundColor) {
-      ctx.fillStyle = backgroundColor || "#000000";
-      ctx.fillRect(x, y, width, height);
-    }
-
-    if (text) {
-      ctx.fillStyle = color || "#000000";
-      ctx.fillText(text, x + 5, y + height - 10);
-    }
-
-    ctx.fill();
-
-    unsetGridCellStyle(ctx);
-  };
-
-  let renderGrid = () => {
+  let initCanvas = () => {
     if (!gridRef.current || !canvasRef.current) return;
 
     let { clientWidth, clientHeight } = gridRef.current;
@@ -180,18 +74,101 @@ const Grid = () => {
     virtualCanvas.height = canvas.height;
     virtualCtxRef.current = virtualCanvas.getContext("2d")!;
     virtualCanvasRef.current = virtualCanvas;
+  };
 
-    // Draw column lines
-    renderGridColumns(ctx);
+  let renderGridColumn: IRenderGridColumn = (
+    ctx,
+    { x, y, width, columnId }
+  ) => {
+    setGridLineStyle(ctx);
+    ctx.beginPath();
+    ctx.moveTo(x, y - cell.height + 1);
+    ctx.lineTo(x + width, y - cell.height + 1);
+    ctx.lineTo(x + width, y);
+    ctx.lineTo(x, y);
+    ctx.fillText(columnId, x + width / 2, cell.height / 2);
+    ctx.stroke();
+    unsetGridLineStyle(ctx);
+  };
 
-    // Draw top line
-    setGridRowStyle(ctx);
-    renderGridRow(ctx, { x: 0, y: 1, height: cell.height });
-    unsetGridRowStyle(ctx);
+  let renderGridRow: IRenderGridRow = (ctx, { x, y, height, rowId }) => {
+    setGridLineStyle(ctx);
+    ctx.beginPath();
+    ctx.moveTo(x, y + height);
+    ctx.lineTo(cell.width / 2, y + height);
+    ctx.fillText(rowId, cell.width / 4, y + height / 2);
+    ctx.stroke();
+    unsetGridLineStyle(ctx);
+  };
 
+  let unsetGridCellStyle: IGridCellStyle = (ctx) => {
+    ctx.fillStyle = "#000000";
+    ctx.font = "10px sans-serif";
+    ctx.textAlign = "start";
+    ctx.textBaseline = "alphabetic";
+  };
+
+  let setGridLineStyle: IGridLineStyle = (ctx) => {
+    ctx.strokeStyle = "silver";
+    ctx.fillStyle = "#566164";
+    ctx.font = "14px Poppins";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+  };
+
+  let unsetGridLineStyle: IGridLineStyle = (ctx) => {
+    ctx.strokeStyle = "#000000";
+    ctx.fillStyle = "#000000";
+    ctx.font = "10px sans-serif";
+    ctx.textAlign = "start";
+    ctx.textBaseline = "alphabetic";
+  };
+
+  let renderGridCellLine: IRenderGridCellLine = (
+    ctx,
+    { x, y, width, height }
+  ) => {
+    setGridLineStyle(ctx);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, y + height);
+    ctx.lineTo(x + width, y + height);
+    ctx.stroke();
+    unsetGridLineStyle(ctx);
+  };
+
+  let renderGridCell: IRenderGridCell = (ctx, rect, props) => {
+    renderGridCellLine(ctx, rect);
+
+    if (!props) return;
+
+    let { x, y, width, height } = rect;
+    let { text, color, backgroundColor } = props;
+
+    ctx.font = "14px Poppins";
+    ctx.textBaseline = "middle";
+
+    if (backgroundColor) {
+      ctx.beginPath();
+      ctx.fillStyle = backgroundColor || "#000000";
+      ctx.fillRect(x, y, width, height);
+      ctx.fill();
+    }
+
+    if (text) {
+      ctx.beginPath();
+      ctx.fillStyle = color || "#000000";
+      ctx.fillText(text, x + 5, y + height - 10);
+      ctx.fill();
+    }
+
+    unsetGridCellStyle(ctx);
+  };
+
+  let renderGrid: IRenderGrid = (ctx, { offsetY, colStart, rowStart }) => {
     let canvasWidth = ctx.canvas.width;
     let canvasHeight = ctx.canvas.height;
-    let y = cell.height;
+    let y = offsetY;
 
     let {
       meta: { columnIds, totalRows },
@@ -200,25 +177,25 @@ const Grid = () => {
       cells,
     } = sheetData;
 
-    // Draw row lines and cells
-    for (let row = 1; row <= totalRows && y < canvasHeight; row++) {
-      let rowId = row.toString();
-      let height = rows[row]?.height || cell.height;
-      let cellsRect = new Map<string, ICellRect>();
-      let x = cell.width / 2;
-      cellsList.current.set(rowId, { rowRect: { x, y }, cellsRect });
+    let isColumnRendered = false;
 
-      setGridRowStyle(ctx);
+    for (let row = rowStart; row < totalRows && y < canvasHeight; row++) {
+      let rowId = (row + 1).toString();
+      let height = rows[rowId]?.height || cell.height;
+      let cellsRect: ICellRect[] = [];
+      let x = cell.width / 2;
+
+      cellsList.current.push([{ rowId, x, y }, cellsRect]);
+
       renderGridRow(ctx, {
         x: 0,
         y,
         height,
-        text: rowId,
+        rowId,
       });
-      unsetGridRowStyle(ctx);
 
       for (
-        let column = 0;
+        let column = colStart;
         column < columnIds.length && x < canvasWidth;
         column++
       ) {
@@ -226,7 +203,7 @@ const Grid = () => {
         let cellId = `${columnId}${rowId}`;
         let width = columns[columnId]?.width || cell.width;
         let props = cells[cellId];
-        let rect = {
+        let rect: ICellRect = {
           x,
           y,
           width,
@@ -234,43 +211,33 @@ const Grid = () => {
           cellId,
         };
 
-        cellsRect.set(cellId, rect);
+        cellsRect.push(rect);
 
-        if (props) renderGridCell(ctx, rect, props);
+        if (!isColumnRendered) renderGridColumn(ctx, { x, y, width, columnId });
+
+        renderGridCell(ctx, rect, props);
 
         x += width;
       }
 
-      cellsInView.current.row.end = row;
       y += height;
+      isColumnRendered = true;
     }
-  };
-
-  const handleContextMenu = (event: MouseEvent) => {
-    event.preventDefault();
   };
 
   let clearCanvas: IClearCanvas = (ctx, virtualCtx) => {
     virtualCtx.drawImage(ctx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height);
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.clearRect(0, cell.height, ctx.canvas.width, ctx.canvas.height);
   };
 
-  let renderGridYAxisDownWard: IRenderGridYAxisDownWard = (ctx, virtualCtx) => {
-    //   Draw cells column
+  let renderGridYAxisDownWards: IRenderGridYAxisDownWards = (
+    ctx,
+    virtualCtx
+  ) => {
+    clearCanvas(ctx, virtualCtx);
+
     let canvasWidth = ctx.canvas.width;
     let canvasHeight = ctx.canvas.height;
-
-    ctx.drawImage(
-      virtualCtx.canvas,
-      0,
-      0,
-      canvasWidth,
-      cell.height,
-      0,
-      0,
-      canvasWidth,
-      cell.height
-    );
 
     //   Draw top cells
     ctx.drawImage(
@@ -297,10 +264,7 @@ const Grid = () => {
 
     if (deltaY > 0) {
       scrollPosition[key] += 3 * cell.height;
-      if (key === "y") {
-        clearCanvas(ctx, virtualCtx);
-        renderGridYAxisDownWard(ctx, virtualCtx);
-      }
+      key === "x" ? "" : renderGridYAxisDownWards(ctx, virtualCtx);
     } else {
       scrollPosition[key] = Math.max(0, scrollPosition[key] - 3 * cell.height);
     }
@@ -313,7 +277,9 @@ const Grid = () => {
     500
   );
 
-  console.log(scroll);
+  const handleContextMenu = (event: MouseEvent) => {
+    event.preventDefault();
+  };
 
   return (
     <div
