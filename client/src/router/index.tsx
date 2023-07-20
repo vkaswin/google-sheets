@@ -1,6 +1,6 @@
 import { lazy } from "react";
 import { Navigate, RouteObject, useRoutes } from "react-router-dom";
-import { withAuth } from "./withAuth";
+import ProtectedRoute from "./ProtectedRoute";
 
 let AuthLayout = lazy(() => import(`@/layouts/AuthLayout`));
 let SignIn = lazy(() => import(`@/pages/Auth/SignIn`));
@@ -22,27 +22,33 @@ let routes: RouteObject[] = [
     children: [
       {
         path: "sign-in",
-        element: withAuth(SignIn, {
-          redirectIfLoggedIn: true,
-          isAuthenticated: false,
-        }),
+        element: (
+          <ProtectedRoute
+            children={<SignIn />}
+            isAuthenticated={false}
+            redirectIfLogin
+          />
+        ),
       },
       {
         path: "sign-up",
-        element: withAuth(SignUp, {
-          redirectIfLoggedIn: true,
-          isAuthenticated: false,
-        }),
+        element: (
+          <ProtectedRoute
+            children={<SignUp />}
+            isAuthenticated={false}
+            redirectIfLogin
+          />
+        ),
       },
     ],
   },
   {
     path: "sheets/list",
-    element: withAuth(SheetsList),
+    element: <ProtectedRoute children={<SheetsList />} />,
   },
   {
     path: "sheets/:id",
-    element: withAuth(SheetsDetail),
+    element: <ProtectedRoute children={<SheetsDetail />} />,
   },
   { path: "*", element: <PageNotFound /> },
 ];
