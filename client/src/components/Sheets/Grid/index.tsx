@@ -72,27 +72,24 @@ const Grid = () => {
     canvas.height = clientHeight;
   };
 
-  let renderGridColumn: IRenderGridColumn = (
-    ctx,
-    { offsetX, width, columnId }
-  ) => {
+  let renderGridColumn: IRenderGridColumn = (ctx, { x, width, id }) => {
     setGridLineStyle(ctx);
     ctx.beginPath();
-    ctx.moveTo(offsetX, 1);
-    ctx.lineTo(offsetX + width, 1);
-    ctx.lineTo(offsetX + width, cell.height);
-    ctx.lineTo(offsetX, cell.height);
-    ctx.fillText(columnId, offsetX + width / 2, cell.height / 2);
+    ctx.moveTo(x, 1);
+    ctx.lineTo(x + width, 1);
+    ctx.lineTo(x + width, cell.height);
+    ctx.lineTo(x, cell.height);
+    ctx.fillText(id, x + width / 2, cell.height / 2);
     ctx.stroke();
     unsetGridLineStyle(ctx);
   };
 
-  let renderGridRow: IRenderGridRow = (ctx, { x, y, height, rowId }) => {
+  let renderGridRow: IRenderGridRow = (ctx, { x, y, height, id }) => {
     setGridLineStyle(ctx);
     ctx.beginPath();
     ctx.moveTo(x, y + height);
     ctx.lineTo(cell.width / 2, y + height);
-    ctx.fillText(rowId, cell.width / 4, y + height / 2);
+    ctx.fillText(id, cell.width / 4, y + height / 2);
     ctx.stroke();
     unsetGridLineStyle(ctx);
   };
@@ -188,6 +185,15 @@ const Grid = () => {
       let rowId = row.toString();
       let height = rows[rowId]?.height || cell.height;
       let x = cell.width / 2;
+      let rowInfo = {
+        x: 0,
+        y,
+        height,
+        id: rowId,
+      };
+
+      renderGridRow(ctx, rowInfo);
+      rowList.current.push(rowInfo);
 
       for (
         let column = colStart;
@@ -211,26 +217,12 @@ const Grid = () => {
         renderGridCell(ctx, rect, props);
 
         if (!isColumnRendered) {
-          renderGridColumn(ctx, { offsetX: x, width, columnId });
+          renderGridColumn(ctx, { x, width, id: columnId });
           columnList.current.push({ x, width, id: column.toString(), y: 0 });
         }
 
         x += width;
       }
-
-      renderGridRow(ctx, {
-        x: 0,
-        y,
-        height,
-        rowId,
-      });
-
-      rowList.current.push({
-        x: 0,
-        y,
-        id: rowId,
-        height,
-      });
 
       y += height;
       isColumnRendered = true;

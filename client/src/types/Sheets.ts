@@ -9,7 +9,7 @@ export type IRenderGridRow = (
     x: number;
     y: number;
     height: number;
-    rowId: string;
+    id: string;
   }
 ) => void;
 
@@ -18,9 +18,9 @@ export type IGridCellStyle = (ctx: CanvasRenderingContext2D) => void;
 export type IRenderGridColumn = (
   ctx: CanvasRenderingContext2D,
   props: {
-    offsetX: number;
+    x: number;
     width: number;
-    columnId: string;
+    id: string;
   }
 ) => void;
 
