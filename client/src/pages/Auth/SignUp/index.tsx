@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import useAuth from "@/hooks/useAuth";
-import Input from "@/components/Common/Input";
+import Input from "@/components/Input";
 import { getStaticUrl } from "@/utils";
 
 import styles from "./SignUp.module.scss";
