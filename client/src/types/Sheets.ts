@@ -77,8 +77,6 @@ export type IRenderGridCellLine = (
 ) => void;
 
 export type IRenderGrid = (data: {
-  offsetX: number;
-  offsetY: number;
   rowStart: number;
   colStart: number;
 }) => void;

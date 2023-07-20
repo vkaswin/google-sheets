@@ -6,8 +6,6 @@ import router from "./src/routes";
 
 dotenv.config();
 
-connect();
-
 const port = process.env.PORT;
 const app = express();
 
@@ -17,6 +15,8 @@ app
   .use(express.urlencoded({ extended: false }))
   .use(router);
 
-app.listen(port, () => {
-  console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
+connect().then(() => {
+  app.listen(port, () => {
+    console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
+  });
 });

@@ -1,5 +1,4 @@
-import { useEffect, useRef, WheelEvent, MouseEvent, useState } from "react";
-import { sheetData } from "./data";
+import { useEffect, useRef, WheelEvent, MouseEvent } from "react";
 import { throttle } from "@/utils";
 import {
   IRenderGridColumn,
@@ -15,6 +14,7 @@ import {
   IRowList,
   IColumnList,
 } from "@/types/Sheets";
+import { sheetData } from "./data";
 
 import styles from "./Grid.module.scss";
 
@@ -32,6 +32,8 @@ const Grid = () => {
   let cellList = useRef<ICellList>([]);
   let rowList = useRef<IRowList>([]);
   let columnList = useRef<IColumnList>([]);
+  let isReachedBottom = useRef(false);
+  let isReachedRight = useRef(false);
 
   useEffect(() => {
     initCanvas();
@@ -39,14 +41,35 @@ const Grid = () => {
     if (!ctxRef.current) return;
 
     renderGrid({
-      offsetX: 0,
-      offsetY: cell.height,
       rowStart: 1,
       colStart: 1,
     });
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.addEventListener("resize", handleResize);
+    };
   }, []);
 
-  let renderBox = (ctx: CanvasRenderingContext2D) => {
+  let handleResize = () => {
+    if (!gridRef.current || !canvasRef.current) return;
+
+    let { clientWidth, clientHeight } = gridRef.current;
+
+    canvasRef.current.width = clientWidth;
+    canvasRef.current.height = clientHeight;
+
+    let rowStart = +rowList.current[0]!.id;
+    let colStart = +columnList.current[0]!.id;
+
+    renderGrid({
+      rowStart,
+      colStart,
+    });
+  };
+
+  let renderTopLeftBox = (ctx: CanvasRenderingContext2D) => {
     ctx.clearRect(0, 0, cell.width / 2, cell.height);
     setGridLineStyle(ctx);
     ctx.beginPath();
@@ -158,14 +181,14 @@ const Grid = () => {
     unsetGridCellStyle(ctx);
   };
 
-  let renderGrid: IRenderGrid = ({ offsetY, colStart, rowStart }) => {
+  let renderGrid: IRenderGrid = ({ colStart, rowStart }) => {
     let ctx = ctxRef.current;
 
     if (!ctx) return;
 
     let canvasWidth = ctx.canvas.width;
     let canvasHeight = ctx.canvas.height;
-    let y = offsetY;
+    let y = cell.height;
 
     cellList.current = [];
     rowList.current = [];
@@ -228,7 +251,16 @@ const Grid = () => {
       isColumnRendered = true;
     }
 
-    renderBox(ctx);
+    renderTopLeftBox(ctx);
+
+    if (rowList.current.length) {
+      isReachedBottom.current = +rowList.current.at(-1)!.id === totalRows;
+    }
+
+    if (columnList.current.length) {
+      isReachedRight.current =
+        +columnList.current.at(-1)!.id === columnIds.length;
+    }
   };
 
   const handleScroll = (event: WheelEvent) => {
@@ -238,17 +270,21 @@ const Grid = () => {
 
     let { deltaY, deltaX } = event;
 
-    let key: keyof IScrollPosition = deltaY === -0 ? "left" : "top";
+    let key: keyof IScrollPosition = deltaY === 0 ? "left" : "top";
 
     let rowStart = +rowList.current[0].id;
     let colStart = +columnList.current[0].id;
 
     if (key === "top") {
+      if (deltaY > 0 && isReachedBottom.current) return;
+
       rowStart = Math.max(
         1,
         deltaY > 0 ? rowStart + scrollBy : rowStart - scrollBy
       );
     } else {
+      if (deltaX > 0 && isReachedRight.current) return;
+
       colStart = Math.max(
         1,
         deltaX > 0 ? colStart + scrollBy : colStart - scrollBy
@@ -258,8 +294,6 @@ const Grid = () => {
     renderGrid({
       rowStart,
       colStart,
-      offsetX: 0,
-      offsetY: cell.height,
     });
   };
 

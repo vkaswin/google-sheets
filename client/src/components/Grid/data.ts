@@ -2,7 +2,7 @@ import { ISheetData } from "@/types/Sheets";
 
 export const sheetData: ISheetData = {
   meta: {
-    totalRows: 100,
+    totalRows: 50,
     dimension: {
       width: 26 * 100,
       height: 100 * 25,
@@ -37,6 +37,9 @@ export const sheetData: ISheetData = {
     ],
   },
   rows: {
+    50: {
+      height: 250,
+    },
     1: {
       height: 100,
     },
