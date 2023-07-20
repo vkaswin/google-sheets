@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import useAuth from "@/hooks/useAuth";
 import Input from "@/components/Common/Input";
-import { SignInData } from "@/types/User";
+import { ISignIn } from "@/types/User";
 
 import styles from "./SignIn.module.scss";
 
@@ -12,7 +12,7 @@ const SignIn = () => {
     formState: { errors },
     register,
     handleSubmit,
-  } = useForm<SignInData>();
+  } = useForm<ISignIn>();
 
   let { signIn } = useAuth();
 

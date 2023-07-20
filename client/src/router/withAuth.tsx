@@ -5,19 +5,21 @@ import { Navigate } from "react-router-dom";
 type IWithAuth = (
   Component: FC,
   options?: {
-    redirectIfLoggedIn: boolean;
+    redirectIfLoggedIn?: boolean;
+    isAuthenticated?: boolean;
   }
 ) => JSX.Element;
 
 export const withAuth: IWithAuth = (Component: FC, options) => {
-  let { redirectIfLoggedIn = false } = options || {};
+  let { redirectIfLoggedIn = false, isAuthenticated = true } = options || {};
 
-  let authToken = cookie.get("auth_token");
+  //   let authToken = cookie.get("auth_token");
 
-  if (redirectIfLoggedIn && authToken)
-    return <Navigate to="/sheets/list" replace />;
+  //   if (redirectIfLoggedIn && authToken)
+  //     return <Navigate to="/sheets/list" replace />;
 
-  if (!authToken) return <Navigate to="/auth/sign-in" replace />;
+  //   if (!authToken && isAuthenticated)
+  //     return <Navigate to="/auth/sign-in" replace />;
 
   return <Component />;
 };

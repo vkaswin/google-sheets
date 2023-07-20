@@ -22,11 +22,17 @@ let routes: RouteObject[] = [
     children: [
       {
         path: "sign-in",
-        element: withAuth(SignIn, { redirectIfLoggedIn: true }),
+        element: withAuth(SignIn, {
+          redirectIfLoggedIn: true,
+          isAuthenticated: false,
+        }),
       },
       {
         path: "sign-up",
-        element: withAuth(SignUp, { redirectIfLoggedIn: true }),
+        element: withAuth(SignUp, {
+          redirectIfLoggedIn: true,
+          isAuthenticated: false,
+        }),
       },
     ],
   },

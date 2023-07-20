@@ -3,6 +3,10 @@ import { ISheetData } from "@/types/Sheets";
 export const sheetData: ISheetData = {
   meta: {
     totalRows: 100,
+    dimension: {
+      width: 26 * 100,
+      height: 100 * 25,
+    },
     columnIds: [
       "A",
       "B",
@@ -33,17 +37,47 @@ export const sheetData: ISheetData = {
     ],
   },
   rows: {
+    1: {
+      height: 100,
+    },
     2: {
       height: 35,
+    },
+    3: {
+      height: 39,
     },
     4: {
       height: 50,
     },
     5: {
+      height: 128,
+    },
+    6: {
+      height: 77,
+    },
+    7: {
+      height: 99,
+    },
+    13: {
       height: 100,
     },
-    12: {
-      height: 75,
+    15: {
+      height: 35,
+    },
+    33: {
+      height: 39,
+    },
+    24: {
+      height: 50,
+    },
+    45: {
+      height: 128,
+    },
+    66: {
+      height: 77,
+    },
+    37: {
+      height: 99,
     },
   },
   columns: {
@@ -95,6 +129,11 @@ export const sheetData: ISheetData = {
     },
     C9: {
       text: "Loreum Ispum",
+    },
+    E80: {
+      text: "Loreum Ispum",
+      backgroundColor: "#766CEB",
+      color: "white",
     },
   },
 };

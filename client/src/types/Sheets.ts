@@ -1,6 +1,6 @@
 export type IScrollPosition = {
-  x: number;
-  y: number;
+  top: number;
+  left: number;
 };
 
 export type IRenderGridRow = (
@@ -18,8 +18,7 @@ export type IGridCellStyle = (ctx: CanvasRenderingContext2D) => void;
 export type IRenderGridColumn = (
   ctx: CanvasRenderingContext2D,
   props: {
-    x: number;
-    y: number;
+    offsetX: number;
     width: number;
     columnId: string;
   }
@@ -34,6 +33,7 @@ export type ISheetData = {
 
 export type ISheetMeta = {
   totalRows: number;
+  dimension: { width: number; height: number };
   columnIds: string[];
 };
 
@@ -55,28 +55,19 @@ export type IRenderGridCell = (
   props: ICellProps
 ) => void;
 
-export type IGridCells = [
-  { rowId: string } & Pick<ICellRect, "x" | "y">,
-  ICellRect[]
-][];
+export type ICellList = ICellRect[];
+
+export type IRowList = Omit<ICellRect, "width">[];
+
+export type IColumnList = Omit<ICellRect, "height">[];
 
 export type ICellRect = {
-  cellId: string;
+  id: string;
   x: number;
   y: number;
   width: number;
   height: number;
 };
-
-export type IClearCanvas = (
-  ctx: CanvasRenderingContext2D,
-  virtualCtx: CanvasRenderingContext2D
-) => void;
-
-export type IRenderGridYAxisDownWards = (
-  ctx: CanvasRenderingContext2D,
-  virtualCtx: CanvasRenderingContext2D
-) => void;
 
 export type IGridLineStyle = (ctx: CanvasRenderingContext2D) => void;
 
@@ -85,7 +76,9 @@ export type IRenderGridCellLine = (
   rect: ICellRect
 ) => void;
 
-export type IRenderGrid = (
-  ctx: CanvasRenderingContext2D,
-  data: { offsetX: number; offsetY: number; rowStart: number; colStart: number }
-) => void;
+export type IRenderGrid = (data: {
+  offsetX: number;
+  offsetY: number;
+  rowStart: number;
+  colStart: number;
+}) => void;

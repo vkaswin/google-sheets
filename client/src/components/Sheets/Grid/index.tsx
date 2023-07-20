@@ -6,14 +6,14 @@ import {
   IScrollPosition,
   IRenderGridRow,
   IRenderGridCell,
-  IGridCells,
   ICellRect,
   IGridCellStyle,
-  IClearCanvas,
-  IRenderGridYAxisDownWards,
   IGridLineStyle,
   IRenderGridCellLine,
   IRenderGrid,
+  ICellList,
+  IRowList,
+  IColumnList,
 } from "@/types/Sheets";
 
 import styles from "./Grid.module.scss";
@@ -23,33 +23,35 @@ let cell = {
   height: 25,
 };
 
+let scrollBy = 3;
+
 const Grid = () => {
   let gridRef = useRef<HTMLDivElement | null>(null);
   let canvasRef = useRef<HTMLCanvasElement | null>(null);
   let ctxRef = useRef<CanvasRenderingContext2D | null>(null);
-  let virtualCanvasRef = useRef({} as HTMLCanvasElement);
-  let virtualCtxRef = useRef({} as CanvasRenderingContext2D);
-  let cellsList = useRef<IGridCells>([]);
-
-  let [scroll, setScroll] = useState<IScrollPosition>({ x: 0, y: 0 });
+  let cellList = useRef<ICellList>([]);
+  let rowList = useRef<IRowList>([]);
+  let columnList = useRef<IColumnList>([]);
 
   useEffect(() => {
     initCanvas();
+
     if (!ctxRef.current) return;
-    renderBox(ctxRef.current);
-    renderGrid(ctxRef.current, {
+
+    renderGrid({
       offsetX: 0,
       offsetY: cell.height,
-      rowStart: 0,
-      colStart: 0,
+      rowStart: 1,
+      colStart: 1,
     });
   }, []);
 
   let renderBox = (ctx: CanvasRenderingContext2D) => {
+    ctx.clearRect(0, 0, cell.width / 2, cell.height);
     setGridLineStyle(ctx);
     ctx.beginPath();
     ctx.moveTo(0, cell.height);
-    ctx.lineTo(cell.width / 2, cell.height + 1);
+    ctx.lineTo(cell.width / 2, cell.height);
     ctx.lineTo(cell.width / 2, 1);
     ctx.lineTo(0, 1);
     ctx.stroke();
@@ -68,25 +70,19 @@ const Grid = () => {
     ctxRef.current = ctx;
     canvas.width = clientWidth;
     canvas.height = clientHeight;
-
-    let virtualCanvas = document.createElement("canvas");
-    virtualCanvas.width = canvas.width;
-    virtualCanvas.height = canvas.height;
-    virtualCtxRef.current = virtualCanvas.getContext("2d")!;
-    virtualCanvasRef.current = virtualCanvas;
   };
 
   let renderGridColumn: IRenderGridColumn = (
     ctx,
-    { x, y, width, columnId }
+    { offsetX, width, columnId }
   ) => {
     setGridLineStyle(ctx);
     ctx.beginPath();
-    ctx.moveTo(x, y - cell.height + 1);
-    ctx.lineTo(x + width, y - cell.height + 1);
-    ctx.lineTo(x + width, y);
-    ctx.lineTo(x, y);
-    ctx.fillText(columnId, x + width / 2, cell.height / 2);
+    ctx.moveTo(offsetX, 1);
+    ctx.lineTo(offsetX + width, 1);
+    ctx.lineTo(offsetX + width, cell.height);
+    ctx.lineTo(offsetX, cell.height);
+    ctx.fillText(columnId, offsetX + width / 2, cell.height / 2);
     ctx.stroke();
     unsetGridLineStyle(ctx);
   };
@@ -165,10 +161,19 @@ const Grid = () => {
     unsetGridCellStyle(ctx);
   };
 
-  let renderGrid: IRenderGrid = (ctx, { offsetY, colStart, rowStart }) => {
+  let renderGrid: IRenderGrid = ({ offsetY, colStart, rowStart }) => {
+    let ctx = ctxRef.current;
+
+    if (!ctx) return;
+
     let canvasWidth = ctx.canvas.width;
     let canvasHeight = ctx.canvas.height;
     let y = offsetY;
+
+    cellList.current = [];
+    rowList.current = [];
+    columnList.current = [];
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
     let {
       meta: { columnIds, totalRows },
@@ -179,27 +184,17 @@ const Grid = () => {
 
     let isColumnRendered = false;
 
-    for (let row = rowStart; row < totalRows && y < canvasHeight; row++) {
-      let rowId = (row + 1).toString();
+    for (let row = rowStart; row <= totalRows && y < canvasHeight; row++) {
+      let rowId = row.toString();
       let height = rows[rowId]?.height || cell.height;
-      let cellsRect: ICellRect[] = [];
       let x = cell.width / 2;
-
-      cellsList.current.push([{ rowId, x, y }, cellsRect]);
-
-      renderGridRow(ctx, {
-        x: 0,
-        y,
-        height,
-        rowId,
-      });
 
       for (
         let column = colStart;
-        column < columnIds.length && x < canvasWidth;
+        column <= columnIds.length && x < canvasWidth;
         column++
       ) {
-        let columnId = columnIds[column];
+        let columnId = columnIds[column - 1];
         let cellId = `${columnId}${rowId}`;
         let width = columns[columnId]?.width || cell.width;
         let props = cells[cellId];
@@ -208,74 +203,73 @@ const Grid = () => {
           y,
           width,
           height,
-          cellId,
+          id: cellId,
         };
 
-        cellsRect.push(rect);
-
-        if (!isColumnRendered) renderGridColumn(ctx, { x, y, width, columnId });
+        cellList.current.push(rect);
 
         renderGridCell(ctx, rect, props);
+
+        if (!isColumnRendered) {
+          renderGridColumn(ctx, { offsetX: x, width, columnId });
+          columnList.current.push({ x, width, id: column.toString(), y: 0 });
+        }
 
         x += width;
       }
 
+      renderGridRow(ctx, {
+        x: 0,
+        y,
+        height,
+        rowId,
+      });
+
+      rowList.current.push({
+        x: 0,
+        y,
+        id: rowId,
+        height,
+      });
+
       y += height;
       isColumnRendered = true;
     }
+
+    renderBox(ctx);
   };
 
-  let clearCanvas: IClearCanvas = (ctx, virtualCtx) => {
-    virtualCtx.drawImage(ctx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height);
-    ctx.clearRect(0, cell.height, ctx.canvas.width, ctx.canvas.height);
-  };
-
-  let renderGridYAxisDownWards: IRenderGridYAxisDownWards = (
-    ctx,
-    virtualCtx
-  ) => {
-    clearCanvas(ctx, virtualCtx);
-
-    let canvasWidth = ctx.canvas.width;
-    let canvasHeight = ctx.canvas.height;
-
-    //   Draw top cells
-    ctx.drawImage(
-      virtualCtx.canvas,
-      0,
-      cell.height * 4,
-      canvasWidth,
-      canvasHeight,
-      0,
-      cell.height,
-      canvasWidth,
-      canvasHeight
-    );
-  };
-
-  const handleScroll = (event: WheelEvent, key: keyof IScrollPosition) => {
+  const handleScroll = (event: WheelEvent) => {
     let ctx = ctxRef.current;
-    let virtualCtx = virtualCtxRef.current;
 
-    if (!ctx || !virtualCtx) return;
+    if (!ctx) return;
 
-    let { deltaY } = event;
-    let scrollPosition = { ...scroll };
+    let { deltaY, deltaX } = event;
 
-    if (deltaY > 0) {
-      scrollPosition[key] += 3 * cell.height;
-      key === "x" ? "" : renderGridYAxisDownWards(ctx, virtualCtx);
+    let key: keyof IScrollPosition = deltaY === -0 ? "left" : "top";
+
+    let rowStart = +rowList.current[0].id;
+    let colStart = +columnList.current[0].id;
+
+    if (key === "top") {
+      rowStart = Math.max(
+        1,
+        deltaY > 0 ? rowStart + scrollBy : rowStart - scrollBy
+      );
     } else {
-      scrollPosition[key] = Math.max(0, scrollPosition[key] - 3 * cell.height);
+      colStart = Math.max(
+        1,
+        deltaX > 0 ? colStart + scrollBy : colStart - scrollBy
+      );
     }
 
-    setScroll(scrollPosition);
+    renderGrid({
+      rowStart,
+      colStart,
+      offsetX: 0,
+      offsetY: cell.height,
+    });
   };
-
-  let handleVerticalScroll = throttle(
-    (event: WheelEvent) => handleScroll(event, "y"),
-    500
-  );
 
   const handleContextMenu = (event: MouseEvent) => {
     event.preventDefault();
@@ -286,7 +280,7 @@ const Grid = () => {
       ref={gridRef}
       className={styles.container}
       onContextMenu={handleContextMenu}
-      onWheel={handleVerticalScroll}
+      onWheel={throttle(handleScroll, 50)}
     >
       <canvas ref={canvasRef} />
     </div>
