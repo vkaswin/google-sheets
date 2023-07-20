@@ -1,5 +1,6 @@
 {
     "name": "google-sheets",
+    "homepage": "https://vkaswin.github.io/google-sheets",
     "private": true,
     "version": "0.0.0",
     "type": "module",
