@@ -1,4 +1,4 @@
-import { useEffect, useRef, WheelEvent, MouseEvent } from "react";
+import { useEffect, useRef, WheelEvent, MouseEvent, useState } from "react";
 import { throttle } from "@/utils";
 import {
   IRenderGridColumn,
@@ -13,6 +13,7 @@ import {
   ICellList,
   IRowList,
   IColumnList,
+  IFindNearestCell,
 } from "@/types/Sheets";
 import { sheetData } from "./data";
 
@@ -34,6 +35,8 @@ const Grid = () => {
   let columnList = useRef<IColumnList>([]);
   let isReachedBottom = useRef(false);
   let isReachedRight = useRef(false);
+
+  let [selectedCell, setSelectedCell] = useState<ICellRect | undefined>();
 
   useEffect(() => {
     initCanvas();
@@ -301,13 +304,49 @@ const Grid = () => {
     event.preventDefault();
   };
 
+  let findNearestCell: IFindNearestCell = ({ offsetX, offsetY }) => {
+    if (offsetY <= cell.height) {
+      console.log(columnList.current);
+    } else if (offsetX <= cell.width / 2) {
+      console.log(rowList.current);
+    } else {
+      let cell = cellList.current.find(
+        ({ width, height, x, y }) =>
+          offsetX >= x &&
+          offsetX <= x + width &&
+          offsetY >= y &&
+          offsetY <= y + height
+      );
+      setSelectedCell(cell);
+    }
+  };
+
+  let handleClick = (event: MouseEvent<HTMLDivElement>) => {
+    let { offsetX, offsetY } = event.nativeEvent;
+    findNearestCell({ offsetX, offsetY });
+  };
+
   return (
     <div
       ref={gridRef}
       className={styles.container}
       onContextMenu={handleContextMenu}
+      onClick={handleClick}
       onWheel={throttle(handleScroll, 50)}
     >
+      <div className={styles.grid}>
+        {selectedCell && (
+          <div
+            className={styles.cell}
+            style={{
+              width: selectedCell.width,
+              height: selectedCell.height,
+              top: selectedCell.y - cell.height,
+              left: selectedCell.x,
+            }}
+          ></div>
+        )}
+      </div>
       <canvas ref={canvasRef} />
     </div>
   );

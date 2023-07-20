@@ -1,4 +1,5 @@
 .container {
+  position: relative;
   height: calc(
     100% -
       calc(
@@ -6,4 +7,16 @@
           var(--typing-bar-height)
       )
   );
+  .grid {
+    position: absolute;
+    border-left: 1px solid silver;
+    border-right: 1px solid silver;
+    width: 100%;
+    height: calc(100% - 25px);
+    top: 25px;
+    .cell {
+      position: absolute;
+      border: 2px solid #1973e8;
+    }
+  }
 }
