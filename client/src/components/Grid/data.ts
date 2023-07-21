@@ -128,7 +128,7 @@ export const sheetData: ISheetData = {
       backgroundColor: "#FFF2CC",
     },
     D25: {
-      text: "Loreum Ispum",
+      text: "Loreum",
       backgroundColor: "#B7B7B7",
     },
     C9: {

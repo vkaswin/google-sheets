@@ -72,11 +72,17 @@ export type ICellRect = {
   y: number;
   width: number;
   height: number;
+  row: IRowRect;
+  column: IColumnRect;
 };
 
 export type IGridLineStyle = (ctx: CanvasRenderingContext2D) => void;
 
-export type ISelectedCell = (ICellRect & { hidden: boolean }) | undefined;
+export type ISelectedCell =
+  | ({
+      hidden: boolean;
+    } & ICellRect)
+  | undefined;
 
 export type ISelectedRow = (IRowRect & { hidden: boolean }) | undefined;
 

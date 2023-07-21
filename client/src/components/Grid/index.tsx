@@ -4,8 +4,8 @@ import {
   WheelEvent,
   MouseEvent,
   useState,
-  CSSProperties,
   useMemo,
+  Fragment,
 } from "react";
 import { throttle } from "@/utils";
 import {
@@ -207,6 +207,28 @@ const Grid = () => {
     isReachedRight.current = true;
   };
 
+  let handleUpdateSelectedOne = () => {
+    if (selectedCell) {
+      let cell = cellList.current.find(({ id }) => id === selectedCell!.id);
+      if (cell) setSelectedCell({ ...cell, hidden: false });
+      else setSelectedCell({ ...selectedCell, hidden: true });
+    }
+
+    if (selectedColumn) {
+      let column = columnList.current.find(
+        ({ id }) => id === selectedColumn!.id
+      );
+      if (column) setSelectedColumn({ ...column, hidden: false });
+      else setSelectedColumn({ ...selectedColumn, hidden: true });
+    }
+
+    if (selectedRow) {
+      let row = rowList.current.find(({ id }) => id === selectedRow!.id);
+      if (row) setSelectedRow({ ...row, hidden: false });
+      else setSelectedRow({ ...selectedRow, hidden: true });
+    }
+  };
+
   let renderGrid: IRenderGrid = ({ colStart, rowStart }) => {
     let ctx = ctxRef.current;
 
@@ -234,7 +256,7 @@ const Grid = () => {
     for (let row = rowStart; row <= totalRows && y < canvasHeight; row++) {
       let height = rows[row]?.height || cell.height;
       let x = cell.width / 2;
-      let rowInfo = {
+      let rowRect = {
         x: 0,
         y,
         height,
@@ -242,8 +264,8 @@ const Grid = () => {
         width: cell.width / 2,
       };
 
-      renderGridRow(ctx, rowInfo);
-      rowList.current.push(rowInfo);
+      renderGridRow(ctx, rowRect);
+      rowList.current.push(rowRect);
 
       for (
         let column = colStart;
@@ -261,11 +283,20 @@ const Grid = () => {
         let cellId = `${columnId}${row}`;
         let width = columns[columnId]?.width || cell.width;
         let props = cells[cellId];
+        let columnRect = {
+          x,
+          y: 0,
+          width,
+          id: column,
+          height: cell.height,
+        };
         let rect: ICellRect = {
           x,
           y,
           width,
           height,
+          row: rowRect,
+          column: columnRect,
           id: cellId,
         };
 
@@ -275,13 +306,7 @@ const Grid = () => {
 
         if (!isColumnRendered) {
           renderGridColumn(ctx, { x, width, id: columnId });
-          columnList.current.push({
-            x,
-            y: 0,
-            width,
-            id: column,
-            height: cell.height,
-          });
+          columnList.current.push(columnRect);
         }
 
         x += width;
@@ -292,28 +317,8 @@ const Grid = () => {
     }
 
     renderTopLeftBox(ctx);
-
+    handleUpdateSelectedOne();
     isReachedBottom.current = rowList.current.at(-1)!.id === totalRows;
-
-    if (selectedCell) {
-      let cell = cellList.current.find(({ id }) => id === selectedCell!.id);
-      if (cell) setSelectedCell({ ...cell, hidden: false });
-      else setSelectedCell({ ...selectedCell, hidden: true });
-    }
-
-    if (selectedColumn) {
-      let column = columnList.current.find(
-        ({ id }) => id === selectedColumn!.id
-      );
-      if (column) setSelectedColumn({ ...column, hidden: false });
-      else setSelectedColumn({ ...selectedColumn, hidden: true });
-    }
-
-    if (selectedRow) {
-      let row = rowList.current.find(({ id }) => id === selectedRow!.id);
-      if (row) setSelectedRow({ ...row, hidden: false });
-      else setSelectedRow({ ...selectedRow, hidden: true });
-    }
   };
 
   const handleScroll = (event: WheelEvent) => {
@@ -397,6 +402,7 @@ const Grid = () => {
           offsetY >= y &&
           offsetY <= y + height
       );
+
       if (cell) selectedCell = { ...cell, hidden: false };
     }
 
@@ -405,18 +411,32 @@ const Grid = () => {
     setSelectedColumn(selectedColumn);
   };
 
-  let selectedCellStyle = useMemo<CSSProperties>(() => {
+  let selectedCellStyle = useMemo(() => {
     if (!selectedCell) return {};
 
     return {
-      width: selectedCell.width + "px",
-      height: selectedCell.height + "px",
-      top: selectedCell.y + "px",
-      left: selectedCell.x + "px",
+      cell: {
+        width: selectedCell.width + "px",
+        height: selectedCell.height + "px",
+        top: selectedCell.y + "px",
+        left: selectedCell.x + "px",
+      },
+      row: {
+        width: selectedCell.row.width + "px",
+        height: selectedCell.row.height + "px",
+        top: selectedCell.row.y + "px",
+        left: selectedCell.row.x + "px",
+      },
+      column: {
+        width: selectedCell.column.width + "px",
+        height: selectedCell.column.height + "px",
+        top: selectedCell.column.y + "px",
+        left: selectedCell.column.x + "px",
+      },
     };
   }, [selectedCell]);
 
-  let selectedRowStyle = useMemo<CSSProperties>(() => {
+  let selectedRowStyle = useMemo(() => {
     if (!selectedRow) return {};
 
     return {
@@ -427,7 +447,7 @@ const Grid = () => {
     };
   }, [selectedRow]);
 
-  let selectedColumnStyle = useMemo<CSSProperties>(() => {
+  let selectedColumnStyle = useMemo(() => {
     if (!selectedColumn) return {};
 
     return {
@@ -447,7 +467,24 @@ const Grid = () => {
       onWheel={throttle(handleScroll, 50)}
     >
       {selectedCell && !selectedCell.hidden && (
-        <div className={styles.selected_cell} style={selectedCellStyle}></div>
+        <Fragment>
+          <div
+            className={styles.selected_cell}
+            style={selectedCellStyle.cell}
+          ></div>
+          <div
+            className={styles.selected_cell_highlight}
+            style={selectedCellStyle.row}
+          >
+            <b>{selectedCell.row.id}</b>
+          </div>
+          <div
+            className={styles.selected_cell_highlight}
+            style={selectedCellStyle.column}
+          >
+            <b>{sheetData.meta.columnIds[selectedCell.column.id - 1]}</b>
+          </div>
+        </Fragment>
       )}
       {selectedRow && !selectedRow.hidden && (
         <div className={styles.selected_row} style={selectedRowStyle}>
