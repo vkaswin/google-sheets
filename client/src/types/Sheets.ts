@@ -5,12 +5,7 @@ export type IScrollPosition = {
 
 export type IRenderGridRow = (
   ctx: CanvasRenderingContext2D,
-  props: {
-    x: number;
-    y: number;
-    height: number;
-    id: string;
-  }
+  props: IRowRect
 ) => void;
 
 export type IGridCellStyle = (ctx: CanvasRenderingContext2D) => void;
@@ -55,11 +50,21 @@ export type IRenderGridCell = (
   props: ICellProps
 ) => void;
 
-export type ICellList = ICellRect[];
+export type IRowRect = {
+  id: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
 
-export type IRowList = Omit<ICellRect, "width">[];
-
-export type IColumnList = Omit<ICellRect, "height">[];
+export type IColumnRect = {
+  id: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
 
 export type ICellRect = {
   id: string;
@@ -71,6 +76,12 @@ export type ICellRect = {
 
 export type IGridLineStyle = (ctx: CanvasRenderingContext2D) => void;
 
+export type ISelectedCell = (ICellRect & { hidden: boolean }) | undefined;
+
+export type ISelectedRow = (IRowRect & { hidden: boolean }) | undefined;
+
+export type ISelectedColumn = (IColumnRect & { hidden: boolean }) | undefined;
+
 export type IRenderGridCellLine = (
   ctx: CanvasRenderingContext2D,
   rect: ICellRect
@@ -80,3 +91,8 @@ export type IRenderGrid = (data: {
   rowStart: number;
   colStart: number;
 }) => void;
+
+export type ICloseRightGrid = (
+  ctx: CanvasRenderingContext2D,
+  data: { x: number; y: number }
+) => void;

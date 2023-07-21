@@ -34,6 +34,7 @@ export const sheetData: ISheetData = {
       "X",
       "Y",
       "Z",
+      "null",
     ],
   },
   rows: {
