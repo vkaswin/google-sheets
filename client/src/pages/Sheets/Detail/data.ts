@@ -1,6 +1,6 @@
-import { ISheetData } from "@/types/Sheets";
+import { ISheetDetail } from "@/types/Sheets";
 
-export const sheetData: ISheetData = {
+export const sheetDetail: ISheetDetail = {
   meta: {
     totalRows: 50,
     dimension: {

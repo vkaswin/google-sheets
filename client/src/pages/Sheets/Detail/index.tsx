@@ -4,6 +4,7 @@ import Toolbar from "@/components/Toolbar";
 import TypingBar from "@/components/TypingBar";
 import Grid from "@/components/Grid";
 import BottomBar from "@/components/BottomBar";
+import { sheetDetail } from "./data";
 
 const Detail = () => {
   return (
@@ -11,7 +12,7 @@ const Detail = () => {
       <Header />
       <Toolbar />
       <TypingBar />
-      <Grid />
+      <Grid sheetDetail={sheetDetail} />
       <BottomBar />
     </Fragment>
   );

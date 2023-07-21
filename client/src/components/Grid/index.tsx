@@ -24,8 +24,8 @@ import {
   ISelectedRow,
   ISelectedColumn,
   ICloseRightGrid,
+  ISheetDetail,
 } from "@/types/Sheets";
-import { sheetData } from "./data";
 
 import styles from "./Grid.module.scss";
 
@@ -34,7 +34,18 @@ let cell = {
   height: 25,
 };
 
-const Grid = () => {
+type IGridProps = {
+  sheetDetail: ISheetDetail;
+};
+
+const Grid = ({
+  sheetDetail: {
+    meta: { columnIds, totalRows },
+    cells,
+    columns,
+    rows,
+  },
+}: IGridProps) => {
   let gridRef = useRef<HTMLDivElement | null>(null);
   let canvasRef = useRef<HTMLCanvasElement | null>(null);
   let ctxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -242,13 +253,6 @@ const Grid = () => {
     rowList.current = [];
     columnList.current = [];
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-    let {
-      meta: { columnIds, totalRows },
-      rows,
-      columns,
-      cells,
-    } = sheetData;
 
     let isColumnRendered = false;
     isReachedRight.current = false;
@@ -482,7 +486,7 @@ const Grid = () => {
             className={styles.selected_cell_highlight}
             style={selectedCellStyle.column}
           >
-            <b>{sheetData.meta.columnIds[selectedCell.column.id - 1]}</b>
+            <b>{columnIds[selectedCell.column.id - 1]}</b>
           </div>
         </Fragment>
       )}
@@ -498,7 +502,7 @@ const Grid = () => {
         <div className={styles.selected_column} style={selectedColumnStyle}>
           <div className={styles.column}></div>
           <div className={styles.title}>
-            <b>{sheetData.meta.columnIds[selectedColumn.id - 1]}</b>
+            <b>{columnIds[selectedColumn.id - 1]}</b>
           </div>
           <div className={styles.highlight} aria-label="column"></div>
         </div>

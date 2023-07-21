@@ -19,7 +19,7 @@ export type IRenderGridColumn = (
   }
 ) => void;
 
-export type ISheetData = {
+export type ISheetDetail = {
   meta: ISheetMeta;
   rows: ISheetRows;
   columns: ISheetColumns;
