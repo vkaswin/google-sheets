@@ -13,7 +13,6 @@ import {
   ICellList,
   IRowList,
   IColumnList,
-  IFindNearestCell,
 } from "@/types/Sheets";
 import { sheetData } from "./data";
 
@@ -23,8 +22,6 @@ let cell = {
   width: 100,
   height: 25,
 };
-
-let scrollBy = 3;
 
 const Grid = () => {
   let gridRef = useRef<HTMLDivElement | null>(null);
@@ -281,12 +278,16 @@ const Grid = () => {
     if (key === "top") {
       if (deltaY > 0 && isReachedBottom.current) return;
 
+      let scrollBy = 2;
+
       rowStart = Math.max(
         1,
         deltaY > 0 ? rowStart + scrollBy : rowStart - scrollBy
       );
     } else {
       if (deltaX > 0 && isReachedRight.current) return;
+
+      let scrollBy = 1;
 
       colStart = Math.max(
         1,
@@ -304,26 +305,30 @@ const Grid = () => {
     event.preventDefault();
   };
 
-  let findNearestCell: IFindNearestCell = ({ offsetX, offsetY }) => {
+  let handleClick = (event: MouseEvent<HTMLDivElement>) => {
+    if (!gridRef.current) return;
+
+    let { top, left } = gridRef.current.getBoundingClientRect();
+    let { clientX, clientY } = event;
+
+    let offsetX = clientX - left;
+    let offsetY = clientY - top;
+
     if (offsetY <= cell.height) {
       console.log(columnList.current);
     } else if (offsetX <= cell.width / 2) {
       console.log(rowList.current);
     } else {
-      let cell = cellList.current.find(
-        ({ width, height, x, y }) =>
+      let selectedCell = cellList.current.find(({ width, height, x, y }) => {
+        return (
           offsetX >= x &&
           offsetX <= x + width &&
           offsetY >= y &&
           offsetY <= y + height
-      );
-      setSelectedCell(cell);
+        );
+      });
+      setSelectedCell(selectedCell);
     }
-  };
-
-  let handleClick = (event: MouseEvent<HTMLDivElement>) => {
-    let { offsetX, offsetY } = event.nativeEvent;
-    findNearestCell({ offsetX, offsetY });
   };
 
   return (

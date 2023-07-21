@@ -80,8 +80,3 @@ export type IRenderGrid = (data: {
   rowStart: number;
   colStart: number;
 }) => void;
-
-export type IFindNearestCell = (data: {
-  offsetX: number;
-  offsetY: number;
-}) => void;
