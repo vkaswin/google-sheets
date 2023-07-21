@@ -1,3 +1,38 @@
 .container {
-  height: var(--toolbar-height);
+  .header {
+    display: flex;
+    align-items: center;
+    height: var(--header-height);
+    .left_wrapper {
+      display: flex;
+      align-items: center;
+      .logo {
+        img {
+          width: 60px;
+          height: 42px;
+        }
+      }
+      .options_wrapper {
+        display: flex;
+        flex-direction: column;
+        .options_top {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          .title_field {
+            color: #575a5a;
+            font-family: "Poppins-Medium";
+            line-height: 2;
+            font-size: 18px;
+          }
+        }
+        .options_bottom {
+          display: flex;
+        }
+      }
+    }
+  }
+  .toolbar {
+    height: var(--toolbar-height);
+  }
 }

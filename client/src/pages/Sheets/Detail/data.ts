@@ -103,7 +103,7 @@ export const sheetDetail: ISheetDetail = {
   },
   cells: {
     A1: {
-      text: "Loreum Ispum",
+      text: "Loreum Ispum Loreum Ispum",
       backgroundColor: "#EA9999",
       color: "white",
     },
@@ -124,7 +124,7 @@ export const sheetDetail: ISheetDetail = {
       backgroundColor: "#B3A7D6",
     },
     F12: {
-      text: "Loreum Ispum",
+      text: "Loreum Ispum Loreum Ispum",
       backgroundColor: "#FFF2CC",
     },
     D25: {

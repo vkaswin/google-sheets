@@ -181,11 +181,14 @@ const Grid = ({
   };
 
   let renderGridCell: IRenderGridCell = (ctx, rect, props) => {
+    let { x, y, width, height } = rect;
+
+    ctx.clearRect(x, y, width, height);
+
     renderGridCellLine(ctx, rect);
 
     if (!props) return;
 
-    let { x, y, width, height } = rect;
     let { text, color, backgroundColor } = props;
 
     ctx.font = "14px Poppins";
@@ -304,14 +307,13 @@ const Grid = ({
           id: cellId,
         };
 
-        cellList.current.push(rect);
-
-        renderGridCell(ctx, rect, props);
-
         if (!isColumnRendered) {
           renderGridColumn(ctx, { x, width, id: columnId });
           columnList.current.push(columnRect);
         }
+
+        renderGridCell(ctx, rect, props);
+        cellList.current.push(rect);
 
         x += width;
       }
