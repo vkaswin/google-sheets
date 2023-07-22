@@ -1,5 +1,3 @@
-import "./ScrollBar.module.scss";
-
 const ScrollBar = () => {
   return <div>ScrollBar</div>;
 };

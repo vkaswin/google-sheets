@@ -27,8 +27,6 @@ import {
   ISheetDetail,
 } from "@/types/Sheets";
 
-import styles from "./Grid.module.scss";
-
 let cell = {
   width: 100,
   height: 25,
@@ -183,7 +181,7 @@ const Grid = ({
   let renderGridCell: IRenderGridCell = (ctx, rect, props) => {
     let { x, y, width, height } = rect;
 
-    ctx.clearRect(x, y, width, height);
+    ctx.clearRect(x, y + 1, width, height);
 
     renderGridCellLine(ctx, rect);
 
@@ -467,7 +465,8 @@ const Grid = ({
   return (
     <div
       ref={gridRef}
-      className={styles.container}
+      className="relative h-[var(--grid-height)] overflow-hidden"
+      //   className={styles.container}
       onContextMenu={handleContextMenu}
       onClick={handleClick}
       onWheel={throttle(handleScroll, 50)}
@@ -475,17 +474,17 @@ const Grid = ({
       {selectedCell && !selectedCell.hidden && (
         <Fragment>
           <div
-            className={styles.selected_cell}
+            className="absolute border-2 border-[#1973e8]"
             style={selectedCellStyle.cell}
           ></div>
           <div
-            className={styles.selected_cell_highlight}
+            className="absolute flex items-center justify-center bg-[#d3e3fd] text-[#444746] text-sm border-1 border-silver"
             style={selectedCellStyle.row}
           >
             <b>{selectedCell.row.id}</b>
           </div>
           <div
-            className={styles.selected_cell_highlight}
+            className="absolute flex items-center justify-center bg-[#d3e3fd] text-[#444746] text-sm border-1 border-silver"
             style={selectedCellStyle.column}
           >
             <b>{columnIds[selectedCell.column.id - 1]}</b>
@@ -493,20 +492,25 @@ const Grid = ({
         </Fragment>
       )}
       {selectedRow && !selectedRow.hidden && (
-        <div className={styles.selected_row} style={selectedRowStyle}>
-          <div className={styles.title}>
+        <div
+          className="absolute flex w-full border-t border-b border-[#1973e8]"
+          style={selectedRowStyle}
+        >
+          <div className="flex w-[var(--cell-width)] justify-center items-center bg-[#0b57d0] text-white text-sm">
             <b>{selectedRow.id}</b>
           </div>
-          <div className={styles.highlight} aria-label="row"></div>
+          <div className="bg-[#1973e8] opacity-10 w-[calc(100%-var(--cell-width))]"></div>
         </div>
       )}
       {selectedColumn && !selectedColumn.hidden && (
-        <div className={styles.selected_column} style={selectedColumnStyle}>
-          <div className={styles.column}></div>
-          <div className={styles.title}>
+        <div
+          className="absolute w-[calc(--cell-width)] h-full border-l border-r border-[#1973e8]"
+          style={selectedColumnStyle}
+        >
+          <div className="flex h-[var(--cell-height)] justify-center items-center bg-[#0b57d0] text-white text-sm">
             <b>{columnIds[selectedColumn.id - 1]}</b>
           </div>
-          <div className={styles.highlight} aria-label="column"></div>
+          <div className="bg-[#1973e8] opacity-10 h-[calc(100%-var(--cell-height))]"></div>
         </div>
       )}
       <canvas ref={canvasRef} />

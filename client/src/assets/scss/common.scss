@@ -3,10 +3,17 @@ html {
 }
 
 :root {
-  --toolbar-height: 45px;
-  --header-height: 65px;
+  --toolbar-height: 110px;
   --bottom-bar-height: 45px;
   --typing-bar-height: 30px;
+  --grid-height: calc(
+    100% -
+      calc(
+        var(--toolbar-height) + var(--bottom-bar-height) +
+          var(--typing-bar-height)
+      )
+  );
+  --cell-height: 25px;
 }
 
 body {
