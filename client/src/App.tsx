@@ -4,8 +4,8 @@ import { Router } from "@/router";
 import { ToastContainer } from "react-toastify";
 import AuthProvider from "@/context/AuthContext";
 
-import "@/assets/scss/index.scss";
 import "react-toastify/dist/ReactToastify.css";
+import "@/assets/css/index.css";
 
 export const App = () => {
   return (

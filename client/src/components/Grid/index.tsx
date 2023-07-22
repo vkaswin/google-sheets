@@ -151,8 +151,8 @@ const Grid = ({
 
   let setGridLineStyle: IGridLineStyle = (ctx) => {
     ctx.strokeStyle = "silver";
-    ctx.fillStyle = "#566164";
-    ctx.font = "14px Poppins";
+    ctx.fillStyle = "#545454";
+    ctx.font = "14px Open-Sans";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
   };
@@ -189,7 +189,7 @@ const Grid = ({
 
     let { text, color, backgroundColor } = props;
 
-    ctx.font = "14px Poppins";
+    ctx.font = "14px Open-Sans";
     ctx.textBaseline = "middle";
 
     if (backgroundColor) {
@@ -217,6 +217,16 @@ const Grid = ({
     ctx.stroke();
     unsetGridCellStyle(ctx);
     isReachedRight.current = true;
+  };
+
+  let closeBottomGrid: ICloseRightGrid = (ctx, { x, y }) => {
+    setGridLineStyle(ctx);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, ctx.canvas.width);
+    ctx.stroke();
+    unsetGridCellStyle(ctx);
+    isReachedBottom.current = true;
   };
 
   let handleUpdateSelectedOne = () => {
@@ -257,8 +267,15 @@ const Grid = ({
 
     let isColumnRendered = false;
     isReachedRight.current = false;
+    isReachedBottom.current = false;
+    let rowsLimit = totalRows + 1;
 
-    for (let row = rowStart; row <= totalRows && y < canvasHeight; row++) {
+    for (let row = rowStart; row <= rowsLimit && y < canvasHeight; row++) {
+      if (row === rowsLimit) {
+        closeBottomGrid(ctx, { x: 0, y });
+        break;
+      }
+
       let height = rows[row]?.height || cell.height;
       let x = cell.width / 2;
       let rowRect = {
@@ -322,7 +339,6 @@ const Grid = ({
 
     renderTopLeftBox(ctx);
     handleUpdateSelectedOne();
-    isReachedBottom.current = rowList.current.at(-1)!.id === totalRows;
   };
 
   const handleScroll = (event: WheelEvent) => {
@@ -474,17 +490,17 @@ const Grid = ({
       {selectedCell && !selectedCell.hidden && (
         <Fragment>
           <div
-            className="absolute border-2 border-[#1973e8]"
+            className="absolute border-2 border-medium-light-blue"
             style={selectedCellStyle.cell}
           ></div>
           <div
-            className="absolute flex items-center justify-center bg-[#d3e3fd] text-[#444746] text-sm border-1 border-silver"
+            className="absolute flex items-center justify-center bg-mild-blue text-dark-gray text-sm border-1 border-silver"
             style={selectedCellStyle.row}
           >
             <b>{selectedCell.row.id}</b>
           </div>
           <div
-            className="absolute flex items-center justify-center bg-[#d3e3fd] text-[#444746] text-sm border-1 border-silver"
+            className="absolute flex items-center justify-center bg-mild-blue text-dark-gray text-sm border-1 border-silver"
             style={selectedCellStyle.column}
           >
             <b>{columnIds[selectedCell.column.id - 1]}</b>
@@ -493,24 +509,24 @@ const Grid = ({
       )}
       {selectedRow && !selectedRow.hidden && (
         <div
-          className="absolute flex w-full border-t border-b border-[#1973e8]"
+          className="absolute flex w-full border-t border-b border-medium-light-blue"
           style={selectedRowStyle}
         >
-          <div className="flex w-[var(--cell-width)] justify-center items-center bg-[#0b57d0] text-white text-sm">
+          <div className="flex w-[var(--cell-width)] justify-center items-center bg-dark-blue text-white text-sm">
             <b>{selectedRow.id}</b>
           </div>
-          <div className="bg-[#1973e8] opacity-10 w-[calc(100%-var(--cell-width))]"></div>
+          <div className="bg-medium-light-blue opacity-10 w-[calc(100%-var(--cell-width))]"></div>
         </div>
       )}
       {selectedColumn && !selectedColumn.hidden && (
         <div
-          className="absolute w-[calc(--cell-width)] h-full border-l border-r border-[#1973e8]"
+          className="absolute w-[calc(--cell-width)] h-full border-l border-r border-medium-light-blue"
           style={selectedColumnStyle}
         >
-          <div className="flex h-[var(--cell-height)] justify-center items-center bg-[#0b57d0] text-white text-sm">
+          <div className="flex h-[var(--cell-height)] justify-center items-center bg-dark-blue text-white text-sm">
             <b>{columnIds[selectedColumn.id - 1]}</b>
           </div>
-          <div className="bg-[#1973e8] opacity-10 h-[calc(100%-var(--cell-height))]"></div>
+          <div className="bg-medium-light-blue opacity-10 h-[calc(100%-var(--cell-height))]"></div>
         </div>
       )}
       <canvas ref={canvasRef} />

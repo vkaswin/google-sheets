@@ -13,17 +13,22 @@ html {
           var(--typing-bar-height)
       )
   );
-  --cell-height: 25px;
 }
 
 body {
   background-color: #fff;
   font-size: 16px;
-  font-family: "Poppins", sans-serif;
+  font-family: "Open-Sans", sans-serif;
   height: 100%;
   overflow: hidden;
 }
 
 #root {
   height: 100%;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }

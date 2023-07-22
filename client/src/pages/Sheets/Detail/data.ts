@@ -2,7 +2,7 @@ import { ISheetDetail } from "@/types/Sheets";
 
 export const sheetDetail: ISheetDetail = {
   meta: {
-    totalRows: 50,
+    totalRows: 1000,
     dimension: {
       width: 26 * 100,
       height: 100 * 25,
@@ -38,9 +38,6 @@ export const sheetDetail: ISheetDetail = {
     ],
   },
   rows: {
-    50: {
-      height: 250,
-    },
     1: {
       height: 100,
     },
@@ -77,6 +74,9 @@ export const sheetDetail: ISheetDetail = {
     45: {
       height: 128,
     },
+    50: {
+      height: 150,
+    },
     66: {
       height: 77,
     },
@@ -102,6 +102,11 @@ export const sheetDetail: ISheetDetail = {
     },
   },
   cells: {
+    B50: {
+      text: "Loreum Ispum Loreum Ispum",
+      backgroundColor: "#CADAF8",
+      color: "white",
+    },
     A1: {
       text: "Loreum Ispum Loreum Ispum",
       backgroundColor: "#EA9999",
