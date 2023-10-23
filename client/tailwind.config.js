@@ -3,14 +3,17 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
-      colors: {
-        "mild-blue": "#d3e3fd",
-        "medium-light-blue": "#1973e8",
+      borderColor: {
+        gray: "#C4C7C5",
+        blue: "#1973E8",
         "dark-blue": "#0b57d0",
-        "light-silver": "#F9FBFD",
-        "light-gray": "#E8EBEE",
-        "light-blue": "#EDF2FA",
-        "mild-silver": "#e8eaed",
+      },
+      outlineColor: {
+        "light-blue": "#a8c7fa",
+      },
+      backgroundColor: {
+        "dark-silver": "#C0C0C0",
+        "light-blue": "#D3E3FD",
       },
       textColor: {
         "light-gray": "#575a5a",
@@ -19,7 +22,7 @@ export default {
       fontFamily: {
         medium: "Open-Sans-Medium",
         bold: "Open-Sans-Bold",
-        "semi-bold": "Open-Sans-SemiBold",
+        semibold: "Open-Sans-SemiBold",
         light: "Open-Sans-Light",
         regular: "Open-Sans",
       },

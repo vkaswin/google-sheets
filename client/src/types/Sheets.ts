@@ -1,104 +1,66 @@
-export type IScrollPosition = {
-  top: number;
-  left: number;
-};
-
-export type IRenderGridRow = (
-  ctx: CanvasRenderingContext2D,
-  props: IRowRect
-) => void;
-
-export type IGridCellStyle = (ctx: CanvasRenderingContext2D) => void;
-
-export type IRenderGridColumn = (
-  ctx: CanvasRenderingContext2D,
-  props: {
-    x: number;
-    width: number;
-    id: string;
-  }
-) => void;
-
-export type ISheetDetail = {
-  meta: ISheetMeta;
-  rows: ISheetRows;
-  columns: ISheetColumns;
-  cells: ISheetCells;
-};
-
-export type ISheetMeta = {
-  totalRows: number;
-  dimension: { width: number; height: number };
-  columnIds: string[];
-};
-
-export type ISheetCells = Record<string, ICellProps>;
-
-export type ISheetRows = Record<string, { height?: number }>;
-
-export type ISheetColumns = Record<string, { width?: number }>;
-
-export type ICellProps = {
-  text?: string;
-  backgroundColor?: string;
-  color?: string;
-};
-
-export type IRenderGridCell = (
-  ctx: CanvasRenderingContext2D,
-  rect: ICellRect,
-  props: ICellProps
-) => void;
-
-export type IRowRect = {
-  id: number;
+export interface IRow {
+  id: string;
+  rowId: number;
   x: number;
   y: number;
   width: number;
   height: number;
-};
+}
 
-export type IColumnRect = {
-  id: number;
+export interface IColumn {
+  id: string;
+  columnId: number;
   x: number;
   y: number;
   width: number;
   height: number;
-};
+}
 
-export type ICellRect = {
+export interface ICell {
   id: string;
   x: number;
   y: number;
+  rowId: string;
+  columnId: string;
   width: number;
   height: number;
-  row: IRowRect;
-  column: IColumnRect;
-};
+  props: ICellProps;
+}
 
-export type IGridLineStyle = (ctx: CanvasRenderingContext2D) => void;
+export interface ISheetMeta {
+  totalRows: number;
+  totalColumns: number;
+}
 
-export type ISelectedCell =
-  | ({
-      hidden: boolean;
-    } & ICellRect)
-  | undefined;
+export interface ICellProps {
+  content?: string;
+  text?: string;
+  backgroundColor?: string;
+  color?: string;
+}
 
-export type ISelectedRow = (IRowRect & { hidden: boolean }) | undefined;
+export interface IRowProps {
+  height?: number;
+  backgroundColor?: string;
+}
 
-export type ISelectedColumn = (IColumnRect & { hidden: boolean }) | undefined;
+export interface IColumnProps {
+  width?: number;
+  backgroundColor?: string;
+}
 
-export type IRenderGridCellLine = (
-  ctx: CanvasRenderingContext2D,
-  rect: ICellRect
-) => void;
+export interface ISheetDetail {
+  meta: ISheetMeta;
+  rows: Record<string, IRowProps>;
+  columns: Record<string, IColumnProps>;
+  cells: Record<string, ICellProps>;
+}
+
+export type IClickCell = (cell: ICell) => void;
 
 export type IRenderGrid = (data: {
+  offsetX: number;
+  offsetY: number;
   rowStart: number;
   colStart: number;
 }) => void;
-
-export type ICloseRightGrid = (
-  ctx: CanvasRenderingContext2D,
-  data: { x: number; y: number }
-) => void;

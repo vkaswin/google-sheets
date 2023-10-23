@@ -1,535 +1,242 @@
+import { WheelEvent, useEffect, useRef, useState } from "react";
+import GridColumns from "./GridColumns";
+import GridRows from "./GridRows";
+import GridCells from "./GridCells";
+import ActiveCell from "./ActiveCell";
+
 import {
-  useEffect,
-  useRef,
-  WheelEvent,
-  MouseEvent,
-  useState,
-  useMemo,
-  Fragment,
-} from "react";
-import { throttle } from "@/utils";
-import {
-  IRenderGridColumn,
-  IScrollPosition,
-  IRenderGridRow,
-  IRenderGridCell,
-  ICellRect,
-  IGridCellStyle,
-  IGridLineStyle,
-  IRenderGridCellLine,
-  IRenderGrid,
-  IRowRect,
-  IColumnRect,
-  ISelectedCell,
-  ISelectedRow,
-  ISelectedColumn,
-  ICloseRightGrid,
+  ICell,
+  IClickCell,
+  IColumn,
+  IRow,
   ISheetDetail,
+  IRenderGrid,
 } from "@/types/Sheets";
+
+type IGridProps = {
+  sheetDetail: ISheetDetail;
+};
+
+let colWidth = 46;
+let rowHeight = 25;
 
 let cell = {
   width: 100,
   height: 25,
 };
 
-type IGridProps = {
-  sheetDetail: ISheetDetail;
-};
+const Grid = ({ sheetDetail }: IGridProps) => {
+  let [rows, setRows] = useState<IRow[]>([]);
 
-const Grid = ({
-  sheetDetail: {
-    meta: { columnIds, totalRows },
-    cells,
-    columns,
-    rows,
-  },
-}: IGridProps) => {
-  let gridRef = useRef<HTMLDivElement | null>(null);
-  let canvasRef = useRef<HTMLCanvasElement | null>(null);
-  let ctxRef = useRef<CanvasRenderingContext2D | null>(null);
-  let cellList = useRef<ICellRect[]>([]);
-  let rowList = useRef<IRowRect[]>([]);
-  let columnList = useRef<IColumnRect[]>([]);
-  let isReachedBottom = useRef(false);
-  let isReachedRight = useRef(false);
+  let [columns, setColumns] = useState<IColumn[]>([]);
 
-  let [selectedCell, setSelectedCell] = useState<ISelectedCell>();
-  let [selectedRow, setSelectedRow] = useState<ISelectedRow>();
-  let [selectedColumn, setSelectedColumn] = useState<ISelectedColumn>();
+  let [cells, setCells] = useState<Map<string, ICell>>(new Map());
 
-  useEffect(() => {
-    initCanvas();
+  let [selectedCell, setSelectedCell] = useState<ICell | null>(null);
 
-    if (!ctxRef.current) return;
+  let gridRef = useRef<HTMLDivElement>(null);
+
+  let canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const handleResize = () => {
+    let { rowId = 1, y = rowHeight } = rows[0] ?? {};
+    let { columnId = 1, x = colWidth } = columns[0] ?? {};
 
     renderGrid({
-      rowStart: 1,
-      colStart: 1,
+      offsetX: x,
+      offsetY: y,
+      rowStart: rowId,
+      colStart: columnId,
     });
+  };
 
+  useEffect(() => {
+    handleResize();
+  }, []);
+
+  useEffect(() => {
     window.addEventListener("resize", handleResize);
 
     return () => {
-      window.addEventListener("resize", handleResize);
+      window.removeEventListener("resize", handleResize);
     };
-  }, []);
+  }, [rows, columns]);
 
-  let handleResize = () => {
-    if (!gridRef.current || !canvasRef.current) return;
+  const renderGrid: IRenderGrid = ({
+    offsetX,
+    offsetY,
+    rowStart,
+    colStart,
+  }) => {
+    if (!gridRef.current) return;
 
-    let { clientWidth, clientHeight } = gridRef.current;
-
-    canvasRef.current.width = clientWidth;
-    canvasRef.current.height = clientHeight;
-
-    let rowStart = rowList.current[0]!.id;
-    let colStart = columnList.current[0]!.id;
-
-    renderGrid({
-      rowStart,
-      colStart,
-    });
-  };
-
-  let renderTopLeftBox = (ctx: CanvasRenderingContext2D) => {
-    ctx.clearRect(0, 0, cell.width / 2, cell.height);
-    setGridLineStyle(ctx);
-    ctx.beginPath();
-    ctx.moveTo(0, cell.height);
-    ctx.lineTo(cell.width / 2, cell.height);
-    ctx.lineTo(cell.width / 2, 1);
-    ctx.lineTo(0, 1);
-    ctx.fillStyle = "#C7C7C7";
-    ctx.fillRect(0, cell.height - 5, cell.width / 2, 5);
-    ctx.fillRect(cell.width / 2 - 5, 0, 5, cell.height);
-    ctx.stroke();
-    unsetGridLineStyle(ctx);
-  };
-
-  let initCanvas = () => {
-    if (!gridRef.current || !canvasRef.current) return;
+    let { totalRows, totalColumns } = sheetDetail.meta;
 
     let { clientWidth, clientHeight } = gridRef.current;
-    let canvas = canvasRef.current;
-    let ctx = canvas.getContext("2d");
 
-    if (!ctx) return;
+    let rowData: IRow[] = [];
+    let columnData: IColumn[] = [];
+    let cellData = new Map<string, ICell>();
 
-    ctxRef.current = ctx;
-    canvas.width = clientWidth;
-    canvas.height = clientHeight;
-  };
+    for (
+      let i = rowStart, y = offsetY;
+      i <= totalRows && y < clientHeight;
+      i++
+    ) {
+      let height = sheetDetail.rows[i]?.height || cell.height;
 
-  let renderGridColumn: IRenderGridColumn = (ctx, { x, width, id }) => {
-    setGridLineStyle(ctx);
-    ctx.beginPath();
-    ctx.moveTo(x, 1);
-    ctx.lineTo(x + width, 1);
-    ctx.lineTo(x + width, cell.height);
-    ctx.lineTo(x, cell.height);
-    ctx.fillText(id, x + width / 2, cell.height / 2);
-    ctx.stroke();
-    unsetGridLineStyle(ctx);
-  };
-
-  let renderGridRow: IRenderGridRow = (ctx, { x, y, height, id }) => {
-    setGridLineStyle(ctx);
-    ctx.beginPath();
-    ctx.moveTo(x, y + height);
-    ctx.lineTo(cell.width / 2, y + height);
-    ctx.fillText(id.toString(), cell.width / 4, y + height / 2);
-    ctx.stroke();
-    unsetGridLineStyle(ctx);
-  };
-
-  let unsetGridCellStyle: IGridCellStyle = (ctx) => {
-    ctx.fillStyle = "#000000";
-    ctx.font = "10px sans-serif";
-    ctx.textAlign = "start";
-    ctx.textBaseline = "alphabetic";
-  };
-
-  let setGridLineStyle: IGridLineStyle = (ctx) => {
-    ctx.strokeStyle = "silver";
-    ctx.fillStyle = "#545454";
-    ctx.font = "14px Open-Sans";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-  };
-
-  let unsetGridLineStyle: IGridLineStyle = (ctx) => {
-    ctx.strokeStyle = "#000000";
-    ctx.fillStyle = "#000000";
-    ctx.font = "10px sans-serif";
-    ctx.textAlign = "start";
-    ctx.textBaseline = "alphabetic";
-  };
-
-  let renderGridCellLine: IRenderGridCellLine = (
-    ctx,
-    { x, y, width, height }
-  ) => {
-    setGridLineStyle(ctx);
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x, y + height);
-    ctx.lineTo(x + width, y + height);
-    ctx.stroke();
-    unsetGridLineStyle(ctx);
-  };
-
-  let renderGridCell: IRenderGridCell = (ctx, rect, props) => {
-    let { x, y, width, height } = rect;
-
-    ctx.clearRect(x, y + 1, width, height);
-
-    renderGridCellLine(ctx, rect);
-
-    if (!props) return;
-
-    let { text, color, backgroundColor } = props;
-
-    ctx.font = "14px Open-Sans";
-    ctx.textBaseline = "middle";
-
-    if (backgroundColor) {
-      ctx.beginPath();
-      ctx.fillStyle = backgroundColor || "#000000";
-      ctx.fillRect(x, y, width, height);
-      ctx.fill();
-    }
-
-    if (text) {
-      ctx.beginPath();
-      ctx.fillStyle = color || "#000000";
-      ctx.fillText(text, x + 5, y + height - 10);
-      ctx.fill();
-    }
-
-    unsetGridCellStyle(ctx);
-  };
-
-  let closeRightGrid: ICloseRightGrid = (ctx, { x, y }) => {
-    setGridLineStyle(ctx);
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x, ctx.canvas.height);
-    ctx.stroke();
-    unsetGridCellStyle(ctx);
-    isReachedRight.current = true;
-  };
-
-  let closeBottomGrid: ICloseRightGrid = (ctx, { x, y }) => {
-    setGridLineStyle(ctx);
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x, ctx.canvas.width);
-    ctx.stroke();
-    unsetGridCellStyle(ctx);
-    isReachedBottom.current = true;
-  };
-
-  let handleUpdateSelectedOne = () => {
-    if (selectedCell) {
-      let cell = cellList.current.find(({ id }) => id === selectedCell!.id);
-      if (cell) setSelectedCell({ ...cell, hidden: false });
-      else setSelectedCell({ ...selectedCell, hidden: true });
-    }
-
-    if (selectedColumn) {
-      let column = columnList.current.find(
-        ({ id }) => id === selectedColumn!.id
-      );
-      if (column) setSelectedColumn({ ...column, hidden: false });
-      else setSelectedColumn({ ...selectedColumn, hidden: true });
-    }
-
-    if (selectedRow) {
-      let row = rowList.current.find(({ id }) => id === selectedRow!.id);
-      if (row) setSelectedRow({ ...row, hidden: false });
-      else setSelectedRow({ ...selectedRow, hidden: true });
-    }
-  };
-
-  let renderGrid: IRenderGrid = ({ colStart, rowStart }) => {
-    let ctx = ctxRef.current;
-
-    if (!ctx) return;
-
-    let canvasWidth = ctx.canvas.width;
-    let canvasHeight = ctx.canvas.height;
-    let y = cell.height;
-
-    cellList.current = [];
-    rowList.current = [];
-    columnList.current = [];
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-    let isColumnRendered = false;
-    isReachedRight.current = false;
-    isReachedBottom.current = false;
-    let rowsLimit = totalRows + 1;
-
-    for (let row = rowStart; row <= rowsLimit && y < canvasHeight; row++) {
-      if (row === rowsLimit) {
-        closeBottomGrid(ctx, { x: 0, y });
-        break;
-      }
-
-      let height = rows[row]?.height || cell.height;
-      let x = cell.width / 2;
-      let rowRect = {
-        x: 0,
-        y,
-        height,
-        id: row,
-        width: cell.width / 2,
-      };
-
-      renderGridRow(ctx, rowRect);
-      rowList.current.push(rowRect);
-
-      for (
-        let column = colStart;
-        column <= columnIds.length && x < canvasWidth;
-        column++
-      ) {
-        let columnId = columnIds[column - 1];
-
-        if (columnId === "null") {
-          if (isReachedRight.current) break;
-          closeRightGrid(ctx, { x, y: cell.height });
-          break;
-        }
-
-        let cellId = `${columnId}${row}`;
-        let width = columns[columnId]?.width || cell.width;
-        let props = cells[cellId];
-        let columnRect = {
-          x,
-          y: 0,
-          width,
-          id: column,
-          height: cell.height,
-        };
-        let rect: ICellRect = {
-          x,
+      if (y + height > rowHeight) {
+        rowData.push({
           y,
-          width,
-          height,
-          row: rowRect,
-          column: columnRect,
-          id: cellId,
-        };
-
-        if (!isColumnRendered) {
-          renderGridColumn(ctx, { x, width, id: columnId });
-          columnList.current.push(columnRect);
-        }
-
-        renderGridCell(ctx, rect, props);
-        cellList.current.push(rect);
-
-        x += width;
+          x: 0,
+          id: `${i}`,
+          rowId: i,
+          height: height,
+          width: colWidth,
+        });
       }
 
       y += height;
-      isColumnRendered = true;
     }
 
-    renderTopLeftBox(ctx);
-    handleUpdateSelectedOne();
+    for (
+      let i = colStart, x = offsetX;
+      i <= totalColumns && x < clientWidth;
+      i++
+    ) {
+      let width = sheetDetail.columns[i]?.width || cell.width;
+
+      if (x + width > colWidth) {
+        columnData.push({
+          x,
+          y: 0,
+          id: String.fromCharCode(96 + i).toUpperCase(),
+          columnId: i,
+          width,
+          height: rowHeight,
+        });
+      }
+
+      x += width;
+    }
+
+    for (let { id: rowId, height, y } of rowData) {
+      for (let { id: columnId, width, x } of columnData) {
+        let cellId = `${columnId}${rowId}`;
+
+        cellData.set(cellId, {
+          id: cellId,
+          x,
+          y,
+          rowId,
+          columnId,
+          width,
+          height,
+          props: { ...sheetDetail.cells[cellId] },
+        });
+      }
+    }
+
+    setRows(rowData);
+    setColumns(columnData);
+    setCells(cellData);
   };
 
-  const handleScroll = (event: WheelEvent) => {
-    let ctx = ctxRef.current;
+  const handleClickCell: IClickCell = (cell) => {
+    setSelectedCell(cell);
+  };
 
-    if (!ctx) return;
+  const handleVerticalScroll = (deltaY: number) => {
+    if (!rows.length || !columns.length) return;
 
-    let { deltaY, deltaX } = event;
+    let { rowId, y } = rows[0];
+    let { columnId, x } = columns[0];
 
-    let key: keyof IScrollPosition = deltaY === 0 ? "left" : "top";
+    if (deltaY < 0) {
+      // Scroll upwards
+      y += -deltaY;
+      rowId--;
 
-    let rowStart = rowList.current[0].id;
-    let colStart = columnList.current[0].id;
+      while (rowId > 0 && y > rowHeight) {
+        y -= sheetDetail.rows[rowId]?.height ?? cell.height;
+        rowId--;
+      }
 
-    if (key === "top") {
-      if (deltaY > 0 && isReachedBottom.current) return;
-
-      let scrollBy = 2;
-
-      rowStart = Math.max(
-        1,
-        deltaY > 0 ? rowStart + scrollBy : rowStart - scrollBy
-      );
+      renderGrid({
+        offsetX: x,
+        offsetY: Math.min(rowHeight, y),
+        rowStart: rowId + 1,
+        colStart: columnId,
+      });
     } else {
-      if (deltaX > 0 && isReachedRight.current) return;
-
-      let scrollBy = 1;
-
-      colStart = Math.max(
-        1,
-        deltaX > 0 ? colStart + scrollBy : colStart - scrollBy
-      );
+      // Scroll downwards
+      renderGrid({
+        offsetX: x,
+        offsetY: y + -deltaY,
+        rowStart: rowId,
+        colStart: columnId,
+      });
     }
-
-    renderGrid({
-      rowStart,
-      colStart,
-    });
   };
 
-  const handleContextMenu = (event: MouseEvent) => {
-    event.preventDefault();
-  };
+  const handleHorizontalScroll = (deltaX: number) => {
+    if (!rows.length || !columns.length) return;
 
-  let handleClick = (event: MouseEvent<HTMLDivElement>) => {
-    if (!gridRef.current) return;
+    let { rowId, y } = rows[0];
+    let { columnId, x } = columns[0];
 
-    let { top, left } = gridRef.current.getBoundingClientRect();
-    let { clientX, clientY } = event;
+    if (deltaX < 0) {
+      // Scroll leftwards
+      x += -deltaX;
+      columnId--;
 
-    let offsetX = clientX - left;
-    let offsetY = clientY - top;
+      while (columnId > 0 && x > colWidth) {
+        x -= sheetDetail.columns[columnId]?.width ?? cell.width;
+        columnId--;
+      }
 
-    let selectedCell: ISelectedCell = undefined;
-    let selectedColumn: ISelectedColumn = undefined;
-    let selectedRow: ISelectedRow = undefined;
-
-    if (offsetY <= cell.height) {
-      let column = columnList.current.find(
-        ({ x, y, width }) =>
-          offsetX >= x &&
-          offsetX <= x + width &&
-          offsetY >= y &&
-          offsetY <= y + cell.height
-      );
-      if (column) selectedColumn = { ...column, hidden: false };
-    } else if (offsetX <= cell.width / 2) {
-      let row = rowList.current.find(
-        ({ x, y, height }) =>
-          offsetX >= x &&
-          offsetX <= x + cell.width &&
-          offsetY >= y &&
-          offsetY <= y + height
-      );
-      if (row) selectedRow = { ...row, hidden: false };
+      renderGrid({
+        offsetX: Math.min(colWidth, x),
+        offsetY: y,
+        rowStart: rowId,
+        colStart: columnId + 1,
+      });
     } else {
-      let cell = cellList.current.find(
-        ({ width, height, x, y }) =>
-          offsetX >= x &&
-          offsetX <= x + width &&
-          offsetY >= y &&
-          offsetY <= y + height
-      );
-
-      if (cell) selectedCell = { ...cell, hidden: false };
+      // Scroll rightwards
+      renderGrid({
+        offsetX: x + -deltaX,
+        offsetY: y,
+        rowStart: rowId,
+        colStart: columnId,
+      });
     }
-
-    setSelectedCell(selectedCell);
-    setSelectedRow(selectedRow);
-    setSelectedColumn(selectedColumn);
   };
 
-  let selectedCellStyle = useMemo(() => {
-    if (!selectedCell) return {};
+  const handleScroll = (event: WheelEvent<HTMLDivElement>) => {
+    let { deltaX, deltaY } = event;
 
-    return {
-      cell: {
-        width: selectedCell.width + "px",
-        height: selectedCell.height + "px",
-        top: selectedCell.y + "px",
-        left: selectedCell.x + "px",
-      },
-      row: {
-        width: selectedCell.row.width + "px",
-        height: selectedCell.row.height + "px",
-        top: selectedCell.row.y + "px",
-        left: selectedCell.row.x + "px",
-      },
-      column: {
-        width: selectedCell.column.width + "px",
-        height: selectedCell.column.height + "px",
-        top: selectedCell.column.y + "px",
-        left: selectedCell.column.x + "px",
-      },
-    };
-  }, [selectedCell]);
-
-  let selectedRowStyle = useMemo(() => {
-    if (!selectedRow) return {};
-
-    return {
-      left: selectedRow.x + "px",
-      top: selectedRow.y + "px",
-      height: selectedRow.height + "px",
-      "--cell-width": selectedRow.width + "px",
-    };
-  }, [selectedRow]);
-
-  let selectedColumnStyle = useMemo(() => {
-    if (!selectedColumn) return {};
-
-    return {
-      width: selectedColumn.width + "px",
-      left: selectedColumn.x + "px",
-      top: selectedColumn.y + "px",
-      "--cell-height": selectedColumn.height + "px",
-    };
-  }, [selectedColumn]);
+    if (deltaX === -0) handleVerticalScroll(deltaY);
+    else handleHorizontalScroll(deltaX);
+  };
 
   return (
     <div
       ref={gridRef}
-      className="relative h-[var(--grid-height)] overflow-hidden"
-      //   className={styles.container}
-      onContextMenu={handleContextMenu}
-      onClick={handleClick}
-      onWheel={throttle(handleScroll, 50)}
+      className="relative h-[var(--grid-height)] overflow-hidden select-none"
+      onWheel={handleScroll}
     >
-      {selectedCell && !selectedCell.hidden && (
-        <Fragment>
-          <div
-            className="absolute border-2 border-medium-light-blue"
-            style={selectedCellStyle.cell}
-          ></div>
-          <div
-            className="absolute flex items-center justify-center bg-mild-blue text-dark-gray text-sm border-1 border-silver"
-            style={selectedCellStyle.row}
-          >
-            <b>{selectedCell.row.id}</b>
-          </div>
-          <div
-            className="absolute flex items-center justify-center bg-mild-blue text-dark-gray text-sm border-1 border-silver"
-            style={selectedCellStyle.column}
-          >
-            <b>{columnIds[selectedCell.column.id - 1]}</b>
-          </div>
-        </Fragment>
-      )}
-      {selectedRow && !selectedRow.hidden && (
-        <div
-          className="absolute flex w-full border-t border-b border-medium-light-blue"
-          style={selectedRowStyle}
-        >
-          <div className="flex w-[var(--cell-width)] justify-center items-center bg-dark-blue text-white text-sm">
-            <b>{selectedRow.id}</b>
-          </div>
-          <div className="bg-medium-light-blue opacity-10 w-[calc(100%-var(--cell-width))]"></div>
-        </div>
-      )}
-      {selectedColumn && !selectedColumn.hidden && (
-        <div
-          className="absolute w-[calc(--cell-width)] h-full border-l border-r border-medium-light-blue"
-          style={selectedColumnStyle}
-        >
-          <div className="flex h-[var(--cell-height)] justify-center items-center bg-dark-blue text-white text-sm">
-            <b>{columnIds[selectedColumn.id - 1]}</b>
-          </div>
-          <div className="bg-medium-light-blue opacity-10 h-[calc(100%-var(--cell-height))]"></div>
-        </div>
-      )}
-      <canvas ref={canvasRef} />
+      <div
+        className="absolute top-0 left-0 border bg-white border-gray after:absolute after:w-full after:bg-dark-silver after:h-1 after:-bottom-[1px] after:left-0 before:absolute before:w-1 before:bg-dark-silver before:h-full before:-right-[1px] before:top-0 z-20"
+        style={{ width: colWidth, height: rowHeight }}
+      ></div>
+      <GridColumns
+        columns={columns}
+        selectedColumnId={selectedCell?.columnId}
+      />
+      <GridRows rows={rows} selectedRowId={selectedCell?.rowId} />
+      <GridCells cells={cells} onClickCell={handleClickCell} />
+      <canvas ref={canvasRef}></canvas>
+      {selectedCell && <ActiveCell cell={selectedCell} />}
     </div>
   );
 };

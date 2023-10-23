@@ -3,43 +3,11 @@ import { ISheetDetail } from "@/types/Sheets";
 export const sheetDetail: ISheetDetail = {
   meta: {
     totalRows: 1000,
-    dimension: {
-      width: 26 * 100,
-      height: 100 * 25,
-    },
-    columnIds: [
-      "A",
-      "B",
-      "C",
-      "D",
-      "E",
-      "F",
-      "G",
-      "H",
-      "I",
-      "J",
-      "K",
-      "L",
-      "M",
-      "N",
-      "O",
-      "P",
-      "Q",
-      "R",
-      "S",
-      "T",
-      "U",
-      "V",
-      "W",
-      "X",
-      "Y",
-      "Z",
-      "null",
-    ],
+    totalColumns: 26,
   },
   rows: {
     1: {
-      height: 100,
+      height: 200,
     },
     2: {
       height: 35,
@@ -85,62 +53,62 @@ export const sheetDetail: ISheetDetail = {
     },
   },
   columns: {
-    A: {
+    1: {
       width: 150,
     },
-    B: {
+    2: {
       width: 175,
     },
-    C: {
+    3: {
       width: 220,
     },
-    E: {
+    5: {
       width: 270,
     },
-    H: {
+    8: {
       width: 125,
     },
   },
   cells: {
     B50: {
-      text: "Loreum Ispum Loreum Ispum",
       backgroundColor: "#CADAF8",
       color: "white",
+      content: "<span>Loreum Ispum</span>",
     },
     A1: {
-      text: "Loreum Ispum Loreum Ispum",
+      content: "Loreum Ispum Loreum Ispum",
       backgroundColor: "#EA9999",
       color: "white",
     },
     B4: {
-      text: "Loreum Ispum",
       backgroundColor: "#B7E1CD",
+      content: "<b>Loreum Ispum</b>",
     },
     C6: {
-      text: "Loreum Ispum",
       backgroundColor: "#CADAF8",
+      content: "<span>Loreum Ispum</span>",
     },
     E5: {
-      text: "Loreum Ispum",
+      content: "Lorem Ipsum is simply dummy text of the printing",
       backgroundColor: "#FEE599",
     },
     H2: {
-      text: "Loreum Ispum",
+      content: "Lorem Ipsum",
       backgroundColor: "#B3A7D6",
     },
     F12: {
-      text: "Loreum Ispum Loreum Ispum",
       backgroundColor: "#FFF2CC",
+      content: "<b>Loreum Ispum</b>",
     },
     D25: {
-      text: "Loreum",
       backgroundColor: "#B7B7B7",
+      content: "<span>Loreum</span>",
     },
     C9: {
-      text: "Loreum Ispum",
+      content: "Loreum Ispum",
     },
     E80: {
-      text: "Loreum Ispum",
+      content: "Loreum Ispum",
       backgroundColor: "#766CEB",
       color: "white",
     },

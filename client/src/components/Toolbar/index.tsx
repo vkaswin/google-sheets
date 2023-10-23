@@ -1,35 +1,40 @@
 import { getStaticUrl } from "@/utils";
+import { ChangeEvent } from "react";
+
+let options = [
+  {
+    label: "File",
+  },
+  {
+    label: "Edit",
+  },
+  {
+    label: "View",
+  },
+  {
+    label: "Insert",
+  },
+  {
+    label: "Format",
+  },
+  {
+    label: "Data",
+  },
+  {
+    label: "Tools",
+  },
+  {
+    label: "Extensions",
+  },
+  {
+    label: "Help",
+  },
+];
 
 const Toolbar = () => {
-  let options = [
-    {
-      label: "File",
-    },
-    {
-      label: "Edit",
-    },
-    {
-      label: "View",
-    },
-    {
-      label: "Insert",
-    },
-    {
-      label: "Format",
-    },
-    {
-      label: "Data",
-    },
-    {
-      label: "Tools",
-    },
-    {
-      label: "Extensions",
-    },
-    {
-      label: "Help",
-    },
-  ];
+  const handleChange = (event: ChangeEvent<HTMLDivElement>) => {
+    console.log(event.target.innerText);
+  };
 
   return (
     <div className="bg-light-silver h-[var(--toolbar-height)]">
@@ -41,9 +46,9 @@ const Toolbar = () => {
               <div
                 className="text-dark-gray font-medium text-base border border-transparent px-1 outline-none rounded-sm hover:border-gray-500 focus:border-gray-500"
                 contentEditable={true}
-              >
-                Untitled Spreadsheet
-              </div>
+                onInput={handleChange}
+                dangerouslySetInnerHTML={{ __html: "Untitled Spreadsheet" }}
+              ></div>
               <i className="icon-star-outline"></i>
               <i className="icon-folder-move-outline"></i>
               <i className="icon-cloud-check-outline"></i>
@@ -68,7 +73,7 @@ const Toolbar = () => {
         <i className="icon-lock-outline"></i>
         <img src="https://lh3.googleusercontent.com/ogw/AGvuzYbYUvEKxa6rFyPYlmSyOB0iLAYbAvNNCnB4PZS0fg=s32-c-mo" /> */}
       </div>
-      <div className="flex items-center bg-light-blue h-[45px] px-2 mx-[15px] rounded-full">
+      <div className="flex items-center h-[45px] px-2 mx-[15px] rounded-full">
         Toolbar
       </div>
     </div>

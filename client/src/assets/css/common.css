@@ -1,3 +1,9 @@
+* {
+  box-sizing: border-box;
+  margin: 0px;
+  padding: 0px;
+}
+
 html {
   height: 100%;
 }
@@ -6,6 +12,8 @@ html {
   --toolbar-height: 110px;
   --bottom-bar-height: 45px;
   --typing-bar-height: 30px;
+  --cell-height: 25px;
+  --cell-width: 100px;
   --grid-height: calc(
     100% -
       calc(
@@ -13,6 +21,8 @@ html {
           var(--typing-bar-height)
       )
   );
+  --highlight-width: calc(100% - 4px);
+  --highlight-height: calc(100% - 4px);
 }
 
 body {

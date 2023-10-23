@@ -14,7 +14,7 @@
       "resolveJsonModule": true,
       "isolatedModules": true,
       "noUnusedLocals": false,
-      "noUnusedParameters": true,
+      "noUnusedParameters": false,
       "noFallthroughCasesInSwitch": true,
       "noEmit": true,
       "jsx": "react-jsx",
