@@ -36,7 +36,6 @@ const ActiveCell = ({ cell }: IActiveCellProps) => {
   const handleDoubleClick = () => {
     setIsEdit(true);
   };
-  console.log(isEdit);
 
   return (
     <div

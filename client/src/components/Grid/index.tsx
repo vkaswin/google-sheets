@@ -1,4 +1,4 @@
-import { WheelEvent, useEffect, useRef, useState } from "react";
+import { WheelEvent, useEffect, useMemo, useRef, useState } from "react";
 import GridColumns from "./GridColumns";
 import GridRows from "./GridRows";
 import GridCells from "./GridCells";
@@ -32,7 +32,7 @@ const Grid = ({ sheetDetail }: IGridProps) => {
 
   let [cells, setCells] = useState<Map<string, ICell>>(new Map());
 
-  let [selectedCell, setSelectedCell] = useState<ICell | null>(null);
+  let [selectedCellId, setSelectedCellId] = useState<string>("");
 
   let gridRef = useRef<HTMLDivElement>(null);
 
@@ -142,8 +142,8 @@ const Grid = ({ sheetDetail }: IGridProps) => {
     setCells(cellData);
   };
 
-  const handleClickCell: IClickCell = (cell) => {
-    setSelectedCell(cell);
+  const handleClickCell: IClickCell = (cellId: string) => {
+    setSelectedCellId(cellId);
   };
 
   const handleVerticalScroll = (deltaY: number) => {
@@ -218,6 +218,10 @@ const Grid = ({ sheetDetail }: IGridProps) => {
     if (deltaX === -0) handleVerticalScroll(deltaY);
     else handleHorizontalScroll(deltaX);
   };
+
+  let selectedCell = useMemo(() => {
+    return cells.get(selectedCellId);
+  }, [rows, columns, selectedCellId]);
 
   return (
     <div
