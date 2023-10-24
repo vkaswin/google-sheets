@@ -2,7 +2,7 @@ import { ISheetDetail } from "@/types/Sheets";
 
 export const sheetDetail: ISheetDetail = {
   meta: {
-    totalRows: 1000,
+    totalRows: 100,
     totalColumns: 26,
   },
   rows: {

@@ -3,11 +3,11 @@ import { Navigate, RouteObject, useRoutes } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 
 let AuthLayout = lazy(() => import(`@/layouts/AuthLayout`));
-let SignIn = lazy(() => import(`@/pages/Auth/SignIn`));
-let SignUp = lazy(() => import(`@/pages/Auth/SignUp`));
+let SignIn = lazy(() => import(`@/pages/SignIn`));
+let SignUp = lazy(() => import(`@/pages/SignUp`));
 
-let SheetsDetail = lazy(() => import(`@/pages/Sheets/Detail`));
-let SheetsList = lazy(() => import(`@/pages/Sheets/List`));
+let SheetsDetail = lazy(() => import(`@/pages/SheetDetail`));
+let SheetsList = lazy(() => import(`@/pages/SheetList`));
 
 let PageNotFound = lazy(() => import(`@/pages/NotFound`));
 

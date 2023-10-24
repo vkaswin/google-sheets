@@ -1,7 +1,11 @@
-import { WheelEvent, useEffect, useMemo, useRef, useState } from "react";
-import GridColumns from "./GridColumns";
-import GridRows from "./GridRows";
-import GridCells from "./GridCells";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  WheelEvent,
+  MouseEvent,
+} from "react";
 import ActiveCell from "./ActiveCell";
 
 import {
@@ -30,7 +34,7 @@ const Grid = ({ sheetDetail }: IGridProps) => {
 
   let [columns, setColumns] = useState<IColumn[]>([]);
 
-  let [cells, setCells] = useState<Map<string, ICell>>(new Map());
+  let [cells, setCells] = useState<Record<string, ICell>>({});
 
   let [selectedCellId, setSelectedCellId] = useState<string>("");
 
@@ -39,6 +43,13 @@ const Grid = ({ sheetDetail }: IGridProps) => {
   let canvasRef = useRef<HTMLCanvasElement>(null);
 
   const handleResize = () => {
+    if (!gridRef.current || !canvasRef.current) return;
+    let { clientWidth, clientHeight } = gridRef.current;
+
+    let canvas = canvasRef.current;
+    canvas.width = clientWidth;
+    canvas.height = clientHeight;
+
     let { rowId = 1, y = rowHeight } = rows[0] ?? {};
     let { columnId = 1, x = colWidth } = columns[0] ?? {};
 
@@ -62,21 +73,122 @@ const Grid = ({ sheetDetail }: IGridProps) => {
     };
   }, [rows, columns]);
 
+  const paintRow = (
+    ctx: CanvasRenderingContext2D,
+    { height, id, rowId, width, x, y }: IRow
+  ) => {
+    ctx.save();
+
+    ctx.clearRect(x, y, width, height);
+
+    ctx.beginPath();
+    ctx.moveTo(x + width, y);
+    ctx.lineTo(x + width, y + height);
+    ctx.lineTo(x, y + height);
+    ctx.strokeStyle = "#D5D5D5";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "12px Open-Sans";
+    ctx.fillStyle = "#575a5a";
+    ctx.fillText(id, x + width / 2, y + height / 2);
+
+    ctx.restore();
+  };
+
+  const paintColumn = (
+    ctx: CanvasRenderingContext2D,
+    { columnId, height, id, width, x, y }: IColumn
+  ) => {
+    ctx.save();
+
+    ctx.clearRect(x, y, width, height);
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + width, y);
+    ctx.lineTo(x + width, y + height);
+    ctx.lineTo(x, y + height);
+    ctx.strokeStyle = "#D5D5D5";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "12px Open-Sans";
+    ctx.fillStyle = "#575a5a";
+    ctx.fillText(id, x + width / 2, y + height / 2);
+
+    ctx.restore();
+  };
+
+  const paintCell = (
+    ctx: CanvasRenderingContext2D,
+    { id, rowId, columnId, height, width, x, y }: ICell
+  ) => {
+    let { backgroundColor, color, content } = sheetDetail.cells[id] ?? {};
+
+    ctx.save();
+
+    ctx.clearRect(x, y, width, height);
+
+    ctx.beginPath();
+    ctx.moveTo(x, y + height);
+    ctx.lineTo(x + width, y + height);
+    ctx.lineTo(x + width, y);
+    ctx.strokeStyle = "#D5D5D5";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    if (backgroundColor) {
+      ctx.fillStyle = backgroundColor;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.fillRect(x, y, width, height);
+      ctx.fill();
+    }
+
+    ctx.restore();
+  };
+
+  const paintTopLeftBox = (ctx: CanvasRenderingContext2D) => {
+    ctx.save();
+
+    ctx.clearRect(0, 0, colWidth, rowHeight);
+
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#D5D5D5";
+    ctx.strokeRect(0, 0, colWidth, rowHeight);
+
+    ctx.restore();
+  };
+
   const renderGrid: IRenderGrid = ({
     offsetX,
     offsetY,
     rowStart,
     colStart,
   }) => {
-    if (!gridRef.current) return;
+    if (!canvasRef.current) return;
 
-    let { totalRows, totalColumns } = sheetDetail.meta;
+    let {
+      meta: { totalRows, totalColumns },
+    } = sheetDetail;
 
-    let { clientWidth, clientHeight } = gridRef.current;
+    let canvas = canvasRef.current;
+
+    let { clientWidth, clientHeight } = canvas;
+
+    let ctx = canvas.getContext("2d")!;
 
     let rowData: IRow[] = [];
     let columnData: IColumn[] = [];
-    let cellData = new Map<string, ICell>();
+    let cellData: Record<string, ICell> = {};
 
     for (
       let i = rowStart, y = offsetY;
@@ -124,7 +236,7 @@ const Grid = ({ sheetDetail }: IGridProps) => {
       for (let { id: columnId, width, x } of columnData) {
         let cellId = `${columnId}${rowId}`;
 
-        cellData.set(cellId, {
+        cellData[cellId] = {
           id: cellId,
           x,
           y,
@@ -132,18 +244,76 @@ const Grid = ({ sheetDetail }: IGridProps) => {
           columnId,
           width,
           height,
-          props: { ...sheetDetail.cells[cellId] },
-        });
+        };
+
+        paintCell(ctx, cellData[cellId]);
       }
     }
+
+    for (let row of rowData) {
+      paintRow(ctx, row);
+    }
+
+    for (let column of columnData) {
+      paintColumn(ctx, column);
+    }
+
+    paintTopLeftBox(ctx);
 
     setRows(rowData);
     setColumns(columnData);
     setCells(cellData);
   };
 
-  const handleClickCell: IClickCell = (cellId: string) => {
+  const handleClick = (event: MouseEvent<HTMLDivElement>) => {
+    if (!gridRef.current) return;
+
+    let x = event.pageX;
+    let y = event.pageY - gridRef.current.getBoundingClientRect().top;
+
+    let cellId = getCellIdByCoordiantes(x, y);
+
+    if (!cellId) return;
+
     setSelectedCellId(cellId);
+  };
+
+  const getCellIdByCoordiantes = (x: number, y: number) => {
+    let left = 0;
+    let right = rows.length - 1;
+    let rowId = null;
+
+    while (left < right) {
+      let mid = Math.floor((left + right) / 2);
+
+      if (rows[mid].y <= y) {
+        left = mid + 1;
+        rowId = rows[mid].id;
+      } else {
+        right = mid;
+      }
+    }
+
+    if (!rowId) return null;
+
+    left = 0;
+    right = columns.length - 1;
+    let columnId = null;
+
+    while (left < right) {
+      let mid = Math.floor((left + right) / 2);
+
+      if (columns[mid].x <= x) {
+        left = mid + 1;
+        columnId = columns[mid].id;
+      } else {
+        right = mid;
+      }
+    }
+
+    if (!columnId) return null;
+
+    return columnId + rowId;
   };
 
   const handleVerticalScroll = (deltaY: number) => {
@@ -215,32 +385,28 @@ const Grid = ({ sheetDetail }: IGridProps) => {
   const handleScroll = (event: WheelEvent<HTMLDivElement>) => {
     let { deltaX, deltaY } = event;
 
-    if (deltaX === -0) handleVerticalScroll(deltaY);
+    if (deltaX === 0) handleVerticalScroll(deltaY);
     else handleHorizontalScroll(deltaX);
   };
 
   let selectedCell = useMemo(() => {
-    return cells.get(selectedCellId);
+    return cells[selectedCellId];
   }, [rows, columns, selectedCellId]);
 
   return (
     <div
       ref={gridRef}
       className="relative h-[var(--grid-height)] overflow-hidden select-none"
+      onClick={handleClick}
       onWheel={handleScroll}
     >
-      <div
-        className="absolute top-0 left-0 border bg-white border-gray after:absolute after:w-full after:bg-dark-silver after:h-1 after:-bottom-[1px] after:left-0 before:absolute before:w-1 before:bg-dark-silver before:h-full before:-right-[1px] before:top-0 z-20"
-        style={{ width: colWidth, height: rowHeight }}
-      ></div>
-      <GridColumns
-        columns={columns}
-        selectedColumnId={selectedCell?.columnId}
-      />
-      <GridRows rows={rows} selectedRowId={selectedCell?.rowId} />
-      <GridCells cells={cells} onClickCell={handleClickCell} />
       <canvas ref={canvasRef}></canvas>
-      {selectedCell && <ActiveCell cell={selectedCell} />}
+      {selectedCell && (
+        <ActiveCell
+          cell={selectedCell}
+          data={sheetDetail.cells[selectedCell.id]}
+        />
+      )}
     </div>
   );
 };

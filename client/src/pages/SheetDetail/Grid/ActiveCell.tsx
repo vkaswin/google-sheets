@@ -1,27 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import classNames from "classnames";
 
-import { ICell } from "@/types/Sheets";
+import { ICell, ICellProps } from "@/types/Sheets";
 
 type IActiveCellProps = {
   cell: ICell;
+  data: ICellProps;
 };
 
-const ActiveCell = ({ cell }: IActiveCellProps) => {
+const ActiveCell = ({ cell, data }: IActiveCellProps) => {
   const [isEdit, setIsEdit] = useState(false);
 
   const inputRef = useRef<HTMLDivElement>(null);
 
-  let {
-    columnId,
-    height,
-    id,
-    rowId,
-    width,
-    x,
-    y,
-    props: { backgroundColor, color, content = "", text },
-  } = cell;
+  let { columnId, height, id, rowId, width, x, y } = cell;
+
+  let { backgroundColor, color, content = "", text } = data ?? {};
 
   useEffect(() => {
     if (!isEdit) return;

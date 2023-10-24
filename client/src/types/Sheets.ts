@@ -24,7 +24,6 @@ export interface ICell {
   columnId: string;
   width: number;
   height: number;
-  props: ICellProps;
 }
 
 export interface ISheetMeta {
