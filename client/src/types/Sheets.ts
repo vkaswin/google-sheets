@@ -55,8 +55,6 @@ export interface ISheetDetail {
   cells: Record<string, ICellProps>;
 }
 
-export type IClickCell = (cellId: string) => void;
-
 export type IRenderGrid = (data: {
   offsetX: number;
   offsetY: number;

@@ -7,10 +7,10 @@ import {
   MouseEvent,
 } from "react";
 import ActiveCell from "./ActiveCell";
+import { convertIntegerToColumnId } from "@/utils";
 
 import {
   ICell,
-  IClickCell,
   IColumn,
   IRow,
   ISheetDetail,
@@ -222,7 +222,7 @@ const Grid = ({ sheetDetail }: IGridProps) => {
         columnData.push({
           x,
           y: 0,
-          id: String.fromCharCode(96 + i).toUpperCase(),
+          id: convertIntegerToColumnId(i),
           columnId: i,
           width,
           height: rowHeight,
@@ -257,8 +257,6 @@ const Grid = ({ sheetDetail }: IGridProps) => {
     for (let column of columnData) {
       paintColumn(ctx, column);
     }
-
-    paintTopLeftBox(ctx);
 
     setRows(rowData);
     setColumns(columnData);
@@ -400,7 +398,8 @@ const Grid = ({ sheetDetail }: IGridProps) => {
       onClick={handleClick}
       onWheel={handleScroll}
     >
-      <canvas ref={canvasRef}></canvas>
+      <div className="absolute left-0 top-0 w-[var(--col-width)] h-[var(--row-height)] border border-light-gray bg-white z-10 after:absolute after:right-0 after:h-full after:w-2 after:bg-dark-silver before:absolute before:bottom-0 before:w-full before:h-1 before:bg-dark-silver"></div>
+      <canvas ref={canvasRef} className="relative"></canvas>
       {selectedCell && (
         <ActiveCell
           cell={selectedCell}

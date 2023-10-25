@@ -7,6 +7,7 @@ export default {
         gray: "#C4C7C5",
         blue: "#1973E8",
         "dark-blue": "#0b57d0",
+        "light-gray": "#D5D5D5",
       },
       outlineColor: {
         "light-blue": "#a8c7fa",

@@ -69,3 +69,7 @@ export const getStaticUrl = (path: string) => {
     process.env.NODE_ENV === "production" ? "/google-sheets" : ""
   }${path}`;
 };
+
+export const convertIntegerToColumnId = (integer: number) => {
+  return String.fromCharCode(96 + integer).toUpperCase();
+};

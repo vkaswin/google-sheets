@@ -21,8 +21,8 @@ html {
           var(--typing-bar-height)
       )
   );
-  --highlight-width: calc(100% - 4px);
-  --highlight-height: calc(100% - 4px);
+  --row-height: 25px;
+  --col-width: 46px;
 }
 
 body {
