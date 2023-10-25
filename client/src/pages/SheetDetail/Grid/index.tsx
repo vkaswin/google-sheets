@@ -8,51 +8,46 @@ import {
   Fragment,
 } from "react";
 import HighlightCell from "./HighlightCell";
-import { convertIntegerToColumnId } from "@/utils";
-
-import {
-  ICell,
-  IColumn,
-  IRow,
-  ISheetDetail,
-  IRenderGrid,
-} from "@/types/Sheets";
 import EditCell from "./EditCell";
+import ColumnResizer from "./ColumnResizer";
+import { convertToTitle } from "@/utils";
+import { data } from "../data";
 
-type IGridProps = {
-  sheetDetail: ISheetDetail;
-};
+import { ICell, IColumn, IRow, IRenderGrid } from "@/types/Sheets";
 
-let colWidth = 46;
-let rowHeight = 25;
+const colWidth = 46;
+const rowHeight = 25;
 
-let cell = {
+const cell = {
   width: 100,
   height: 25,
 };
 
-const Grid = ({ sheetDetail }: IGridProps) => {
-  let [rows, setRows] = useState<IRow[]>([]);
+const Grid = () => {
+  const [rows, setRows] = useState<IRow[]>([]);
 
-  let [columns, setColumns] = useState<IColumn[]>([]);
+  const [columns, setColumns] = useState<IColumn[]>([]);
 
-  let [cells, setCells] = useState<Record<string, ICell>>({});
+  const [cells, setCells] = useState<Record<string, ICell>>({});
 
-  let [selectedCellId, setSelectedCellId] = useState<string>("");
+  const [selectedCellId, setSelectedCellId] = useState<string>("");
 
-  let [editCell, setEditCell] = useState<ICell | null>(null);
+  const [editCell, setEditCell] = useState<ICell | null>(null);
 
-  let gridRef = useRef<HTMLDivElement>(null);
+  const [sheetDetail, setSheetDetail] = useState(data);
 
-  let canvasRef = useRef<HTMLCanvasElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
 
-  let selectedCell = useMemo(() => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const selectedCell = useMemo(() => {
     return cells[selectedCellId];
   }, [rows, columns, selectedCellId]);
 
   useEffect(() => {
+    console.log(sheetDetail);
     handleResize();
-  }, []);
+  }, [sheetDetail]);
 
   useEffect(() => {
     window.addEventListener("resize", handleResize);
@@ -60,7 +55,7 @@ const Grid = ({ sheetDetail }: IGridProps) => {
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [rows, columns]);
+  }, [rows, columns, sheetDetail]);
 
   const handleResize = () => {
     if (!gridRef.current || !canvasRef.current) return;
@@ -170,10 +165,6 @@ const Grid = ({ sheetDetail }: IGridProps) => {
   }) => {
     if (!canvasRef.current) return;
 
-    let {
-      meta: { totalRows, totalColumns },
-    } = sheetDetail;
-
     let canvas = canvasRef.current;
 
     let { clientWidth, clientHeight } = canvas;
@@ -184,11 +175,7 @@ const Grid = ({ sheetDetail }: IGridProps) => {
     let columnData: IColumn[] = [];
     let cellData: Record<string, ICell> = {};
 
-    for (
-      let i = rowStart, y = offsetY;
-      i <= totalRows && y < clientHeight;
-      i++
-    ) {
+    for (let i = rowStart, y = offsetY; y < clientHeight; i++) {
       let height = sheetDetail.rows[i]?.height || cell.height;
 
       if (y + height > rowHeight) {
@@ -205,18 +192,15 @@ const Grid = ({ sheetDetail }: IGridProps) => {
       y += height;
     }
 
-    for (
-      let i = colStart, x = offsetX;
-      i <= totalColumns && x < clientWidth;
-      i++
-    ) {
-      let width = sheetDetail.columns[i]?.width || cell.width;
+    for (let i = colStart, x = offsetX; x < clientWidth; i++) {
+      let columnId = convertToTitle(i);
+      let width = sheetDetail.columns[columnId]?.width || cell.width;
 
       if (x + width > colWidth) {
         columnData.push({
           x,
           y: 0,
-          id: convertIntegerToColumnId(i),
+          id: columnId,
           columnId: i,
           width,
           height: rowHeight,
@@ -257,7 +241,7 @@ const Grid = ({ sheetDetail }: IGridProps) => {
     setCells(cellData);
   };
 
-  const handleClick = (event: MouseEvent<HTMLDivElement>) => {
+  const handleClickGrid = (event: MouseEvent<HTMLDivElement>) => {
     if (!gridRef.current) return;
 
     let x = event.pageX;
@@ -382,7 +366,7 @@ const Grid = ({ sheetDetail }: IGridProps) => {
     else handleHorizontalScroll(deltaX);
   };
 
-  const handleDoubleClick = () => {
+  const handleDoubleClickCell = () => {
     if (!gridRef.current || !selectedCellId || !cells[selectedCellId]) return;
 
     let { columnId, id, width, height, rowId, x, y } = cells[selectedCellId];
@@ -402,7 +386,19 @@ const Grid = ({ sheetDetail }: IGridProps) => {
 
   const handleContextMenu = (event: MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
-    handleClick(event);
+    handleClickGrid(event);
+  };
+
+  const handleClickColumn = (columnId: string) => {
+    console.log(columnId);
+  };
+
+  const handleColumnResize = (columnId: string, value: number) => {
+    let details = { ...sheetDetail };
+    if (!details.columns[columnId]) details.columns[columnId] = {};
+    details.columns[columnId].width =
+      (details.columns[columnId].width || 0) + value;
+    setSheetDetail(details);
   };
 
   return (
@@ -410,18 +406,23 @@ const Grid = ({ sheetDetail }: IGridProps) => {
       <div
         ref={gridRef}
         className="relative h-[var(--grid-height)] select-none overflow-hidden"
-        onClick={handleClick}
+        onClick={handleClickGrid}
         onContextMenu={handleContextMenu}
         onWheel={handleScroll}
       >
-        <div className="absolute left-0 top-0 w-[var(--col-width)] h-[var(--row-height)] border border-light-gray bg-white z-10 after:absolute after:right-0 after:h-full after:w-1 after:bg-dark-silver before:absolute before:bottom-0 before:w-full before:h-1 before:bg-dark-silver"></div>
         <canvas ref={canvasRef} className="relative"></canvas>
         {!editCell && selectedCell && (
           <HighlightCell
             cell={selectedCell}
-            onDoubleClick={handleDoubleClick}
+            onDoubleClick={handleDoubleClickCell}
           />
         )}
+        <ColumnResizer
+          columns={columns}
+          onClick={handleClickColumn}
+          onResize={handleColumnResize}
+        />
+        <div className="absolute left-0 top-0 w-[var(--col-width)] h-[var(--row-height)] border border-light-gray bg-white z-10 after:absolute after:right-0 after:h-full after:w-1 after:bg-dark-silver before:absolute before:bottom-0 before:w-full before:h-1 before:bg-dark-silver"></div>
       </div>
       {editCell && (
         <EditCell

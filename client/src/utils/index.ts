@@ -70,6 +70,18 @@ export const getStaticUrl = (path: string) => {
   }${path}`;
 };
 
-export const convertIntegerToColumnId = (integer: number) => {
-  return String.fromCharCode(96 + integer).toUpperCase();
+export const convertToTitle = (n: number) => {
+  if (n < 27) return String.fromCharCode(n + 64);
+
+  let s = "";
+
+  while (n > 0) {
+    let temp = n % 26;
+    temp = temp == 0 ? 26 : temp;
+    s = String.fromCharCode(temp + 64) + s;
+    n -= temp;
+    n /= 26;
+  }
+
+  return s;
 };

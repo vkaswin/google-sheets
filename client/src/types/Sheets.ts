@@ -26,11 +26,6 @@ export interface ICell {
   height: number;
 }
 
-export interface ISheetMeta {
-  totalRows: number;
-  totalColumns: number;
-}
-
 export interface ICellProps {
   content?: string;
   backgroundColor?: string;
@@ -48,7 +43,6 @@ export interface IColumnProps {
 }
 
 export interface ISheetDetail {
-  meta: ISheetMeta;
   rows: Record<string, IRowProps>;
   columns: Record<string, IColumnProps>;
   cells: Record<string, ICellProps>;

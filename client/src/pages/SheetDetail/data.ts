@@ -1,10 +1,6 @@
 import { ISheetDetail } from "@/types/Sheets";
 
-export const sheetDetail: ISheetDetail = {
-  meta: {
-    totalRows: 100,
-    totalColumns: 26,
-  },
+export const data: ISheetDetail = {
   rows: {
     1: {
       height: 200,
@@ -53,19 +49,19 @@ export const sheetDetail: ISheetDetail = {
     },
   },
   columns: {
-    1: {
+    A: {
       width: 150,
     },
-    2: {
+    B: {
       width: 175,
     },
-    3: {
+    C: {
       width: 220,
     },
-    5: {
+    E: {
       width: 270,
     },
-    8: {
+    I: {
       width: 125,
     },
   },
