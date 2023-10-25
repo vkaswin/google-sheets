@@ -14,6 +14,7 @@ import { convertToTitle } from "@/utils";
 import { data } from "../data";
 
 import { ICell, IColumn, IRow, IRenderGrid } from "@/types/Sheets";
+import RowResizer from "./RowResizer";
 
 const colWidth = 46;
 const rowHeight = 25;
@@ -45,20 +46,20 @@ const Grid = () => {
   }, [rows, columns, selectedCellId]);
 
   useEffect(() => {
-    console.log(sheetDetail);
-    handleResize();
+    handleResizeGrid();
   }, [sheetDetail]);
 
   useEffect(() => {
-    window.addEventListener("resize", handleResize);
+    window.addEventListener("resize", handleResizeGrid);
 
     return () => {
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("resize", handleResizeGrid);
     };
   }, [rows, columns, sheetDetail]);
 
-  const handleResize = () => {
+  const handleResizeGrid = () => {
     if (!gridRef.current || !canvasRef.current) return;
+
     let { clientWidth, clientHeight } = gridRef.current;
 
     let canvas = canvasRef.current;
@@ -393,11 +394,21 @@ const Grid = () => {
     console.log(columnId);
   };
 
-  const handleColumnResize = (columnId: string, value: number) => {
+  const handleClickRow = (rowId: string) => {
+    console.log(rowId);
+  };
+
+  const handleResizeColumn = (columnId: string, value: number) => {
     let details = { ...sheetDetail };
     if (!details.columns[columnId]) details.columns[columnId] = {};
-    details.columns[columnId].width =
-      (details.columns[columnId].width || 0) + value;
+    details.columns[columnId].width = value;
+    setSheetDetail(details);
+  };
+
+  const handleResizeRow = (rowId: string, value: number) => {
+    let details = { ...sheetDetail };
+    if (!details.rows[rowId]) details.columns[rowId] = {};
+    details.rows[rowId].height = value;
     setSheetDetail(details);
   };
 
@@ -420,7 +431,12 @@ const Grid = () => {
         <ColumnResizer
           columns={columns}
           onClick={handleClickColumn}
-          onResize={handleColumnResize}
+          onResize={handleResizeColumn}
+        />
+        <RowResizer
+          rows={rows}
+          onClick={handleClickRow}
+          onResize={handleResizeRow}
         />
         <div className="absolute left-0 top-0 w-[var(--col-width)] h-[var(--row-height)] border border-light-gray bg-white z-10 after:absolute after:right-0 after:h-full after:w-1 after:bg-dark-silver before:absolute before:bottom-0 before:w-full before:h-1 before:bg-dark-silver"></div>
       </div>
