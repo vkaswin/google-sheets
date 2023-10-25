@@ -33,7 +33,6 @@ export interface ISheetMeta {
 
 export interface ICellProps {
   content?: string;
-  text?: string;
   backgroundColor?: string;
   color?: string;
 }

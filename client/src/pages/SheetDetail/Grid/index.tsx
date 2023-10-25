@@ -5,8 +5,9 @@ import {
   useState,
   WheelEvent,
   MouseEvent,
+  Fragment,
 } from "react";
-import ActiveCell from "./ActiveCell";
+import HighlightCell from "./HighlightCell";
 import { convertIntegerToColumnId } from "@/utils";
 
 import {
@@ -16,6 +17,7 @@ import {
   ISheetDetail,
   IRenderGrid,
 } from "@/types/Sheets";
+import EditCell from "./EditCell";
 
 type IGridProps = {
   sheetDetail: ISheetDetail;
@@ -38,9 +40,27 @@ const Grid = ({ sheetDetail }: IGridProps) => {
 
   let [selectedCellId, setSelectedCellId] = useState<string>("");
 
+  let [editCell, setEditCell] = useState<ICell | null>(null);
+
   let gridRef = useRef<HTMLDivElement>(null);
 
   let canvasRef = useRef<HTMLCanvasElement>(null);
+
+  let selectedCell = useMemo(() => {
+    return cells[selectedCellId];
+  }, [rows, columns, selectedCellId]);
+
+  useEffect(() => {
+    handleResize();
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [rows, columns]);
 
   const handleResize = () => {
     if (!gridRef.current || !canvasRef.current) return;
@@ -60,18 +80,6 @@ const Grid = ({ sheetDetail }: IGridProps) => {
       colStart: columnId,
     });
   };
-
-  useEffect(() => {
-    handleResize();
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [rows, columns]);
 
   const paintRow = (
     ctx: CanvasRenderingContext2D,
@@ -150,20 +158,6 @@ const Grid = ({ sheetDetail }: IGridProps) => {
       ctx.fillRect(x, y, width, height);
       ctx.fill();
     }
-
-    ctx.restore();
-  };
-
-  const paintTopLeftBox = (ctx: CanvasRenderingContext2D) => {
-    ctx.save();
-
-    ctx.clearRect(0, 0, colWidth, rowHeight);
-
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "#D5D5D5";
-    ctx.strokeRect(0, 0, colWidth, rowHeight);
 
     ctx.restore();
   };
@@ -274,6 +268,7 @@ const Grid = ({ sheetDetail }: IGridProps) => {
     if (!cellId) return;
 
     setSelectedCellId(cellId);
+    setEditCell(null);
   };
 
   const getCellIdByCoordiantes = (x: number, y: number) => {
@@ -387,26 +382,55 @@ const Grid = ({ sheetDetail }: IGridProps) => {
     else handleHorizontalScroll(deltaX);
   };
 
-  let selectedCell = useMemo(() => {
-    return cells[selectedCellId];
-  }, [rows, columns, selectedCellId]);
+  const handleDoubleClick = () => {
+    if (!gridRef.current || !selectedCellId || !cells[selectedCellId]) return;
+
+    let { columnId, id, width, height, rowId, x, y } = cells[selectedCellId];
+
+    let { top } = gridRef.current.getBoundingClientRect();
+
+    setEditCell({
+      columnId,
+      id,
+      width,
+      height,
+      rowId,
+      x: Math.max(colWidth, x),
+      y: Math.max(rowHeight + top, y + top),
+    });
+  };
+
+  const handleContextMenu = (event: MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    handleClick(event);
+  };
 
   return (
-    <div
-      ref={gridRef}
-      className="relative h-[var(--grid-height)] overflow-hidden select-none"
-      onClick={handleClick}
-      onWheel={handleScroll}
-    >
-      <div className="absolute left-0 top-0 w-[var(--col-width)] h-[var(--row-height)] border border-light-gray bg-white z-10 after:absolute after:right-0 after:h-full after:w-2 after:bg-dark-silver before:absolute before:bottom-0 before:w-full before:h-1 before:bg-dark-silver"></div>
-      <canvas ref={canvasRef} className="relative"></canvas>
-      {selectedCell && (
-        <ActiveCell
-          cell={selectedCell}
-          data={sheetDetail.cells[selectedCell.id]}
+    <Fragment>
+      <div
+        ref={gridRef}
+        className="relative h-[var(--grid-height)] select-none overflow-hidden"
+        onClick={handleClick}
+        onContextMenu={handleContextMenu}
+        onWheel={handleScroll}
+      >
+        <div className="absolute left-0 top-0 w-[var(--col-width)] h-[var(--row-height)] border border-light-gray bg-white z-10 after:absolute after:right-0 after:h-full after:w-1 after:bg-dark-silver before:absolute before:bottom-0 before:w-full before:h-1 before:bg-dark-silver"></div>
+        <canvas ref={canvasRef} className="relative"></canvas>
+        {!editCell && selectedCell && (
+          <HighlightCell
+            cell={selectedCell}
+            onDoubleClick={handleDoubleClick}
+          />
+        )}
+      </div>
+      {editCell && (
+        <EditCell
+          cell={editCell}
+          data={sheetDetail.cells[editCell.id]}
+          onWheel={handleScroll}
         />
       )}
-    </div>
+    </Fragment>
   );
 };
 

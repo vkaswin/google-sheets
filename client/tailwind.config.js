@@ -15,6 +15,7 @@ export default {
       backgroundColor: {
         "dark-silver": "#C0C0C0",
         "light-blue": "#D3E3FD",
+        blue: "#4589eb",
       },
       textColor: {
         "light-gray": "#575a5a",
