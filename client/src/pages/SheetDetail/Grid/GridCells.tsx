@@ -1,27 +1,27 @@
 import { Fragment } from "react";
 
-import { ICell, ICellProps } from "@/types/Sheets";
+import { ICell, ICellDetails, ICellProps } from "@/types/Sheets";
 
 type IGridCells = {
   cells: Record<string, ICell>;
-  data: Record<string, ICellProps>;
+  cellDetails: ICellDetails;
 };
 
-const GridCells = ({ cells, data }: IGridCells) => {
+const GridCells = ({ cells, cellDetails }: IGridCells) => {
   return (
     <Fragment>
       {Object.values(cells).map((cell) => {
-        let { columnId, height, id, rowId, width, x, y } = cell;
+        let { columnId, height, cellId, rowId, width, x, y } = cell;
 
         let {
           color = "#000000",
           backgroundColor = "#FFFFFF",
           content = "",
-        } = data[id] ?? {};
+        } = cellDetails[cellId] ?? {};
 
         return (
           <div
-            key={id}
+            key={cellId}
             className="absolute border-r border-b border-gray text-sm p-1"
             style={{ left: x, top: y, width, height, color, backgroundColor }}
             dangerouslySetInnerHTML={{ __html: content }}

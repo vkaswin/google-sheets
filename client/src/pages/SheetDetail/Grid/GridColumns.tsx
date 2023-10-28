@@ -1,13 +1,14 @@
 import { Fragment, PointerEvent, useRef, useState } from "react";
+import classNames from "classnames";
+import { convertToTitle } from "@/utils";
 
 import { IColumn } from "@/types/Sheets";
-import classNames from "classnames";
 
 type IGridColumns = {
   columns: IColumn[];
-  selectedId?: string;
-  onClick: (columnId: string) => void;
-  onResize: (columnId: string, value: number) => void;
+  selectedId?: number;
+  onClick: (columnId: number) => void;
+  onResize: (columnId: number, value: number) => void;
 };
 
 const GridColumns = ({
@@ -50,7 +51,7 @@ const GridColumns = ({
     resizeRef.current.removeEventListener("pointermove", handlePointerMove);
 
     let width = selectedColumn.width + -(pointerRef.current - pageX);
-    onResize(selectedColumn.id, Math.max(50, width));
+    onResize(selectedColumn.columnId, Math.max(50, width));
     pointerRef.current = null;
     setSelectedColumn(null);
     setShowLine(false);
@@ -64,28 +65,28 @@ const GridColumns = ({
     <Fragment>
       <div className="absolute left-0 top-0 w-full h-[var(--row-height)] bg-white z-10">
         {columns.map((column) => {
-          let { x, height, columnId, id, width, y } = column;
+          let { x, height, columnId, width, y } = column;
           return (
             <div
               key={columnId}
               className={classNames(
                 "absolute flex justify-center items-center border-t border-r border-b border-gray",
                 {
-                  "bg-light-blue font-medium": id === selectedId,
+                  "bg-light-blue font-medium": columnId === selectedId,
                 }
               )}
               style={{ width, height, left: x, top: y }}
-              onClick={() => onClick(id)}
+              onClick={() => onClick(columnId)}
             >
               <span
                 className={classNames(
                   "text-xs",
-                  id === selectedId
+                  columnId === selectedId
                     ? "text-black font-medium"
                     : "text-light-gray"
                 )}
               >
-                {id}
+                {convertToTitle(columnId)}
               </span>
               <div
                 className="absolute top-0 -right-3 w-6 h-full bg-transparent"

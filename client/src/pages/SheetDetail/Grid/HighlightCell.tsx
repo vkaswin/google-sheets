@@ -1,6 +1,6 @@
-import { Fragment, MouseEvent } from "react";
+import { MouseEvent } from "react";
 
-import { ICell, ICellProps } from "@/types/Sheets";
+import { ICell } from "@/types/Sheets";
 
 type IActiveCellProps = {
   cell: ICell;
@@ -8,11 +8,7 @@ type IActiveCellProps = {
 };
 
 const HighlightCell = ({ cell, onDoubleClick }: IActiveCellProps) => {
-  let { columnId, height, id, rowId, width, x, y } = cell;
-
-  const handleClick = (event: MouseEvent<HTMLDivElement>) => {
-    event.stopPropagation();
-  };
+  let { columnId, height, cellId, rowId, width, x, y } = cell;
 
   return (
     <div
@@ -23,7 +19,6 @@ const HighlightCell = ({ cell, onDoubleClick }: IActiveCellProps) => {
         width: width,
         height: height,
       }}
-      onClick={handleClick}
       onDoubleClick={onDoubleClick}
     ></div>
   );

@@ -1,18 +1,28 @@
 export type IRow = {
-  id: string;
   rowId: number;
 } & IRect;
 
 export type IColumn = {
-  id: string;
   columnId: number;
 } & IRect;
 
 export type ICell = {
-  id: string;
-  rowId: string;
-  columnId: string;
+  cellId: string;
+  rowId: number;
+  columnId: number;
 } & IRect;
+
+export type IRowDetails = Record<string, { rowId: number; height: number }>;
+
+export type IColumnDetails = Record<
+  string,
+  { columnId: number; width: number }
+>;
+
+export type ICellDetails = Record<
+  string,
+  ICellProps & Pick<ICell, "rowId" | "columnId">
+>;
 
 export type ICellProps = {
   content?: string;
@@ -31,9 +41,9 @@ export type IColumnProps = {
 };
 
 export type ISheetDetail = {
-  rows: Record<string, IRowProps>;
-  columns: Record<string, IColumnProps>;
-  cells: Record<string, ICellProps>;
+  rows: { rowId: number; height: number }[];
+  columns: { columnId: number; width: number }[];
+  cells: (ICellProps & { rowId: number; columnId: number })[];
 };
 
 export type IRenderGrid = (data: {
@@ -43,35 +53,9 @@ export type IRenderGrid = (data: {
   colStart: number;
 }) => void;
 
-export type IPaintRow = (ctx: CanvasRenderingContext2D, row: IRow) => void;
-
-export type IPaintColumn = (
-  ctx: CanvasRenderingContext2D,
-  column: IColumn
-) => void;
-
-export type IPaintCell = (ctx: CanvasRenderingContext2D, cell: ICell) => void;
-
 export type IRect = {
   x: number;
   y: number;
   width: number;
   height: number;
 };
-
-export type IPaintCellBg = (
-  ctx: CanvasRenderingContext2D,
-  backgroundColor: string,
-  data: IRect
-) => void;
-
-export type IPaintCellLine = (
-  ctx: CanvasRenderingContext2D,
-  data: IRect
-) => void;
-
-export type IPaintCellContent = (
-  ctx: CanvasRenderingContext2D,
-  content: string,
-  data: IRect
-) => void;

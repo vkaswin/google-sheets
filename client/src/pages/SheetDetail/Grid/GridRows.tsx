@@ -5,9 +5,9 @@ import classNames from "classnames";
 
 type IGridRows = {
   rows: IRow[];
-  slectedId?: string;
-  onClick: (columnId: string) => void;
-  onResize: (columnId: string, value: number) => void;
+  slectedId?: number;
+  onClick: (columnId: number) => void;
+  onResize: (columnId: number, value: number) => void;
 };
 
 const GridRows = ({ rows, slectedId, onClick, onResize }: IGridRows) => {
@@ -45,7 +45,7 @@ const GridRows = ({ rows, slectedId, onClick, onResize }: IGridRows) => {
     resizeRef.current.removeEventListener("pointermove", handlePointerMove);
 
     let height = selectedRow.height + -(pointerRef.current - pageY);
-    onResize(selectedRow.id, Math.max(25, height));
+    onResize(selectedRow.rowId, Math.max(25, height));
     pointerRef.current = null;
     setSelectedRow(null);
     setShowLine(false);
@@ -59,28 +59,28 @@ const GridRows = ({ rows, slectedId, onClick, onResize }: IGridRows) => {
     <Fragment>
       <div className="absolute left-0 top-0 w-[var(--col-width)] h-full bg-white z-10">
         {rows.map((row) => {
-          let { x, height, rowId, id, width, y } = row;
+          let { x, height, rowId, width, y } = row;
           return (
             <div
               key={rowId}
               className={classNames(
                 "absolute flex justify-center items-center border-r border-b border-l border-gray",
                 {
-                  "bg-light-blue": id === slectedId,
+                  "bg-light-blue": rowId === slectedId,
                 }
               )}
               style={{ width, height, left: x, top: y }}
-              onClick={() => onClick(id)}
+              onClick={() => onClick(rowId)}
             >
               <span
                 className={classNames(
                   "text-xs",
-                  id === slectedId
+                  rowId === slectedId
                     ? "text-black font-medium"
                     : "text-light-gray"
                 )}
               >
-                {id}
+                {rowId}
               </span>
               <div
                 className="absolute left-0 -bottom-3 w-full h-6 bg-transparent"

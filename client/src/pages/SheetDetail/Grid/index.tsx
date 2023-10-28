@@ -12,7 +12,6 @@ import EditCell from "./EditCell";
 import GridColumns from "./GridColumns";
 import GridRows from "./GridRows";
 import GridCells from "./GridCells";
-import { convertToTitle } from "@/utils";
 import { data } from "../data";
 
 import {
@@ -20,13 +19,9 @@ import {
   IColumn,
   IRow,
   IRenderGrid,
-  IPaintCellBg,
-  IPaintColumn,
-  IPaintRow,
-  IPaintCell,
-  IPaintCellLine,
-  IRect,
-  IPaintCellContent,
+  IColumnDetails,
+  IRowDetails,
+  ICellDetails,
 } from "@/types/Sheets";
 
 const colWidth = 46;
@@ -48,19 +43,41 @@ const Grid = () => {
 
   const [editCell, setEditCell] = useState<ICell | null>(null);
 
-  const [sheetDetail, setSheetDetail] = useState(data);
+  const [refresh, forceUpdate] = useState(0);
+
+  const { current: rowDetails } = useRef<IRowDetails>({});
+
+  const { current: columnDetails } = useRef<IColumnDetails>({});
+
+  const { current: cellDetails } = useRef<ICellDetails>({});
 
   const gridRef = useRef<HTMLDivElement>(null);
-
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const selectedCell = useMemo(() => {
     return cells[selectedCellId];
   }, [rows, columns, selectedCellId]);
 
   useEffect(() => {
+    let { rows, cells, columns } = data;
+
+    for (let row of rows) {
+      rowDetails[row.rowId] = row;
+    }
+
+    for (let column of columns) {
+      columnDetails[column.columnId] = column;
+    }
+
+    for (let cell of cells) {
+      let id = `${cell.columnId},${cell.rowId}`;
+      cellDetails[id] = cell;
+    }
+  }, []);
+
+  useEffect(() => {
+    console.log(refresh);
     handleResizeGrid();
-  }, [sheetDetail]);
+  }, [refresh]);
 
   useEffect(() => {
     window.addEventListener("resize", handleResizeGrid);
@@ -68,7 +85,7 @@ const Grid = () => {
     return () => {
       window.removeEventListener("resize", handleResizeGrid);
     };
-  }, [rows, columns, sheetDetail]);
+  }, [rows, columns]);
 
   const handleResizeGrid = () => {
     if (!gridRef.current) return;
@@ -99,13 +116,12 @@ const Grid = () => {
     let cellData: Record<string, ICell> = {};
 
     for (let i = rowStart, y = offsetY; y < clientHeight; i++) {
-      let height = sheetDetail.rows[i]?.height || cell.height;
+      let height = rowDetails[i]?.height || cell.height;
 
       if (y + height > rowHeight) {
         rowData.push({
           y,
           x: 0,
-          id: `${i}`,
           rowId: i,
           height: height,
           width: colWidth,
@@ -116,14 +132,12 @@ const Grid = () => {
     }
 
     for (let i = colStart, x = offsetX; x < clientWidth; i++) {
-      let columnId = convertToTitle(i);
-      let width = sheetDetail.columns[columnId]?.width || cell.width;
+      let width = columnDetails[i]?.width || cell.width;
 
       if (x + width > colWidth) {
         columnData.push({
           x,
           y: 0,
-          id: columnId,
           columnId: i,
           width,
           height: rowHeight,
@@ -133,18 +147,18 @@ const Grid = () => {
       x += width;
     }
 
-    for (let { id: rowId, height, y } of rowData) {
-      for (let { id: columnId, width, x } of columnData) {
-        let cellId = `${columnId}${rowId}`;
+    for (let { rowId, height, y } of rowData) {
+      for (let { width, x, columnId } of columnData) {
+        let cellId = `${columnId},${rowId}`;
 
         cellData[cellId] = {
-          id: cellId,
           x,
           y,
           rowId,
           columnId,
           width,
           height,
+          cellId,
         };
       }
     }
@@ -178,7 +192,7 @@ const Grid = () => {
 
       if (rows[mid].y <= y) {
         left = mid + 1;
-        rowId = rows[mid].id;
+        rowId = rows[mid].rowId;
       } else {
         right = mid - 1;
       }
@@ -195,7 +209,7 @@ const Grid = () => {
 
       if (columns[mid].x <= x) {
         left = mid + 1;
-        columnId = columns[mid].id;
+        columnId = columns[mid].columnId;
       } else {
         right = mid - 1;
       }
@@ -203,7 +217,7 @@ const Grid = () => {
 
     if (!columnId) return null;
 
-    return columnId + rowId;
+    return `${columnId},${rowId}`;
   };
 
   const handleVerticalScroll = (deltaY: number) => {
@@ -218,7 +232,7 @@ const Grid = () => {
       rowId--;
 
       while (rowId > 0 && y > rowHeight) {
-        y -= sheetDetail.rows[rowId]?.height ?? cell.height;
+        y -= rowDetails[rowId]?.height ?? cell.height;
         rowId--;
       }
 
@@ -251,7 +265,7 @@ const Grid = () => {
       columnId--;
 
       while (columnId > 0 && x > colWidth) {
-        x -= sheetDetail.columns[columnId]?.width ?? cell.width;
+        x -= columnDetails[columnId]?.width ?? cell.width;
         columnId--;
       }
 
@@ -282,13 +296,14 @@ const Grid = () => {
   const handleDoubleClickCell = () => {
     if (!gridRef.current || !selectedCellId || !cells[selectedCellId]) return;
 
-    let { columnId, id, width, height, rowId, x, y } = cells[selectedCellId];
+    let { columnId, cellId, width, height, rowId, x, y } =
+      cells[selectedCellId];
 
     let { top } = gridRef.current.getBoundingClientRect();
 
     setEditCell({
+      cellId,
       columnId,
-      id,
       width,
       height,
       rowId,
@@ -302,26 +317,27 @@ const Grid = () => {
     handleClickGrid(event);
   };
 
-  const handleClickColumn = (columnId: string) => {
+  const handleClickColumn = (columnId: number) => {
     console.log(columnId);
   };
 
-  const handleClickRow = (rowId: string) => {
+  const handleClickRow = (rowId: number) => {
     console.log(rowId);
   };
 
-  const handleResizeColumn = (columnId: string, value: number) => {
-    let details = { ...sheetDetail };
-    if (!details.columns[columnId]) details.columns[columnId] = {};
-    details.columns[columnId].width = value;
-    setSheetDetail(details);
+  const handleResizeColumn = (columnId: number, value: number) => {
+    if (!columnDetails[columnId])
+      columnDetails[columnId] = { columnId, width: value };
+    else columnDetails[columnId].width = value;
+
+    forceUpdate(Math.random());
   };
 
-  const handleResizeRow = (rowId: string, value: number) => {
-    let details = { ...sheetDetail };
-    if (!details.rows[rowId]) details.columns[rowId] = {};
-    details.rows[rowId].height = value;
-    setSheetDetail(details);
+  const handleResizeRow = (rowId: number, value: number) => {
+    if (!rowDetails[rowId]) rowDetails[rowId] = { rowId, height: value };
+    else rowDetails[rowId].height = value;
+
+    forceUpdate(Math.random());
   };
 
   return (
@@ -346,7 +362,7 @@ const Grid = () => {
           onClick={handleClickRow}
           onResize={handleResizeRow}
         />
-        <GridCells cells={cells} data={data.cells} />
+        <GridCells cells={cells} cellDetails={cellDetails} />
         {!editCell && selectedCell && (
           <HighlightCell
             cell={selectedCell}
@@ -357,7 +373,7 @@ const Grid = () => {
       {editCell && (
         <EditCell
           cell={editCell}
-          data={sheetDetail.cells[editCell.id]}
+          data={cellDetails[editCell.cellId]}
           onWheel={handleScroll}
         />
       )}

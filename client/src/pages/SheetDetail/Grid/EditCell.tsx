@@ -1,6 +1,7 @@
 import { useRef, MouseEvent, WheelEvent, useEffect } from "react";
 
 import { ICell, ICellProps } from "@/types/Sheets";
+import { convertToTitle } from "@/utils";
 
 type IEditCell = {
   cell: ICell;
@@ -11,7 +12,7 @@ type IEditCell = {
 const EditCell = ({ cell, data, onWheel }: IEditCell) => {
   const inputRef = useRef<HTMLDivElement | null>(null);
 
-  let { x, y, rowId, height, id, columnId, width } = cell;
+  let { x, y, rowId, height, columnId, width } = cell;
 
   let {
     color = "#000000",
@@ -56,7 +57,8 @@ const EditCell = ({ cell, data, onWheel }: IEditCell) => {
         dangerouslySetInnerHTML={{ __html: content }}
       ></div>
       <div className="absolute -top-7 left-0 bg-blue text-xs font-medium text-white rounded-sm px-2 py-1">
-        {id}
+        {convertToTitle(columnId)}
+        {rowId}
       </div>
     </div>
   );
