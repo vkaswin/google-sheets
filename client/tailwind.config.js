@@ -11,9 +11,11 @@ export default {
       },
       outlineColor: {
         "light-blue": "#a8c7fa",
+        "dark-blue": "#0b57d0",
       },
       backgroundColor: {
         "dark-silver": "#C0C0C0",
+        "dark-blue": "#0b57d0",
         "light-blue": "#D3E3FD",
         blue: "#4589eb",
       },

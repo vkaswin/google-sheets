@@ -9,12 +9,25 @@ import {
 } from "react";
 import HighlightCell from "./HighlightCell";
 import EditCell from "./EditCell";
-import ColumnResizer from "./ColumnResizer";
+import GridColumns from "./GridColumns";
+import GridRows from "./GridRows";
+import GridCells from "./GridCells";
 import { convertToTitle } from "@/utils";
 import { data } from "../data";
 
-import { ICell, IColumn, IRow, IRenderGrid } from "@/types/Sheets";
-import RowResizer from "./RowResizer";
+import {
+  ICell,
+  IColumn,
+  IRow,
+  IRenderGrid,
+  IPaintCellBg,
+  IPaintColumn,
+  IPaintRow,
+  IPaintCell,
+  IPaintCellLine,
+  IRect,
+  IPaintCellContent,
+} from "@/types/Sheets";
 
 const colWidth = 46;
 const rowHeight = 25;
@@ -58,13 +71,7 @@ const Grid = () => {
   }, [rows, columns, sheetDetail]);
 
   const handleResizeGrid = () => {
-    if (!gridRef.current || !canvasRef.current) return;
-
-    let { clientWidth, clientHeight } = gridRef.current;
-
-    let canvas = canvasRef.current;
-    canvas.width = clientWidth;
-    canvas.height = clientHeight;
+    if (!gridRef.current) return;
 
     let { rowId = 1, y = rowHeight } = rows[0] ?? {};
     let { columnId = 1, x = colWidth } = columns[0] ?? {};
@@ -77,100 +84,15 @@ const Grid = () => {
     });
   };
 
-  const paintRow = (
-    ctx: CanvasRenderingContext2D,
-    { height, id, rowId, width, x, y }: IRow
-  ) => {
-    ctx.save();
-
-    ctx.clearRect(x, y, width, height);
-
-    ctx.beginPath();
-    ctx.moveTo(x + width, y);
-    ctx.lineTo(x + width, y + height);
-    ctx.lineTo(x, y + height);
-    ctx.strokeStyle = "#D5D5D5";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.font = "12px Open-Sans";
-    ctx.fillStyle = "#575a5a";
-    ctx.fillText(id, x + width / 2, y + height / 2);
-
-    ctx.restore();
-  };
-
-  const paintColumn = (
-    ctx: CanvasRenderingContext2D,
-    { columnId, height, id, width, x, y }: IColumn
-  ) => {
-    ctx.save();
-
-    ctx.clearRect(x, y, width, height);
-
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + width, y);
-    ctx.lineTo(x + width, y + height);
-    ctx.lineTo(x, y + height);
-    ctx.strokeStyle = "#D5D5D5";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.font = "12px Open-Sans";
-    ctx.fillStyle = "#575a5a";
-    ctx.fillText(id, x + width / 2, y + height / 2);
-
-    ctx.restore();
-  };
-
-  const paintCell = (
-    ctx: CanvasRenderingContext2D,
-    { id, rowId, columnId, height, width, x, y }: ICell
-  ) => {
-    let { backgroundColor, color, content } = sheetDetail.cells[id] ?? {};
-
-    ctx.save();
-
-    ctx.clearRect(x, y, width, height);
-
-    ctx.beginPath();
-    ctx.moveTo(x, y + height);
-    ctx.lineTo(x + width, y + height);
-    ctx.lineTo(x + width, y);
-    ctx.strokeStyle = "#D5D5D5";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    if (backgroundColor) {
-      ctx.fillStyle = backgroundColor;
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.fillRect(x, y, width, height);
-      ctx.fill();
-    }
-
-    ctx.restore();
-  };
-
   const renderGrid: IRenderGrid = ({
     offsetX,
     offsetY,
     rowStart,
     colStart,
   }) => {
-    if (!canvasRef.current) return;
+    if (!gridRef.current) return;
 
-    let canvas = canvasRef.current;
-
-    let { clientWidth, clientHeight } = canvas;
-
-    let ctx = canvas.getContext("2d")!;
+    let { clientWidth, clientHeight } = gridRef.current;
 
     let rowData: IRow[] = [];
     let columnData: IColumn[] = [];
@@ -224,17 +146,7 @@ const Grid = () => {
           width,
           height,
         };
-
-        paintCell(ctx, cellData[cellId]);
       }
-    }
-
-    for (let row of rowData) {
-      paintRow(ctx, row);
-    }
-
-    for (let column of columnData) {
-      paintColumn(ctx, column);
     }
 
     setRows(rowData);
@@ -261,14 +173,14 @@ const Grid = () => {
     let right = rows.length - 1;
     let rowId = null;
 
-    while (left < right) {
+    while (left <= right) {
       let mid = Math.floor((left + right) / 2);
 
       if (rows[mid].y <= y) {
         left = mid + 1;
         rowId = rows[mid].id;
       } else {
-        right = mid;
+        right = mid - 1;
       }
     }
 
@@ -278,14 +190,14 @@ const Grid = () => {
     right = columns.length - 1;
     let columnId = null;
 
-    while (left < right) {
+    while (left <= right) {
       let mid = Math.floor((left + right) / 2);
 
       if (columns[mid].x <= x) {
         left = mid + 1;
         columnId = columns[mid].id;
       } else {
-        right = mid;
+        right = mid - 1;
       }
     }
 
@@ -421,24 +333,26 @@ const Grid = () => {
         onContextMenu={handleContextMenu}
         onWheel={handleScroll}
       >
-        <canvas ref={canvasRef} className="relative"></canvas>
+        <div className="absolute left-0 top-0 w-[var(--col-width)] h-[var(--row-height)] border border-light-gray bg-white z-20 after:absolute after:right-0 after:h-full after:w-1 after:bg-dark-silver before:absolute before:bottom-0 before:w-full before:h-1 before:bg-dark-silver"></div>
+        <GridColumns
+          columns={columns}
+          selectedId={selectedCell?.columnId}
+          onClick={handleClickColumn}
+          onResize={handleResizeColumn}
+        />
+        <GridRows
+          rows={rows}
+          slectedId={selectedCell?.rowId}
+          onClick={handleClickRow}
+          onResize={handleResizeRow}
+        />
+        <GridCells cells={cells} data={data.cells} />
         {!editCell && selectedCell && (
           <HighlightCell
             cell={selectedCell}
             onDoubleClick={handleDoubleClickCell}
           />
         )}
-        <ColumnResizer
-          columns={columns}
-          onClick={handleClickColumn}
-          onResize={handleResizeColumn}
-        />
-        <RowResizer
-          rows={rows}
-          onClick={handleClickRow}
-          onResize={handleResizeRow}
-        />
-        <div className="absolute left-0 top-0 w-[var(--col-width)] h-[var(--row-height)] border border-light-gray bg-white z-10 after:absolute after:right-0 after:h-full after:w-1 after:bg-dark-silver before:absolute before:bottom-0 before:w-full before:h-1 before:bg-dark-silver"></div>
       </div>
       {editCell && (
         <EditCell

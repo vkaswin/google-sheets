@@ -1,14 +1,16 @@
 import { Fragment, PointerEvent, useRef, useState } from "react";
 
 import { IRow } from "@/types/Sheets";
+import classNames from "classnames";
 
-type IRowResizer = {
+type IGridRows = {
   rows: IRow[];
+  slectedId?: string;
   onClick: (columnId: string) => void;
   onResize: (columnId: string, value: number) => void;
 };
 
-const RowResizer = ({ rows, onClick, onResize }: IRowResizer) => {
+const GridRows = ({ rows, slectedId, onClick, onResize }: IGridRows) => {
   const [selectedRow, setSelectedRow] = useState<IRow | null>(null);
 
   const [showLine, setShowLine] = useState(false);
@@ -55,16 +57,31 @@ const RowResizer = ({ rows, onClick, onResize }: IRowResizer) => {
 
   return (
     <Fragment>
-      <div className="absolute left-0 top-0 w-[var(--col-width)] h-full">
+      <div className="absolute left-0 top-0 w-[var(--col-width)] h-full bg-white z-10">
         {rows.map((row) => {
           let { x, height, rowId, id, width, y } = row;
           return (
             <div
               key={rowId}
-              className="absolute"
+              className={classNames(
+                "absolute flex justify-center items-center border-r border-b border-l border-gray",
+                {
+                  "bg-light-blue": id === slectedId,
+                }
+              )}
               style={{ width, height, left: x, top: y }}
               onClick={() => onClick(id)}
             >
+              <span
+                className={classNames(
+                  "text-xs",
+                  id === slectedId
+                    ? "text-black font-medium"
+                    : "text-light-gray"
+                )}
+              >
+                {id}
+              </span>
               <div
                 className="absolute left-0 -bottom-3 w-full h-6 bg-transparent"
                 onMouseEnter={() => handleMouseEnter(row)}
@@ -72,40 +89,41 @@ const RowResizer = ({ rows, onClick, onResize }: IRowResizer) => {
             </div>
           );
         })}
-        {selectedRow && (
-          <Fragment>
+      </div>
+      {selectedRow && (
+        <Fragment>
+          <div
+            ref={resizeRef}
+            className="absolute flex flex-col items-center gap-[5px] cursor-row-resize z-20"
+            style={{
+              left: 0,
+              top: selectedRow.y + selectedRow.height - 6,
+              width: selectedRow.width,
+            }}
+            onPointerDown={handlePointerDown}
+          >
             <div
-              ref={resizeRef}
-              className="absolute flex flex-col items-center gap-[5px] w-full cursor-row-resize"
+              className="bg-black rounded-md h-[3px]"
+              style={{ width: selectedRow.width / 2 }}
+            ></div>
+            <div
+              className="bg-black rounded-md h-[3px]"
+              style={{ width: selectedRow.width / 2 }}
+            ></div>
+          </div>
+          {showLine && (
+            <div
+              className="absolute h-[3px] w-full bg-slate-400 z-20"
               style={{
                 left: 0,
-                top: selectedRow.y + selectedRow.height - 6,
+                top: selectedRow.y + selectedRow.height - 2,
               }}
-              onPointerDown={handlePointerDown}
-            >
-              <div
-                className="bg-black rounded-md h-[3px]"
-                style={{ width: selectedRow.width / 2 }}
-              ></div>
-              <div
-                className="bg-black rounded-md h-[3px]"
-                style={{ width: selectedRow.width / 2 }}
-              ></div>
-            </div>
-          </Fragment>
-        )}
-      </div>
-      {selectedRow && showLine && (
-        <div
-          className="absolute h-[3px] w-full bg-slate-400"
-          style={{
-            left: 0,
-            top: selectedRow.y + selectedRow.height - 2,
-          }}
-        ></div>
+            ></div>
+          )}
+        </Fragment>
       )}
     </Fragment>
   );
 };
 
-export default RowResizer;
+export default GridRows;

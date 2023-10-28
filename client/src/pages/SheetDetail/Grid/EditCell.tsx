@@ -1,4 +1,4 @@
-import { useRef, MouseEvent, WheelEvent } from "react";
+import { useRef, MouseEvent, WheelEvent, useEffect } from "react";
 
 import { ICell, ICellProps } from "@/types/Sheets";
 
@@ -13,33 +13,45 @@ const EditCell = ({ cell, data, onWheel }: IEditCell) => {
 
   let { x, y, rowId, height, id, columnId, width } = cell;
 
-  let { color, backgroundColor = "white", content = "" } = data ?? {};
+  let {
+    color = "#000000",
+    backgroundColor = "#FFFFFF",
+    content = "",
+  } = data ?? {};
 
-  const handleClick = (event: MouseEvent<HTMLDivElement>) => {
-    event.stopPropagation();
-  };
+  useEffect(() => {
+    if (!inputRef.current) return;
+    moveCaretToEnd(inputRef.current);
+  }, [cell]);
 
-  const handleInputRef = (ref: HTMLDivElement) => {
-    if (!ref) return;
-    ref.focus();
+  const moveCaretToEnd = (ref: HTMLDivElement) => {
+    let selection = window.getSelection();
+
+    if (!selection) return;
+
+    let range = document.createRange();
+    range.setStart(ref, ref.childNodes.length);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
   };
 
   return (
     <div
-      className="absolute flex border-2 border-dark-blue outline outline-3 outline-light-blue p-1 z-10"
+      className="absolute flex border-1 outline outline-3 outline-light-blue p-[2px] z-10"
       style={{
         width,
         height,
         left: x,
         top: y,
         backgroundColor,
+        color,
       }}
-      onClick={handleClick}
       onWheel={onWheel}
     >
       <div
-        ref={handleInputRef}
-        className="w-full h-full outline-none text-xs"
+        ref={inputRef}
+        className="w-full h-full text-sm outline outline-2 outline-dark-blue p-[2px]"
         contentEditable={true}
         dangerouslySetInnerHTML={{ __html: content }}
       ></div>
