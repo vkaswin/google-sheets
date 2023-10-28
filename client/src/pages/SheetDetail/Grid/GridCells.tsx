@@ -3,14 +3,14 @@ import { Fragment } from "react";
 import { ICell, ICellDetails, ICellProps } from "@/types/Sheets";
 
 type IGridCells = {
-  cells: Record<string, ICell>;
+  cells: ICell[];
   cellDetails: ICellDetails;
 };
 
 const GridCells = ({ cells, cellDetails }: IGridCells) => {
   return (
     <Fragment>
-      {Object.values(cells).map((cell) => {
+      {cells.map((cell) => {
         let { columnId, height, cellId, rowId, width, x, y } = cell;
 
         let {

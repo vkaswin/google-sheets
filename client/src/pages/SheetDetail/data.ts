@@ -120,7 +120,8 @@ export const data: ISheetDetail = {
     },
 
     {
-      content: "Lorem Ipsum",
+      content:
+        "Lorem Ipsum Lorem Ipsum is simply dummy text of the printing Lorem Ipsum is simply dummy text of the printing",
       backgroundColor: "#B3A7D6",
       rowId: 2,
       columnId: 8,

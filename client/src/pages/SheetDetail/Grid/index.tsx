@@ -37,7 +37,7 @@ const Grid = () => {
 
   const [columns, setColumns] = useState<IColumn[]>([]);
 
-  const [cells, setCells] = useState<Record<string, ICell>>({});
+  const [cells, setCells] = useState<ICell[]>([]);
 
   const [selectedCellId, setSelectedCellId] = useState<string>("");
 
@@ -54,7 +54,7 @@ const Grid = () => {
   const gridRef = useRef<HTMLDivElement>(null);
 
   const selectedCell = useMemo(() => {
-    return cells[selectedCellId];
+    return cells.find(({ cellId }) => cellId === selectedCellId);
   }, [rows, columns, selectedCellId]);
 
   useEffect(() => {
@@ -113,7 +113,7 @@ const Grid = () => {
 
     let rowData: IRow[] = [];
     let columnData: IColumn[] = [];
-    let cellData: Record<string, ICell> = {};
+    let cellData: ICell[] = [];
 
     for (let i = rowStart, y = offsetY; y < clientHeight; i++) {
       let height = rowDetails[i]?.height || cell.height;
@@ -151,7 +151,7 @@ const Grid = () => {
       for (let { width, x, columnId } of columnData) {
         let cellId = `${columnId},${rowId}`;
 
-        cellData[cellId] = {
+        cellData.push({
           x,
           y,
           rowId,
@@ -159,7 +159,7 @@ const Grid = () => {
           width,
           height,
           cellId,
-        };
+        });
       }
     }
 
@@ -294,10 +294,9 @@ const Grid = () => {
   };
 
   const handleDoubleClickCell = () => {
-    if (!gridRef.current || !selectedCellId || !cells[selectedCellId]) return;
+    if (!gridRef.current || !selectedCell) return;
 
-    let { columnId, cellId, width, height, rowId, x, y } =
-      cells[selectedCellId];
+    let { columnId, cellId, width, height, rowId, x, y } = selectedCell;
 
     let { top } = gridRef.current.getBoundingClientRect();
 
