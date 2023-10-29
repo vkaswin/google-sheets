@@ -89,12 +89,12 @@ export const data: ISheetDetail = {
     {
       backgroundColor: "#CADAF8",
       color: "white",
-      content: "<span>Loreum Ispum</span>",
+      html: "<span>Loreum Ispum</span>",
       rowId: 50,
       columnId: 2,
     },
     {
-      content: `<span style="font-size:13px;color:#000000;font-weight:normal;text-decoration:none;font-family:''Arial'';font-style:italic;text-decoration-skip-ink:none;">afssfs </span><span style="font-size:41px;color:#000000;font-weight:bold;text-decoration:none;font-family:''Arial'';font-style:italic;text-decoration-skip-ink:none;">sfs</span><span style="font-size:41px;color:#000000;font-weight:bold;text-decoration:line-through;font-family:''Arial'';font-style:italic;text-decoration-skip-ink:none;">fsfs</span><span style="font-size:41px;color:#000000;font-weight:bold;text-decoration:none;font-family:''Arial'';font-style:normal;text-decoration-skip-ink:none;"> </span><span style="font-size:41px;color:#000000;font-weight:bold;text-decoration:none;font-family:''Arial'';font-style:italic;text-decoration-skip-ink:none;">sfsf s</span><span style="font-size:41px;color:#000000;font-weight:bold;text-decoration:none;font-family:''Arial'';font-style:normal;text-decoration-skip-ink:none;">f</span><span style="font-size:41px;color:#000000;font-weight:bold;text-decoration:none;font-family:''Arial'';font-style:italic;text-decoration-skip-ink:none;">sasfasfsafs </span><span style="font-size:13px;color:#000000;font-weight:normal;text-decoration:none;font-family:''Arial'';font-style:italic;text-decoration-skip-ink:none;">sfs \nsfsfs f jbjihhiu hhol d</span><br>`,
+      html: "Loreum Ispum",
       backgroundColor: "#EA9999",
       color: "white",
       rowId: 1,
@@ -102,49 +102,48 @@ export const data: ISheetDetail = {
     },
     {
       backgroundColor: "#B7E1CD",
-      content: "<b>Loreum Ispum</b>",
+      html: "<b>Loreum Ispum</b>",
       rowId: 4,
       columnId: 2,
     },
     {
       backgroundColor: "#CADAF8",
-      content: "<span>Loreum Ispum</span>",
+      html: "<span>Loreum Ispum</span>",
       columnId: 3,
       rowId: 6,
     },
     {
-      content: "Lorem Ipsum is simply dummy text of the printing",
+      html: "Lorem Ipsum is simply dummy text of the printing",
       backgroundColor: "#FEE599",
       rowId: 5,
       columnId: 5,
     },
 
     {
-      content:
-        "Lorem Ipsum Lorem Ipsum is simply dummy text of the printing Lorem Ipsum is simply dummy text of the printing",
+      html: "Lorem Ipsum Lorem Ipsum is simply dummy text of the printing Lorem Ipsum is simply dummy text of the printing",
       backgroundColor: "#B3A7D6",
       rowId: 2,
       columnId: 8,
     },
     {
       backgroundColor: "#FFF2CC",
-      content: "<b>Loreum Ispum</b>",
+      html: "<b>Loreum Ispum</b>",
       rowId: 12,
       columnId: 6,
     },
     {
       backgroundColor: "#B7B7B7",
-      content: "<span>Loreum</span>",
+      html: "<span>Loreum</span>",
       rowId: 25,
       columnId: 4,
     },
     {
-      content: "Loreum Ispum",
+      html: "Loreum Ispum",
       rowId: 9,
       columnId: 3,
     },
     {
-      content: "Loreum Ispum",
+      html: "Loreum Ispum",
       backgroundColor: "#766CEB",
       color: "white",
       rowId: 80,

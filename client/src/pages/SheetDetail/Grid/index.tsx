@@ -24,6 +24,10 @@ import {
   IRowDetails,
   ICellDetails,
   IRect,
+  IPaintCell,
+  IPaintCellRect,
+  IPaintCellLine,
+  IPaintCellHtml,
 } from "@/types/Sheets";
 
 const colWidth = 46;
@@ -179,10 +183,10 @@ const Grid = () => {
     ctx.restore();
   };
 
-  const paintCellRect = (
-    ctx: CanvasRenderingContext2D,
-    backgroundColor: string,
-    { x, y, height, width }: IRect
+  const paintCellRect: IPaintCellRect = (
+    ctx,
+    backgroundColor,
+    { x, y, height, width }
   ) => {
     ctx.save();
     ctx.fillStyle = backgroundColor;
@@ -193,10 +197,7 @@ const Grid = () => {
     ctx.restore();
   };
 
-  const paintCellLine = (
-    ctx: CanvasRenderingContext2D,
-    { height, width, x, y }: IRect
-  ) => {
+  const paintCellLine: IPaintCellLine = (ctx, { height, width, x, y }) => {
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(x, y + height);
@@ -208,14 +209,24 @@ const Grid = () => {
     ctx.restore();
   };
 
-  const paintCell = (
-    ctx: CanvasRenderingContext2D,
-    { cellId, rowId, columnId, height, width, x, y }: ICell
+  const paintCellHtml: IPaintCellHtml = (
+    ctx,
+    html,
+    { height, width, x, y }
+  ) => {
+    ctx.font = "14px Open-Sans";
+    ctx.beginPath();
+    ctx.fillText(html, x, y + 14);
+  };
+
+  const paintCell: IPaintCell = (
+    ctx,
+    { cellId, rowId, columnId, height, width, x, y }
   ) => {
     let {
       backgroundColor = "#FFFFFF",
       color = "#000000",
-      content = "",
+      html = "",
     } = cellDetails[cellId] ?? {};
 
     let rect = { x, y, width, height };
@@ -223,6 +234,7 @@ const Grid = () => {
     ctx.clearRect(x, y, width, height);
 
     paintCellRect(ctx, backgroundColor, rect);
+    paintCellHtml(ctx, html, rect);
     paintCellLine(ctx, rect);
   };
 

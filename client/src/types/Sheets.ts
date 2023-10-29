@@ -25,7 +25,7 @@ export type ICellDetails = Record<
 >;
 
 export type ICellProps = {
-  content?: string;
+  html?: string;
   backgroundColor?: string;
   color?: string;
 };
@@ -59,3 +59,22 @@ export type IRect = {
   width: number;
   height: number;
 };
+
+export type IPaintCell = (ctx: CanvasRenderingContext2D, rect: ICell) => void;
+
+export type IPaintCellRect = (
+  ctx: CanvasRenderingContext2D,
+  backgroundColor: string,
+  rect: IRect
+) => void;
+
+export type IPaintCellLine = (
+  ctx: CanvasRenderingContext2D,
+  rect: IRect
+) => void;
+
+export type IPaintCellHtml = (
+  ctx: CanvasRenderingContext2D,
+  html: string,
+  rect: IRect
+) => void;

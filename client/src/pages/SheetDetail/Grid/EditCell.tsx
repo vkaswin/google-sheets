@@ -17,7 +17,7 @@ const EditCell = ({ cell, data, onWheel }: IEditCell) => {
   let {
     color = "#000000",
     backgroundColor = "#FFFFFF",
-    content = "",
+    html = "",
   } = data ?? {};
 
   useEffect(() => {
@@ -54,7 +54,7 @@ const EditCell = ({ cell, data, onWheel }: IEditCell) => {
         ref={inputRef}
         className="w-full h-full text-sm outline outline-2 outline-dark-blue p-[2px]"
         contentEditable={true}
-        dangerouslySetInnerHTML={{ __html: content }}
+        dangerouslySetInnerHTML={{ __html: html }}
       ></div>
       <div className="absolute -top-7 left-0 bg-blue text-xs font-medium text-white rounded-sm px-2 py-1">
         {convertToTitle(columnId)}
