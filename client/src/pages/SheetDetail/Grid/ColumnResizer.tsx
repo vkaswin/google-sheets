@@ -1,22 +1,14 @@
 import { Fragment, PointerEvent, useRef, useState } from "react";
-import classNames from "classnames";
-import { convertToTitle } from "@/utils";
 
 import { IColumn } from "@/types/Sheets";
 
-type IGridColumns = {
+type IColumnResizer = {
   columns: IColumn[];
-  selectedId?: number;
   onClick: (columnId: number) => void;
   onResize: (columnId: number, value: number) => void;
 };
 
-const GridColumns = ({
-  columns,
-  selectedId,
-  onClick,
-  onResize,
-}: IGridColumns) => {
+const ColumnResizer = ({ columns, onClick, onResize }: IColumnResizer) => {
   const [selectedColumn, setSelectedColumn] = useState<IColumn | null>(null);
 
   const [showLine, setShowLine] = useState(false);
@@ -63,31 +55,16 @@ const GridColumns = ({
 
   return (
     <Fragment>
-      <div className="absolute left-0 top-0 w-full h-[var(--row-height)] bg-white z-10">
+      <div className="absolute left-0 top-0 w-full h-[var(--row-height)]">
         {columns.map((column) => {
           let { x, height, columnId, width, y } = column;
           return (
             <div
               key={columnId}
-              className={classNames(
-                "absolute flex justify-center items-center border-t border-r border-b border-gray",
-                {
-                  "bg-light-blue font-medium": columnId === selectedId,
-                }
-              )}
+              className="absolute"
               style={{ width, height, left: x, top: y }}
               onClick={() => onClick(columnId)}
             >
-              <span
-                className={classNames(
-                  "text-xs",
-                  columnId === selectedId
-                    ? "text-black font-medium"
-                    : "text-light-gray"
-                )}
-              >
-                {convertToTitle(columnId)}
-              </span>
               <div
                 className="absolute top-0 -right-3 w-6 h-full bg-transparent"
                 onMouseEnter={() => handleMouseEnter(column)}
@@ -100,7 +77,7 @@ const GridColumns = ({
         <Fragment>
           <div
             ref={resizeRef}
-            className="absolute flex gap-[5px] items-center cursor-col-resize z-30"
+            className="absolute flex gap-[5px] items-center cursor-col-resize"
             style={{
               left: selectedColumn.x + selectedColumn.width - 6,
               top: 0,
@@ -132,4 +109,4 @@ const GridColumns = ({
   );
 };
 
-export default GridColumns;
+export default ColumnResizer;

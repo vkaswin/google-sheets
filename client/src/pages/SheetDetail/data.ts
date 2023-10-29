@@ -65,7 +65,7 @@ export const data: ISheetDetail = {
   ],
   columns: [
     {
-      width: 150,
+      width: 350,
       columnId: 1,
     },
     {
@@ -94,7 +94,7 @@ export const data: ISheetDetail = {
       columnId: 2,
     },
     {
-      content: "Loreum Ispum Loreum Ispum",
+      content: `<span style="font-size:13px;color:#000000;font-weight:normal;text-decoration:none;font-family:''Arial'';font-style:italic;text-decoration-skip-ink:none;">afssfs </span><span style="font-size:41px;color:#000000;font-weight:bold;text-decoration:none;font-family:''Arial'';font-style:italic;text-decoration-skip-ink:none;">sfs</span><span style="font-size:41px;color:#000000;font-weight:bold;text-decoration:line-through;font-family:''Arial'';font-style:italic;text-decoration-skip-ink:none;">fsfs</span><span style="font-size:41px;color:#000000;font-weight:bold;text-decoration:none;font-family:''Arial'';font-style:normal;text-decoration-skip-ink:none;"> </span><span style="font-size:41px;color:#000000;font-weight:bold;text-decoration:none;font-family:''Arial'';font-style:italic;text-decoration-skip-ink:none;">sfsf s</span><span style="font-size:41px;color:#000000;font-weight:bold;text-decoration:none;font-family:''Arial'';font-style:normal;text-decoration-skip-ink:none;">f</span><span style="font-size:41px;color:#000000;font-weight:bold;text-decoration:none;font-family:''Arial'';font-style:italic;text-decoration-skip-ink:none;">sasfasfsafs </span><span style="font-size:13px;color:#000000;font-weight:normal;text-decoration:none;font-family:''Arial'';font-style:italic;text-decoration-skip-ink:none;">sfs \nsfsfs f jbjihhiu hhol d</span><br>`,
       backgroundColor: "#EA9999",
       color: "white",
       rowId: 1,

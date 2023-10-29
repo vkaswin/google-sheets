@@ -1,16 +1,14 @@
 import { Fragment, PointerEvent, useRef, useState } from "react";
 
 import { IRow } from "@/types/Sheets";
-import classNames from "classnames";
 
-type IGridRows = {
+type IRowResizer = {
   rows: IRow[];
-  slectedId?: number;
   onClick: (columnId: number) => void;
   onResize: (columnId: number, value: number) => void;
 };
 
-const GridRows = ({ rows, slectedId, onClick, onResize }: IGridRows) => {
+const RowResizer = ({ rows, onClick, onResize }: IRowResizer) => {
   const [selectedRow, setSelectedRow] = useState<IRow | null>(null);
 
   const [showLine, setShowLine] = useState(false);
@@ -57,31 +55,15 @@ const GridRows = ({ rows, slectedId, onClick, onResize }: IGridRows) => {
 
   return (
     <Fragment>
-      <div className="absolute left-0 top-0 w-[var(--col-width)] h-full bg-white z-10">
+      <div className="absolute left-0 top-0 w-[var(--col-width)] h-ful">
         {rows.map((row) => {
           let { x, height, rowId, width, y } = row;
           return (
             <div
               key={rowId}
-              className={classNames(
-                "absolute flex justify-center items-center border-r border-b border-l border-gray",
-                {
-                  "bg-light-blue": rowId === slectedId,
-                }
-              )}
               style={{ width, height, left: x, top: y }}
               onClick={() => onClick(rowId)}
             >
-              <span
-                className={classNames(
-                  "text-xs",
-                  rowId === slectedId
-                    ? "text-black font-medium"
-                    : "text-light-gray"
-                )}
-              >
-                {rowId}
-              </span>
               <div
                 className="absolute left-0 -bottom-3 w-full h-6 bg-transparent"
                 onMouseEnter={() => handleMouseEnter(row)}
@@ -94,7 +76,7 @@ const GridRows = ({ rows, slectedId, onClick, onResize }: IGridRows) => {
         <Fragment>
           <div
             ref={resizeRef}
-            className="absolute flex flex-col items-center gap-[5px] cursor-row-resize z-20"
+            className="absolute flex flex-col items-center gap-[5px] cursor-row-resize"
             style={{
               left: 0,
               top: selectedRow.y + selectedRow.height - 6,
@@ -126,4 +108,4 @@ const GridRows = ({ rows, slectedId, onClick, onResize }: IGridRows) => {
   );
 };
 
-export default GridRows;
+export default RowResizer;

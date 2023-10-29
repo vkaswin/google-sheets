@@ -1,26 +1,57 @@
-import { MouseEvent } from "react";
+import { Fragment } from "react";
 
-import { ICell } from "@/types/Sheets";
+import { ICell, IColumn, IRow } from "@/types/Sheets";
+import { convertToTitle } from "@/utils";
 
 type IActiveCellProps = {
-  cell: ICell;
+  selectedGrid: { cell: ICell; row: IRow; column: IColumn };
   onDoubleClick: () => void;
 };
 
-const HighlightCell = ({ cell, onDoubleClick }: IActiveCellProps) => {
+const HighlightCell = ({
+  selectedGrid: { cell, column, row },
+  onDoubleClick,
+}: IActiveCellProps) => {
   let { columnId, height, cellId, rowId, width, x, y } = cell;
 
   return (
-    <div
-      className="absolute flex text-sm bg-transparent border-2 border-blue"
-      style={{
-        left: x,
-        top: y,
-        width: width,
-        height: height,
-      }}
-      onDoubleClick={onDoubleClick}
-    ></div>
+    <Fragment>
+      <div
+        className="absolute flex text-sm bg-transparent border-2 border-blue p-1"
+        style={{
+          left: x,
+          top: y,
+          width: width,
+          height: height,
+        }}
+        onDoubleClick={onDoubleClick}
+      ></div>
+      <div
+        className="absolute top-0 h-[var(--row-height)] bg-light-blue border border-light-gray"
+        style={{ left: x, width }}
+      >
+        <span
+          className="absolute text-xs font-medium"
+          style={{ left: column.width / 2 - 5, top: column.height / 2 - 10 }}
+        >
+          {convertToTitle(columnId)}
+        </span>
+      </div>
+      <div
+        className="absolute left-0 w-[var(--col-width)] bg-light-blue border border-light-gray"
+        style={{
+          top: y,
+          height,
+        }}
+      >
+        <span
+          className="absolute text-xs font-medium"
+          style={{ left: row.width / 2 - 5, top: row.height / 2 - 10 }}
+        >
+          {rowId}
+        </span>
+      </div>
+    </Fragment>
   );
 };
 

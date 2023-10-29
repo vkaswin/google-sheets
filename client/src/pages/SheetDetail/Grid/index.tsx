@@ -9,9 +9,10 @@ import {
 } from "react";
 import HighlightCell from "./HighlightCell";
 import EditCell from "./EditCell";
-import GridColumns from "./GridColumns";
-import GridRows from "./GridRows";
-import GridCells from "./GridCells";
+import ColumnResizer from "./ColumnResizer";
+import RowResizer from "./RowResizer";
+
+import { convertToTitle } from "@/utils";
 import { data } from "../data";
 
 import {
@@ -22,6 +23,7 @@ import {
   IColumnDetails,
   IRowDetails,
   ICellDetails,
+  IRect,
 } from "@/types/Sheets";
 
 const colWidth = 46;
@@ -53,11 +55,38 @@ const Grid = () => {
 
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const selectedCell = useMemo(() => {
-    return cells.find(({ cellId }) => cellId === selectedCellId);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const selectedGrid = useMemo(() => {
+    let cell = cells.find(({ cellId }) => cellId === selectedCellId) as ICell;
+
+    if (!cell) return null;
+
+    let [columnId, rowId] = selectedCellId.split(",");
+
+    let row = rows.find((row) => row.rowId === +rowId) as IRow;
+
+    let column = columns.find(
+      (column) => column.columnId === +columnId
+    ) as IColumn;
+
+    return {
+      column,
+      row,
+      cell,
+    };
   }, [rows, columns, selectedCellId]);
 
   useEffect(() => {
+    if (!gridRef.current || !canvasRef.current) return;
+
+    let canvas = canvasRef.current;
+
+    let { clientWidth, clientHeight } = gridRef.current;
+
+    canvas.width = clientWidth;
+    canvas.height = clientHeight;
+
     let { rows, cells, columns } = data;
 
     for (let row of rows) {
@@ -75,7 +104,6 @@ const Grid = () => {
   }, []);
 
   useEffect(() => {
-    console.log(refresh);
     handleResizeGrid();
   }, [refresh]);
 
@@ -88,7 +116,13 @@ const Grid = () => {
   }, [rows, columns]);
 
   const handleResizeGrid = () => {
-    if (!gridRef.current) return;
+    if (!gridRef.current || !canvasRef.current) return;
+
+    let { clientWidth, clientHeight } = gridRef.current;
+
+    let canvas = canvasRef.current;
+    canvas.width = clientWidth;
+    canvas.height = clientHeight;
 
     let { rowId = 1, y = rowHeight } = rows[0] ?? {};
     let { columnId = 1, x = colWidth } = columns[0] ?? {};
@@ -101,14 +135,106 @@ const Grid = () => {
     });
   };
 
+  const paintRow = (
+    ctx: CanvasRenderingContext2D,
+    { height, rowId, width, x, y }: IRow
+  ) => {
+    ctx.save();
+    ctx.clearRect(x, y, width, height);
+    ctx.beginPath();
+    ctx.moveTo(x + width, y);
+    ctx.lineTo(x + width, y + height);
+    ctx.lineTo(x, y + height);
+    ctx.strokeStyle = "#D5D5D5";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "12px Open-Sans";
+    ctx.fillStyle = "#575a5a";
+    ctx.fillText(rowId.toString(), x + width / 2, y + height / 2);
+    ctx.restore();
+  };
+
+  const paintColumn = (
+    ctx: CanvasRenderingContext2D,
+    { columnId, height, width, x, y }: IColumn
+  ) => {
+    ctx.save();
+    ctx.clearRect(x, y, width, height);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + width, y);
+    ctx.lineTo(x + width, y + height);
+    ctx.lineTo(x, y + height);
+    ctx.strokeStyle = "#D5D5D5";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "12px Open-Sans";
+    ctx.fillStyle = "#575a5a";
+    ctx.fillText(convertToTitle(columnId), x + width / 2, y + height / 2);
+    ctx.restore();
+  };
+
+  const paintCellRect = (
+    ctx: CanvasRenderingContext2D,
+    backgroundColor: string,
+    { x, y, height, width }: IRect
+  ) => {
+    ctx.save();
+    ctx.fillStyle = backgroundColor;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.fillRect(x, y, width, height);
+    ctx.fill();
+    ctx.restore();
+  };
+
+  const paintCellLine = (
+    ctx: CanvasRenderingContext2D,
+    { height, width, x, y }: IRect
+  ) => {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x, y + height);
+    ctx.lineTo(x + width, y + height);
+    ctx.lineTo(x + width, y);
+    ctx.strokeStyle = "#D5D5D5";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+  };
+
+  const paintCell = (
+    ctx: CanvasRenderingContext2D,
+    { cellId, rowId, columnId, height, width, x, y }: ICell
+  ) => {
+    let {
+      backgroundColor = "#FFFFFF",
+      color = "#000000",
+      content = "",
+    } = cellDetails[cellId] ?? {};
+
+    let rect = { x, y, width, height };
+
+    ctx.clearRect(x, y, width, height);
+
+    paintCellRect(ctx, backgroundColor, rect);
+    paintCellLine(ctx, rect);
+  };
+
   const renderGrid: IRenderGrid = ({
     offsetX,
     offsetY,
     rowStart,
     colStart,
   }) => {
-    if (!gridRef.current) return;
+    if (!gridRef.current || !canvasRef.current) return;
 
+    let ctx = canvasRef.current.getContext("2d")!;
     let { clientWidth, clientHeight } = gridRef.current;
 
     let rowData: IRow[] = [];
@@ -160,7 +286,17 @@ const Grid = () => {
           height,
           cellId,
         });
+
+        paintCell(ctx, cellData.at(-1)!);
       }
+    }
+
+    for (let row of rowData) {
+      paintRow(ctx, row);
+    }
+
+    for (let column of columnData) {
+      paintColumn(ctx, column);
     }
 
     setRows(rowData);
@@ -294,9 +430,9 @@ const Grid = () => {
   };
 
   const handleDoubleClickCell = () => {
-    if (!gridRef.current || !selectedCell) return;
+    if (!gridRef.current || !selectedGrid) return;
 
-    let { columnId, cellId, width, height, rowId, x, y } = selectedCell;
+    let { columnId, cellId, width, height, rowId, x, y } = selectedGrid.cell;
 
     let { top } = gridRef.current.getBoundingClientRect();
 
@@ -348,23 +484,21 @@ const Grid = () => {
         onContextMenu={handleContextMenu}
         onWheel={handleScroll}
       >
+        <canvas ref={canvasRef} className="relative"></canvas>
         <div className="absolute left-0 top-0 w-[var(--col-width)] h-[var(--row-height)] border border-light-gray bg-white z-20 after:absolute after:right-0 after:h-full after:w-1 after:bg-dark-silver before:absolute before:bottom-0 before:w-full before:h-1 before:bg-dark-silver"></div>
-        <GridColumns
+        <ColumnResizer
           columns={columns}
-          selectedId={selectedCell?.columnId}
           onClick={handleClickColumn}
           onResize={handleResizeColumn}
         />
-        <GridRows
+        <RowResizer
           rows={rows}
-          slectedId={selectedCell?.rowId}
           onClick={handleClickRow}
           onResize={handleResizeRow}
         />
-        <GridCells cells={cells} cellDetails={cellDetails} />
-        {!editCell && selectedCell && (
+        {!editCell && selectedGrid && (
           <HighlightCell
-            cell={selectedCell}
+            selectedGrid={selectedGrid}
             onDoubleClick={handleDoubleClickCell}
           />
         )}
