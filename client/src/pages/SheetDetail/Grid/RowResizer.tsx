@@ -55,17 +55,18 @@ const RowResizer = ({ rows, onClick, onResize }: IRowResizer) => {
 
   return (
     <Fragment>
-      <div className="absolute left-0 top-0 w-[var(--col-width)] h-ful">
+      <div className="absolute left-0 top-0 w-[var(--col-width)] h-full">
         {rows.map((row) => {
           let { x, height, rowId, width, y } = row;
           return (
             <div
               key={rowId}
+              className="absolute"
               style={{ width, height, left: x, top: y }}
               onClick={() => onClick(rowId)}
             >
               <div
-                className="absolute left-0 -bottom-3 w-full h-6 bg-transparent"
+                className="absolute left-0 -bottom-3 w-full h-6 bg-transparent z-10"
                 onMouseEnter={() => handleMouseEnter(row)}
               ></div>
             </div>
@@ -76,7 +77,7 @@ const RowResizer = ({ rows, onClick, onResize }: IRowResizer) => {
         <Fragment>
           <div
             ref={resizeRef}
-            className="absolute flex flex-col items-center gap-[5px] cursor-row-resize"
+            className="absolute flex flex-col items-center gap-[5px] cursor-row-resize z-10"
             style={{
               left: 0,
               top: selectedRow.y + selectedRow.height - 6,
@@ -95,7 +96,7 @@ const RowResizer = ({ rows, onClick, onResize }: IRowResizer) => {
           </div>
           {showLine && (
             <div
-              className="absolute h-[3px] w-full bg-slate-400 z-20"
+              className="absolute h-[3px] w-full bg-slate-400 z-10"
               style={{
                 left: 0,
                 top: selectedRow.y + selectedRow.height - 2,

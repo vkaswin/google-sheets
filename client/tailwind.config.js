@@ -8,6 +8,7 @@ export default {
         blue: "#1973E8",
         "dark-blue": "#0b57d0",
         "light-gray": "#D5D5D5",
+        "mild-gray": "#d9d9d9",
       },
       outlineColor: {
         "light-blue": "#a8c7fa",
@@ -18,6 +19,8 @@ export default {
         "dark-blue": "#0b57d0",
         "light-blue": "#D3E3FD",
         blue: "#4589eb",
+        "light-green": "#C7EED1",
+        "dark-green": "#79D28F",
       },
       textColor: {
         "light-gray": "#575a5a",

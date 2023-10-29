@@ -1,7 +1,7 @@
 import { Fragment } from "react";
+import { convertToTitle } from "@/utils";
 
 import { ICell, IColumn, IRow } from "@/types/Sheets";
-import { convertToTitle } from "@/utils";
 
 type IActiveCellProps = {
   selectedGrid: { cell: ICell; row: IRow; column: IColumn };
@@ -17,7 +17,7 @@ const HighlightCell = ({
   return (
     <Fragment>
       <div
-        className="absolute flex text-sm bg-transparent border-2 border-blue p-1"
+        className="absolute flex text-sm bg-transparent border-2 border-blue p-1 z-10"
         style={{
           left: x,
           top: y,

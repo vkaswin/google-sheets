@@ -2,13 +2,13 @@ import { Fragment, PointerEvent, useRef, useState } from "react";
 
 import { IColumn } from "@/types/Sheets";
 
-type IColumnResizer = {
+type ICoumnResizer = {
   columns: IColumn[];
   onClick: (columnId: number) => void;
   onResize: (columnId: number, value: number) => void;
 };
 
-const ColumnResizer = ({ columns, onClick, onResize }: IColumnResizer) => {
+const CoumnResizer = ({ columns, onClick, onResize }: ICoumnResizer) => {
   const [selectedColumn, setSelectedColumn] = useState<IColumn | null>(null);
 
   const [showLine, setShowLine] = useState(false);
@@ -66,7 +66,7 @@ const ColumnResizer = ({ columns, onClick, onResize }: IColumnResizer) => {
               onClick={() => onClick(columnId)}
             >
               <div
-                className="absolute top-0 -right-3 w-6 h-full bg-transparent"
+                className="absolute top-0 -right-3 w-6 h-full bg-transparent z-10"
                 onMouseEnter={() => handleMouseEnter(column)}
               ></div>
             </div>
@@ -77,7 +77,7 @@ const ColumnResizer = ({ columns, onClick, onResize }: IColumnResizer) => {
         <Fragment>
           <div
             ref={resizeRef}
-            className="absolute flex gap-[5px] items-center cursor-col-resize"
+            className="absolute flex gap-[5px] items-center cursor-col-resize z-10"
             style={{
               left: selectedColumn.x + selectedColumn.width - 6,
               top: 0,
@@ -96,7 +96,7 @@ const ColumnResizer = ({ columns, onClick, onResize }: IColumnResizer) => {
           </div>
           {showLine && (
             <div
-              className="absolute w-[3px] h-full bg-slate-400 z-30"
+              className="absolute w-[3px] h-full bg-slate-400 z-10"
               style={{
                 left: selectedColumn.x + selectedColumn.width - 2,
                 top: 0,
@@ -109,4 +109,4 @@ const ColumnResizer = ({ columns, onClick, onResize }: IColumnResizer) => {
   );
 };
 
-export default ColumnResizer;
+export default CoumnResizer;

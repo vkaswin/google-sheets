@@ -11,7 +11,7 @@ import HighlightCell from "./HighlightCell";
 import EditCell from "./EditCell";
 import ColumnResizer from "./ColumnResizer";
 import RowResizer from "./RowResizer";
-
+import SeachBox from "./SearchBox";
 import { convertToTitle } from "@/utils";
 import { data } from "../data";
 
@@ -23,11 +23,10 @@ import {
   IColumnDetails,
   IRowDetails,
   ICellDetails,
-  IRect,
   IPaintCell,
-  IPaintCellRect,
   IPaintCellLine,
   IPaintCellHtml,
+  IPaintRect,
 } from "@/types/Sheets";
 
 const colWidth = 46;
@@ -91,6 +90,10 @@ const Grid = () => {
     canvas.width = clientWidth;
     canvas.height = clientHeight;
 
+    getSheetDetails();
+  }, []);
+
+  const getSheetDetails = () => {
     let { rows, cells, columns } = data;
 
     for (let row of rows) {
@@ -105,7 +108,7 @@ const Grid = () => {
       let id = `${cell.columnId},${cell.rowId}`;
       cellDetails[id] = cell;
     }
-  }, []);
+  };
 
   useEffect(() => {
     handleResizeGrid();
@@ -143,8 +146,11 @@ const Grid = () => {
     ctx: CanvasRenderingContext2D,
     { height, rowId, width, x, y }: IRow
   ) => {
-    ctx.save();
     ctx.clearRect(x, y, width, height);
+
+    paintRect(ctx, "#FFFFFF", { height, width, x, y });
+
+    ctx.save();
     ctx.beginPath();
     ctx.moveTo(x + width, y);
     ctx.lineTo(x + width, y + height);
@@ -152,7 +158,6 @@ const Grid = () => {
     ctx.strokeStyle = "#D5D5D5";
     ctx.lineWidth = 2;
     ctx.stroke();
-    ctx.beginPath();
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = "12px Open-Sans";
@@ -165,8 +170,11 @@ const Grid = () => {
     ctx: CanvasRenderingContext2D,
     { columnId, height, width, x, y }: IColumn
   ) => {
-    ctx.save();
     ctx.clearRect(x, y, width, height);
+
+    paintRect(ctx, "#FFFFFF", { height, width, x, y });
+
+    ctx.save();
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x + width, y);
@@ -183,7 +191,7 @@ const Grid = () => {
     ctx.restore();
   };
 
-  const paintCellRect: IPaintCellRect = (
+  const paintRect: IPaintRect = (
     ctx,
     backgroundColor,
     { x, y, height, width }
@@ -233,7 +241,7 @@ const Grid = () => {
 
     ctx.clearRect(x, y, width, height);
 
-    paintCellRect(ctx, backgroundColor, rect);
+    paintRect(ctx, backgroundColor, rect);
     paintCellHtml(ctx, html, rect);
     paintCellLine(ctx, rect);
   };
@@ -497,7 +505,7 @@ const Grid = () => {
         onWheel={handleScroll}
       >
         <canvas ref={canvasRef} className="relative"></canvas>
-        <div className="absolute left-0 top-0 w-[var(--col-width)] h-[var(--row-height)] border border-light-gray bg-white z-20 after:absolute after:right-0 after:h-full after:w-1 after:bg-dark-silver before:absolute before:bottom-0 before:w-full before:h-1 before:bg-dark-silver"></div>
+        <div className="absolute left-0 top-0 w-[var(--col-width)] h-[var(--row-height)] border-b-4 border-r-4 border-t border-l border-light-gray bg-white z-20"></div>
         <ColumnResizer
           columns={columns}
           onClick={handleClickColumn}
@@ -514,6 +522,9 @@ const Grid = () => {
             onDoubleClick={handleDoubleClickCell}
           />
         )}
+        <div className="absolute left-[var(--col-width)] top-[var(--row-height)] w-full h-full overflow-hidden">
+          <SeachBox cells={cells} />
+        </div>
       </div>
       {editCell && (
         <EditCell

@@ -62,7 +62,7 @@ export type IRect = {
 
 export type IPaintCell = (ctx: CanvasRenderingContext2D, rect: ICell) => void;
 
-export type IPaintCellRect = (
+export type IPaintRect = (
   ctx: CanvasRenderingContext2D,
   backgroundColor: string,
   rect: IRect

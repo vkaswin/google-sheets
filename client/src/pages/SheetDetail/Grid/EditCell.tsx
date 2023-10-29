@@ -1,7 +1,7 @@
-import { useRef, MouseEvent, WheelEvent, useEffect } from "react";
+import { useRef, WheelEvent, useEffect } from "react";
+import { convertToTitle } from "@/utils";
 
 import { ICell, ICellProps } from "@/types/Sheets";
-import { convertToTitle } from "@/utils";
 
 type IEditCell = {
   cell: ICell;

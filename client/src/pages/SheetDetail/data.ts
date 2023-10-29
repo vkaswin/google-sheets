@@ -86,19 +86,21 @@ export const data: ISheetDetail = {
     },
   ],
   cells: [
+    { rowId: 1, columnId: 5, html: "Loreum Ispum" },
+    { rowId: 2, columnId: 2, html: "Loreum Ispum" },
     {
       backgroundColor: "#CADAF8",
       color: "white",
-      html: "<span>Loreum Ispum</span>",
+      html: "<span>Loreum Ispum</span><br><span style='font-size:20px; font-color: red'>Loreum Ispum</span>",
       rowId: 50,
       columnId: 2,
     },
     {
-      html: "Loreum Ispum",
       backgroundColor: "#EA9999",
       color: "white",
       rowId: 1,
       columnId: 1,
+      html: "<span>Loreum Ispum</span><br><span style='font-size:20px; font-color: red'>Loreum Ispum</span>",
     },
     {
       backgroundColor: "#B7E1CD",
