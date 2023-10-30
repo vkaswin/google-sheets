@@ -7,7 +7,7 @@ import {
   MouseEvent,
   Fragment,
 } from "react";
-import HighlightCell from "./HighlightCell";
+import HighlightCell from "./HighLightCell";
 import EditCell from "./EditCell";
 import ColumnResizer from "./ColumnResizer";
 import RowResizer from "./RowResizer";
@@ -28,6 +28,8 @@ import {
   IPaintCellHtml,
   IPaintRect,
 } from "@/types/Sheets";
+import HighLightColumn from "./HighLightColumn";
+import HighLightRow from "./HighLightRow";
 
 const colWidth = 46;
 const rowHeight = 25;
@@ -44,7 +46,11 @@ const Grid = () => {
 
   const [cells, setCells] = useState<ICell[]>([]);
 
-  const [selectedCellId, setSelectedCellId] = useState<string>("");
+  const [selectedCellId, setSelectedCellId] = useState("");
+
+  const [selectedColumnId, setSelectedColumnId] = useState(Infinity);
+
+  const [selectedRowId, setSelectedRowId] = useState(Infinity);
 
   const [editCell, setEditCell] = useState<ICell | null>(null);
 
@@ -60,25 +66,17 @@ const Grid = () => {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const selectedGrid = useMemo(() => {
-    let cell = cells.find(({ cellId }) => cellId === selectedCellId) as ICell;
-
-    if (!cell) return null;
-
-    let [columnId, rowId] = selectedCellId.split(",");
-
-    let row = rows.find((row) => row.rowId === +rowId) as IRow;
-
-    let column = columns.find(
-      (column) => column.columnId === +columnId
-    ) as IColumn;
-
-    return {
-      column,
-      row,
-      cell,
-    };
+  const selectedCell = useMemo(() => {
+    return cells.find(({ cellId }) => cellId === selectedCellId);
   }, [rows, columns, selectedCellId]);
+
+  const selectedRow = useMemo(() => {
+    return rows.find(({ rowId }) => rowId === selectedRowId);
+  }, [rows, selectedRowId]);
+
+  const selectedColumn = useMemo(() => {
+    return columns.find(({ columnId }) => columnId === selectedColumnId);
+  }, [columns, selectedColumnId]);
 
   useEffect(() => {
     if (!gridRef.current || !canvasRef.current) return;
@@ -162,7 +160,7 @@ const Grid = () => {
     ctx.textBaseline = "middle";
     ctx.font = "12px Open-Sans";
     ctx.fillStyle = "#575a5a";
-    ctx.fillText(rowId.toString(), x + width / 2, y + height / 2);
+    ctx.fillText(rowId.toString(), x + width / 2 + 1, y + height / 2 + 1);
     ctx.restore();
   };
 
@@ -187,7 +185,11 @@ const Grid = () => {
     ctx.textBaseline = "middle";
     ctx.font = "12px Open-Sans";
     ctx.fillStyle = "#575a5a";
-    ctx.fillText(convertToTitle(columnId), x + width / 2, y + height / 2);
+    ctx.fillText(
+      convertToTitle(columnId),
+      x + width / 2 + 1,
+      y + height / 2 + 1
+    );
     ctx.restore();
   };
 
@@ -244,6 +246,18 @@ const Grid = () => {
     paintRect(ctx, backgroundColor, rect);
     paintCellHtml(ctx, html, rect);
     paintCellLine(ctx, rect);
+  };
+
+  const paintBox = (ctx: CanvasRenderingContext2D) => {
+    ctx.save();
+    ctx.clearRect(0, 0, colWidth, rowHeight);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, colWidth, rowHeight);
+    ctx.strokeStyle = "#D5D5D5";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, 0, colWidth, rowHeight);
+    ctx.stroke();
+    ctx.restore();
   };
 
   const renderGrid: IRenderGrid = ({
@@ -319,6 +333,8 @@ const Grid = () => {
       paintColumn(ctx, column);
     }
 
+    paintBox(ctx);
+
     setRows(rowData);
     setColumns(columnData);
     setCells(cellData);
@@ -336,6 +352,8 @@ const Grid = () => {
 
     setSelectedCellId(cellId);
     setEditCell(null);
+    setSelectedColumnId(Infinity);
+    setSelectedRowId(Infinity);
   };
 
   const getCellIdByCoordiantes = (x: number, y: number) => {
@@ -450,9 +468,9 @@ const Grid = () => {
   };
 
   const handleDoubleClickCell = () => {
-    if (!gridRef.current || !selectedGrid) return;
+    if (!gridRef.current || !selectedCell) return;
 
-    let { columnId, cellId, width, height, rowId, x, y } = selectedGrid.cell;
+    let { columnId, cellId, width, height, rowId, x, y } = selectedCell;
 
     let { top } = gridRef.current.getBoundingClientRect();
 
@@ -473,11 +491,17 @@ const Grid = () => {
   };
 
   const handleClickColumn = (columnId: number) => {
-    console.log(columnId);
+    setSelectedColumnId(columnId);
+    setSelectedRowId(Infinity);
+    setSelectedCellId("");
+    setEditCell(null);
   };
 
   const handleClickRow = (rowId: number) => {
-    console.log(rowId);
+    setSelectedRowId(rowId);
+    setSelectedColumnId(Infinity);
+    setSelectedCellId("");
+    setEditCell(null);
   };
 
   const handleResizeColumn = (columnId: number, value: number) => {
@@ -516,15 +540,16 @@ const Grid = () => {
           onClick={handleClickRow}
           onResize={handleResizeRow}
         />
-        {!editCell && selectedGrid && (
+        {!editCell && selectedCell && (
           <HighlightCell
-            selectedGrid={selectedGrid}
+            selectedCell={selectedCell}
             onDoubleClick={handleDoubleClickCell}
           />
         )}
-        <div className="absolute left-[var(--col-width)] top-[var(--row-height)] w-full h-full overflow-hidden">
-          <SeachBox cells={cells} />
-        </div>
+        {selectedColumn && <HighLightColumn selectedColumn={selectedColumn} />}
+        {selectedRow && <HighLightRow selectedRow={selectedRow} />}
+        <SeachBox cells={cells} />
+        {/* <div className="absolute left-[var(--col-width)] top-[var(--row-height)] w-full h-full overflow-hidden"></div> */}
       </div>
       {editCell && (
         <EditCell

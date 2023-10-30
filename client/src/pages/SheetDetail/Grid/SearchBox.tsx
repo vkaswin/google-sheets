@@ -13,7 +13,7 @@ const SeachBox = ({ cells }: ISearchBox) => {
 
   let [activeIndex, setActiveIndex] = useState(0);
 
-  const [cellIds, setCellIds] = useState(["1,1", "2,5", "4,5", "5,1", "2,2"]);
+  const [cellIds, setCellIds] = useState<string[]>([]);
 
   let highLightCellIds = useMemo(() => new Set(cellIds), [cellIds]);
 
@@ -35,7 +35,9 @@ const SeachBox = ({ cells }: ISearchBox) => {
   };
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    console.log(event.target.value, cellIds);
+    console.log(event.target.value);
+    let result = ["1,1", "2,5", "4,5", "5,1", "2,2"];
+    setCellIds(result);
   };
 
   const toggle = () => {
@@ -66,35 +68,42 @@ const SeachBox = ({ cells }: ISearchBox) => {
           className="w-44 h-9 outline-dark-blue border border-mild-gray text-sm rounded px-2 py-2"
           onChange={debounce(handleChange, 500)}
         />
-        <i
-          className="bx-chevron-up text-gray-400 text-xl cursor-pointer"
-          onClick={handlePrevious}
-        ></i>
-        <i
-          className="bx-chevron-down text-gray-400 text-xl cursor-pointer"
-          onClick={handleNext}
-        ></i>
-        <i
-          className="bx-x text-xl text-dark-gray cursor-pointer"
-          onClick={toggle}
-        ></i>
+        <button
+          className="text-gray-400 text-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={!cellIds.length}
+        >
+          <i className="bx-chevron-up" onClick={handlePrevious}></i>
+        </button>
+        <button
+          className="text-gray-400 text-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={!cellIds.length}
+        >
+          <i className="bx-chevron-down " onClick={handleNext}></i>
+        </button>
+        <button className="text-xl text-dark-gray">
+          <i className="bx-x" onClick={toggle}></i>
+        </button>
       </div>
       {cells.map(({ cellId, columnId, height, rowId, width, x, y }) => {
         if (!highLightCellIds.has(cellId)) return null;
+
+        let left = `calc(${x}px - var(--col-width))`;
+        let top = `calc(${y}px - var(--row-height))`;
+
         return (
           <div
             key={cellId}
             className={classNames(
               "absolute",
               cellId === cellIds[activeIndex]
-                ? "bg-[rgba(55,190,95,.702)]"
+                ? "bg-[rgba(55,190,95,.702)] shadow-[0_0_0_2px_#146c2e] border border-white"
                 : "bg-[rgba(109,213,140,.4)]"
             )}
             style={{
               width,
               height,
-              left: `calc(${x}px - var(--col-width))`,
-              top: `calc(${y}px - var(--row-height))`,
+              left: x,
+              top: y,
             }}
           ></div>
         );
