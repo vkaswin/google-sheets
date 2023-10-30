@@ -43,15 +43,17 @@ const SeachBox = ({ cells }: ISearchBox) => {
   };
 
   const handleNext = () => {
-    ++activeIndex;
-    if (activeIndex > cellIds.length) setActiveIndex(0);
-    else setActiveIndex(activeIndex);
+    setActiveIndex((activeIndex) => {
+      activeIndex++;
+      return activeIndex === cellIds.length ? 0 : activeIndex;
+    });
   };
 
   const handlePrevious = () => {
-    --activeIndex;
-    if (activeIndex < 0) setActiveIndex(cellIds.length - 1);
-    else setActiveIndex(activeIndex);
+    setActiveIndex((activeIndex) => {
+      activeIndex--;
+      return activeIndex < 0 ? cellIds.length - 1 : activeIndex;
+    });
   };
 
   if (!isOpen) return null;

@@ -1,4 +1,4 @@
-import { Fragment, PointerEvent, useRef, useState } from "react";
+import { Fragment, PointerEvent, useRef, useState, MouseEvent } from "react";
 
 import { IColumn } from "@/types/Sheets";
 
@@ -12,6 +12,8 @@ const CoumnResizer = ({ columns, onClick, onResize }: ICoumnResizer) => {
   const [selectedColumn, setSelectedColumn] = useState<IColumn | null>(null);
 
   const [showLine, setShowLine] = useState(false);
+
+  const [showResizer, setShowResizer] = useState(false);
 
   const resizeRef = useRef<HTMLDivElement>(null);
   const pointerRef = useRef<number | null>(null);
@@ -49,61 +51,82 @@ const CoumnResizer = ({ columns, onClick, onResize }: ICoumnResizer) => {
     setShowLine(false);
   };
 
-  const handleMouseEnter = (column: IColumn) => {
+  const toggleResizer = () => {
+    setShowResizer(!showResizer);
+  };
+
+  const findColumnByXAxis = (x: number) => {
+    let left = 0;
+    let right = columns.length - 1;
+    let columnId: number | null = null;
+
+    while (left <= right) {
+      let mid = Math.floor((left + right) / 2);
+      if (columns[mid].x <= x) {
+        left = mid + 1;
+        columnId = mid;
+      } else {
+        right = mid - 1;
+      }
+    }
+
+    if (columnId === null) return null;
+
+    return columns[columnId];
+  };
+
+  const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
+    if (showLine) return;
+    let column = findColumnByXAxis(event.pageX);
+    if (!column || selectedColumn?.columnId === column.columnId) return;
     setSelectedColumn({ ...column });
+  };
+
+  const handleMouseLeave = () => {
+    setSelectedColumn(null);
   };
 
   return (
     <Fragment>
-      <div className="absolute left-0 top-0 w-full h-[var(--row-height)]">
-        {columns.map((column) => {
-          let { x, height, columnId, width, y } = column;
-          return (
-            <div
-              key={columnId}
-              className="absolute"
-              style={{ width, height, left: x, top: y }}
-              onClick={() => onClick(columnId)}
-            >
-              <div
-                className="absolute top-0 -right-3 w-6 h-full bg-transparent z-10"
-                onMouseEnter={() => handleMouseEnter(column)}
-              ></div>
-            </div>
-          );
-        })}
-      </div>
-      {selectedColumn && (
-        <Fragment>
+      <div
+        className="absolute left-0 top-0 w-full h-[var(--row-height)] z-10"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
+        {selectedColumn && (
           <div
-            ref={resizeRef}
-            className="absolute flex gap-[5px] items-center cursor-col-resize z-10"
+            className="absolute"
             style={{
-              left: selectedColumn.x + selectedColumn.width - 6,
-              top: 0,
+              width: selectedColumn.width,
               height: selectedColumn.height,
+              left: selectedColumn.x,
+              top: selectedColumn.y,
             }}
-            onPointerDown={handlePointerDown}
+            onClick={() => onClick(selectedColumn.columnId)}
           >
             <div
-              className="bg-black rounded-md w-[3px]"
-              style={{ height: selectedColumn.height - 8 }}
+              className="absolute top-0 -right-3 w-6 h-full bg-transparent"
+              onMouseEnter={toggleResizer}
             ></div>
             <div
-              className="bg-black rounded-md w-[3px]"
-              style={{ height: selectedColumn.height - 8 }}
-            ></div>
+              ref={resizeRef}
+              className="absolute top-0 -right-[5px] flex gap-[5px] items-center h-full cursor-col-resize"
+              onPointerDown={handlePointerDown}
+            >
+              <div className="bg-black rounded-md w-[3px] h-2/3"></div>
+              <div className="bg-black rounded-md w-[3px] h-2/3"></div>
+            </div>
           </div>
-          {showLine && (
-            <div
-              className="absolute w-[3px] h-full bg-slate-400 z-10"
-              style={{
-                left: selectedColumn.x + selectedColumn.width - 2,
-                top: 0,
-              }}
-            ></div>
-          )}
-        </Fragment>
+        )}
+      </div>
+      {selectedColumn && showLine && (
+        <div
+          className="absolute w-[3px] h-full bg-slate-400 z-10"
+          style={{
+            left: selectedColumn.x + selectedColumn.width - 2,
+            top: 0,
+          }}
+        ></div>
       )}
     </Fragment>
   );

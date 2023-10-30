@@ -1,4 +1,4 @@
-import { Fragment, PointerEvent, useRef, useState } from "react";
+import { Fragment, PointerEvent, useRef, useState, MouseEvent } from "react";
 
 import { IRow } from "@/types/Sheets";
 
@@ -15,6 +15,7 @@ const RowResizer = ({ rows, onClick, onResize }: IRowResizer) => {
 
   const resizeRef = useRef<HTMLDivElement>(null);
   const pointerRef = useRef<number | null>(null);
+  const columnRef = useRef<HTMLDivElement>(null);
 
   const handlePointerDown = (event: PointerEvent) => {
     if (!resizeRef.current || !selectedRow) return;
@@ -49,61 +50,76 @@ const RowResizer = ({ rows, onClick, onResize }: IRowResizer) => {
     setShowLine(false);
   };
 
-  const handleMouseEnter = (row: IRow) => {
+  const findRowByYAxis = (y: number) => {
+    let left = 0;
+    let right = rows.length - 1;
+    let rowId: number | null = null;
+
+    while (left <= right) {
+      let mid = Math.floor((left + right) / 2);
+      if (rows[mid].y <= y) {
+        left = mid + 1;
+        rowId = mid;
+      } else {
+        right = mid - 1;
+      }
+    }
+
+    if (rowId === null) return null;
+
+    return rows[rowId];
+  };
+
+  const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
+    if (!columnRef.current || showLine) return;
+    let { top } = columnRef.current.getBoundingClientRect();
+    let row = findRowByYAxis(event.pageY - top);
+    if (!row || selectedRow?.rowId === row.rowId) return;
     setSelectedRow({ ...row });
+  };
+
+  const handleMouseLeave = () => {
+    setSelectedRow(null);
   };
 
   return (
     <Fragment>
-      <div className="absolute left-0 top-0 w-[var(--col-width)] h-full">
-        {rows.map((row) => {
-          let { x, height, rowId, width, y } = row;
-          return (
-            <div
-              key={rowId}
-              className="absolute"
-              style={{ width, height, left: x, top: y }}
-              onClick={() => onClick(rowId)}
-            >
-              <div
-                className="absolute left-0 -bottom-3 w-full h-6 bg-transparent z-10"
-                onMouseEnter={() => handleMouseEnter(row)}
-              ></div>
-            </div>
-          );
-        })}
-      </div>
-      {selectedRow && (
-        <Fragment>
+      <div
+        ref={columnRef}
+        className="absolute left-0 top-0 w-[var(--col-width)] h-full z-10"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
+        {selectedRow && (
           <div
-            ref={resizeRef}
-            className="absolute flex flex-col items-center gap-[5px] cursor-row-resize z-10"
+            className="absolute"
             style={{
-              left: 0,
-              top: selectedRow.y + selectedRow.height - 6,
               width: selectedRow.width,
+              height: selectedRow.height,
+              left: selectedRow.x,
+              top: selectedRow.y,
             }}
-            onPointerDown={handlePointerDown}
+            onClick={() => onClick(selectedRow.rowId)}
           >
             <div
-              className="bg-black rounded-md h-[3px]"
-              style={{ width: selectedRow.width / 2 }}
-            ></div>
-            <div
-              className="bg-black rounded-md h-[3px]"
-              style={{ width: selectedRow.width / 2 }}
-            ></div>
+              ref={resizeRef}
+              className="absolute left-0 -bottom-[5px] flex flex-col items-center gap-[5px] w-full cursor-row-resize"
+              onPointerDown={handlePointerDown}
+            >
+              <div className="bg-black rounded-md h-[3px] w-3/5"></div>
+              <div className="bg-black rounded-md h-[3px] w-3/5"></div>
+            </div>
           </div>
-          {showLine && (
-            <div
-              className="absolute h-[3px] w-full bg-slate-400 z-10"
-              style={{
-                left: 0,
-                top: selectedRow.y + selectedRow.height - 2,
-              }}
-            ></div>
-          )}
-        </Fragment>
+        )}
+      </div>
+      {selectedRow && showLine && (
+        <div
+          className="absolute h-[3px] w-full bg-slate-400 z-10"
+          style={{
+            left: 0,
+            top: selectedRow.y + selectedRow.height - 2,
+          }}
+        ></div>
       )}
     </Fragment>
   );
