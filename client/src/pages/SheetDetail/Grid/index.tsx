@@ -28,16 +28,16 @@ import {
   IPaintCellHtml,
   IPaintRect,
 } from "@/types/Sheets";
+import HighLightSearch from "./HighLightSearch";
 import HighLightColumn from "./HighLightColumn";
 import HighLightRow from "./HighLightRow";
+import ColumnOverLay from "./ColumnOverLay";
+import RowOverLay from "./RowOverLay";
 
 const colWidth = 46;
 const rowHeight = 25;
-
-const cell = {
-  width: 100,
-  height: 25,
-};
+const cellWidth = 100;
+const cellHeight = 25;
 
 const Grid = () => {
   const [rows, setRows] = useState<IRow[]>([]);
@@ -53,6 +53,16 @@ const Grid = () => {
   const [selectedRowId, setSelectedRowId] = useState(Infinity);
 
   const [editCell, setEditCell] = useState<ICell | null>(null);
+
+  const [activeSearchIndex, setActiveSearchIndex] = useState(0);
+
+  const [highLightCellIds, setHighLightCellIds] = useState<string[]>([
+    "1,1",
+    "2,5",
+    "4,5",
+    "5,1",
+    "2,2",
+  ]);
 
   const [refresh, forceUpdate] = useState(0);
 
@@ -276,7 +286,7 @@ const Grid = () => {
     let cellData: ICell[] = [];
 
     for (let i = rowStart, y = offsetY; y < clientHeight; i++) {
-      let height = rowDetails[i]?.height || cell.height;
+      let height = rowDetails[i]?.height || cellHeight;
 
       if (y + height > rowHeight) {
         rowData.push({
@@ -292,7 +302,7 @@ const Grid = () => {
     }
 
     for (let i = colStart, x = offsetX; x < clientWidth; i++) {
-      let width = columnDetails[i]?.width || cell.width;
+      let width = columnDetails[i]?.width || cellWidth;
 
       if (x + width > colWidth) {
         columnData.push({
@@ -406,7 +416,7 @@ const Grid = () => {
       rowId--;
 
       while (rowId > 0 && y > rowHeight) {
-        y -= rowDetails[rowId]?.height ?? cell.height;
+        y -= rowDetails[rowId]?.height ?? cellHeight;
         rowId--;
       }
 
@@ -439,7 +449,7 @@ const Grid = () => {
       columnId--;
 
       while (columnId > 0 && x > colWidth) {
-        x -= columnDetails[columnId]?.width ?? cell.width;
+        x -= columnDetails[columnId]?.width ?? cellWidth;
         columnId--;
       }
 
@@ -519,6 +529,24 @@ const Grid = () => {
     forceUpdate(Math.random());
   };
 
+  const handleSearchNext = () => {
+    setActiveSearchIndex((activeIndex) => {
+      activeIndex++;
+      return activeIndex === highLightCellIds.length ? 0 : activeIndex;
+    });
+  };
+
+  const handleSearchPrevious = () => {
+    setActiveSearchIndex((activeIndex) => {
+      activeIndex--;
+      return activeIndex < 0 ? highLightCellIds.length - 1 : activeIndex;
+    });
+  };
+
+  const handleSearchSheet = (text: string) => {
+    console.log(text);
+  };
+
   return (
     <Fragment>
       <div
@@ -528,7 +556,7 @@ const Grid = () => {
         onContextMenu={handleContextMenu}
         onWheel={handleScroll}
       >
-        <canvas ref={canvasRef} className="relative"></canvas>
+        <canvas ref={canvasRef}></canvas>
         <div className="absolute left-0 top-0 w-[var(--col-width)] h-[var(--row-height)] border-b-4 border-r-4 border-t border-l border-light-gray bg-white z-20"></div>
         <ColumnResizer
           columns={columns}
@@ -540,16 +568,23 @@ const Grid = () => {
           onClick={handleClickRow}
           onResize={handleResizeRow}
         />
-        {!editCell && selectedCell && (
-          <HighlightCell
-            selectedCell={selectedCell}
-            onDoubleClick={handleDoubleClickCell}
-          />
-        )}
         {selectedColumn && <HighLightColumn selectedColumn={selectedColumn} />}
         {selectedRow && <HighLightRow selectedRow={selectedRow} />}
-        <SeachBox cells={cells} />
-        {/* <div className="absolute left-[var(--col-width)] top-[var(--row-height)] w-full h-full overflow-hidden"></div> */}
+        <div className="absolute left-[var(--col-width)] top-[var(--row-height)] w-full h-full overflow-hidden">
+          {!editCell && selectedCell && (
+            <HighlightCell
+              selectedCell={selectedCell}
+              onDoubleClick={handleDoubleClickCell}
+            />
+          )}
+          <HighLightSearch
+            activeIndex={activeSearchIndex}
+            visibleCells={cells}
+            cellIds={highLightCellIds}
+          />
+          {selectedColumn && <ColumnOverLay selectedColumn={selectedColumn} />}
+          {selectedRow && <RowOverLay selectedRow={selectedRow} />}
+        </div>
       </div>
       {editCell && (
         <EditCell
@@ -558,6 +593,12 @@ const Grid = () => {
           onWheel={handleScroll}
         />
       )}
+      <SeachBox
+        count={highLightCellIds.length}
+        onNext={handleSearchNext}
+        onPrevious={handleSearchPrevious}
+        onSearch={handleSearchSheet}
+      />
     </Fragment>
   );
 };
