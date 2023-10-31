@@ -26,6 +26,7 @@ export default {
       textColor: {
         "light-gray": "#575a5a",
         "dark-gray": "#444746",
+        "mild-black": "#202124",
       },
       fontFamily: {
         medium: "Open-Sans-Medium",

@@ -32,9 +32,7 @@ let options = [
 ];
 
 const Toolbar = () => {
-  const handleChange = (event: ChangeEvent<HTMLDivElement>) => {
-    console.log(event.target.innerText);
-  };
+  const handleChange = (event: ChangeEvent<HTMLDivElement>) => {};
 
   return (
     <div className="bg-light-silver h-[var(--toolbar-height)]">

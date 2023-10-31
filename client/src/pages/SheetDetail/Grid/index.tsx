@@ -27,12 +27,14 @@ import {
   IPaintCellLine,
   IPaintCellHtml,
   IPaintRect,
+  IRect,
 } from "@/types/Sheets";
 import HighLightSearch from "./HighLightSearch";
 import HighLightColumn from "./HighLightColumn";
 import HighLightRow from "./HighLightRow";
 import ColumnOverLay from "./ColumnOverLay";
 import RowOverLay from "./RowOverLay";
+import ContextMenu from "./ContextMenu";
 
 const colWidth = 46;
 const rowHeight = 25;
@@ -56,15 +58,14 @@ const Grid = () => {
 
   const [activeSearchIndex, setActiveSearchIndex] = useState(0);
 
-  const [highLightCellIds, setHighLightCellIds] = useState<string[]>([
-    "1,1",
-    "2,5",
-    "4,5",
-    "5,1",
-    "2,2",
-  ]);
+  const [highLightCellIds, setHighLightCellIds] = useState<string[]>([]);
 
   const [showSearch, setShowSearch] = useState(false);
+
+  const [contextMenuPosition, setContextMenuPositon] = useState<Pick<
+    IRect,
+    "x" | "y"
+  > | null>(null);
 
   const [refresh, forceUpdate] = useState(0);
 
@@ -193,8 +194,8 @@ const Grid = () => {
     ctx.stroke();
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = `${highlight ? "bold" : ""} 12px Open-Sans`;
-    ctx.fillStyle = "#575a5a";
+    ctx.font = highlight ? "12px Open-Sans-Medium" : "12px Open-Sans";
+    ctx.fillStyle = highlight ? "#000000" : "#575a5a";
     ctx.fillText(rowId.toString(), x + width / 2 + 1, y + height / 2 + 1);
     ctx.restore();
   };
@@ -219,8 +220,8 @@ const Grid = () => {
     ctx.stroke();
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = `${highlight ? "bold" : ""} 12px Open-Sans`;
-    ctx.fillStyle = "#575a5a";
+    ctx.font = highlight ? "12px Open-Sans-Medium" : "12px Open-Sans";
+    ctx.fillStyle = highlight ? "#000000" : "#575a5a";
     ctx.fillText(
       convertToTitle(columnId),
       x + width / 2 + 1,
@@ -410,6 +411,7 @@ const Grid = () => {
     setEditCell(null);
     setSelectedColumnId(Infinity);
     setSelectedRowId(Infinity);
+    setContextMenuPositon(null);
   };
 
   const getCellIdByCoordiantes = (x: number, y: number) => {
@@ -544,6 +546,7 @@ const Grid = () => {
   const handleContextMenu = (event: MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
     handleClickGrid(event);
+    setContextMenuPositon({ x: event.pageX, y: event.pageY });
   };
 
   const handleClickColumn = (columnId: number) => {
@@ -551,6 +554,7 @@ const Grid = () => {
     setSelectedRowId(Infinity);
     setSelectedCellId("");
     setEditCell(null);
+    setContextMenuPositon(null);
   };
 
   const handleClickRow = (rowId: number) => {
@@ -558,6 +562,7 @@ const Grid = () => {
     setSelectedColumnId(Infinity);
     setSelectedCellId("");
     setEditCell(null);
+    setContextMenuPositon(null);
   };
 
   const handleResizeColumn = (columnId: number, value: number) => {
@@ -590,12 +595,52 @@ const Grid = () => {
   };
 
   const handleSearchSheet = (text: string) => {
-    console.log(text);
+    setHighLightCellIds(["1,1", "2,5", "4,5", "5,1", "2,2"]);
   };
 
   const handleCloseSearch = () => {
     setShowSearch(false);
     setHighLightCellIds([]);
+  };
+
+  const handleCopyCell = () => {
+    console.log("copy");
+  };
+
+  const handleCutCell = () => {
+    console.log("cut");
+  };
+
+  const handlePasteCell = () => {
+    console.log("paste");
+  };
+
+  const handleDeleteCell = () => {
+    console.log("delete cell");
+  };
+
+  const handleDeleteRow = () => {
+    console.log("delete row");
+  };
+
+  const handleDeleteColumn = () => {
+    console.log("delete column");
+  };
+
+  const handleInsertColumnLeft = () => {
+    console.log("insert column left");
+  };
+
+  const handleInsertColumnRight = () => {
+    console.log("insert column right");
+  };
+
+  const handleInsertRowBottom = () => {
+    console.log("insert row bottom");
+  };
+
+  const handleInsertRowTop = () => {
+    console.log("insert row top");
   };
 
   return (
@@ -649,10 +694,26 @@ const Grid = () => {
       {showSearch && (
         <SeachBox
           count={highLightCellIds.length}
+          activeIndex={activeSearchIndex}
           onNext={handleSearchNext}
           onPrevious={handleSearchPrevious}
           onSearch={handleSearchSheet}
           onClose={handleCloseSearch}
+        />
+      )}
+      {contextMenuPosition && (
+        <ContextMenu
+          position={contextMenuPosition}
+          onCopy={handleCopyCell}
+          onCut={handleCutCell}
+          onPaste={handlePasteCell}
+          onDeleteCell={handleDeleteCell}
+          onDeleteColumn={handleDeleteColumn}
+          onDeleteRow={handleDeleteRow}
+          onInsertColumnLeft={handleInsertColumnLeft}
+          onInsertColumnRight={handleInsertColumnRight}
+          onInsertRowBottom={handleInsertRowBottom}
+          onInsertRowTop={handleInsertRowTop}
         />
       )}
     </Fragment>
