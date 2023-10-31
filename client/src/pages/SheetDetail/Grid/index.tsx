@@ -130,6 +130,11 @@ const Grid = () => {
     };
   }, [rows, columns]);
 
+  useEffect(() => {
+    paintRows(rows);
+    paintColumns(columns);
+  }, [selectedCellId, selectedColumnId, selectedRowId]);
+
   const handleResizeGrid = () => {
     if (!gridRef.current || !canvasRef.current) return;
 
@@ -152,23 +157,24 @@ const Grid = () => {
 
   const paintRow = (
     ctx: CanvasRenderingContext2D,
+    highlight: boolean,
     { height, rowId, width, x, y }: IRow
   ) => {
     ctx.clearRect(x, y, width, height);
 
-    paintRect(ctx, "#FFFFFF", { height, width, x, y });
+    paintRect(ctx, highlight ? "#D3E3FD" : "#FFFFFF", { height, width, x, y });
 
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(x + width, y);
     ctx.lineTo(x + width, y + height);
     ctx.lineTo(x, y + height);
-    ctx.strokeStyle = "#D5D5D5";
+    ctx.strokeStyle = "#C4C7C5";
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = "12px Open-Sans";
+    ctx.font = `${highlight ? "bold" : ""} 12px Open-Sans`;
     ctx.fillStyle = "#575a5a";
     ctx.fillText(rowId.toString(), x + width / 2 + 1, y + height / 2 + 1);
     ctx.restore();
@@ -176,11 +182,12 @@ const Grid = () => {
 
   const paintColumn = (
     ctx: CanvasRenderingContext2D,
+    highlight: boolean,
     { columnId, height, width, x, y }: IColumn
   ) => {
     ctx.clearRect(x, y, width, height);
 
-    paintRect(ctx, "#FFFFFF", { height, width, x, y });
+    paintRect(ctx, highlight ? "#D3E3FD" : "#FFFFFF", { height, width, x, y });
 
     ctx.save();
     ctx.beginPath();
@@ -188,12 +195,12 @@ const Grid = () => {
     ctx.lineTo(x + width, y);
     ctx.lineTo(x + width, y + height);
     ctx.lineTo(x, y + height);
-    ctx.strokeStyle = "#D5D5D5";
+    ctx.strokeStyle = "#C4C7C5";
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = "12px Open-Sans";
+    ctx.font = `${highlight ? "bold" : ""} 12px Open-Sans`;
     ctx.fillStyle = "#575a5a";
     ctx.fillText(
       convertToTitle(columnId),
@@ -223,7 +230,7 @@ const Grid = () => {
     ctx.moveTo(x, y + height);
     ctx.lineTo(x + width, y + height);
     ctx.lineTo(x + width, y);
-    ctx.strokeStyle = "#D5D5D5";
+    ctx.strokeStyle = "#C4C7C5";
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.restore();
@@ -263,11 +270,37 @@ const Grid = () => {
     ctx.clearRect(0, 0, colWidth, rowHeight);
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, colWidth, rowHeight);
-    ctx.strokeStyle = "#D5D5D5";
+    ctx.strokeStyle = "#C4C7C5";
     ctx.lineWidth = 2;
     ctx.strokeRect(0, 0, colWidth, rowHeight);
     ctx.stroke();
     ctx.restore();
+  };
+
+  const paintRows = (rowData: IRow[]) => {
+    if (!canvasRef.current || !rowData.length) return;
+
+    let ctx = canvasRef.current.getContext("2d")!;
+
+    let id = +selectedCellId.split(",")[1];
+
+    for (let row of rowData) {
+      let highlight = row.rowId === id || selectedColumnId !== Infinity;
+      paintRow(ctx, highlight, row);
+    }
+  };
+
+  const paintColumns = (columnData: IColumn[]) => {
+    if (!canvasRef.current || !columnData.length) return;
+
+    let ctx = canvasRef.current.getContext("2d")!;
+
+    let id = +selectedCellId.split(",")[0];
+
+    for (let column of columnData) {
+      let highlight = column.columnId === id || selectedRowId !== Infinity;
+      paintColumn(ctx, highlight, column);
+    }
   };
 
   const renderGrid: IRenderGrid = ({
@@ -335,14 +368,8 @@ const Grid = () => {
       }
     }
 
-    for (let row of rowData) {
-      paintRow(ctx, row);
-    }
-
-    for (let column of columnData) {
-      paintColumn(ctx, column);
-    }
-
+    paintRows(rowData);
+    paintColumns(columnData);
     paintBox(ctx);
 
     setRows(rowData);

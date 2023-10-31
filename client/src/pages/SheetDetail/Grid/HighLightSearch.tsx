@@ -30,7 +30,7 @@ const HighLightSearch = ({
             className={classNames(
               "absolute",
               cellId === cellIds[activeIndex]
-                ? "bg-[rgba(55,190,95,.702)] shadow-[0_0_0_2px_#146c2e] border border-white"
+                ? "bg-[rgba(55,190,95,.702)] shadow-[0_0_0_2px_#146c2e]"
                 : "bg-[rgba(109,213,140,.4)]"
             )}
             style={{
