@@ -64,6 +64,8 @@ const Grid = () => {
     "2,2",
   ]);
 
+  const [showSearch, setShowSearch] = useState(false);
+
   const [refresh, forceUpdate] = useState(0);
 
   const { current: rowDetails } = useRef<IRowDetails>({});
@@ -89,6 +91,14 @@ const Grid = () => {
   }, [columns, selectedColumnId]);
 
   useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!gridRef.current || !canvasRef.current) return;
 
     let canvas = canvasRef.current;
@@ -100,23 +110,6 @@ const Grid = () => {
 
     getSheetDetails();
   }, []);
-
-  const getSheetDetails = () => {
-    let { rows, cells, columns } = data;
-
-    for (let row of rows) {
-      rowDetails[row.rowId] = row;
-    }
-
-    for (let column of columns) {
-      columnDetails[column.columnId] = column;
-    }
-
-    for (let cell of cells) {
-      let id = `${cell.columnId},${cell.rowId}`;
-      cellDetails[id] = cell;
-    }
-  };
 
   useEffect(() => {
     handleResizeGrid();
@@ -134,6 +127,32 @@ const Grid = () => {
     paintRows(rows);
     paintColumns(columns);
   }, [selectedCellId, selectedColumnId, selectedRowId]);
+
+  const handleKeyDown = (event: Event) => {
+    let { ctrlKey, key } = event as KeyboardEvent;
+
+    if (ctrlKey && key === "f" && !showSearch) {
+      event.preventDefault();
+      setShowSearch(true);
+    }
+  };
+
+  const getSheetDetails = () => {
+    let { rows, cells, columns } = data;
+
+    for (let row of rows) {
+      rowDetails[row.rowId] = row;
+    }
+
+    for (let column of columns) {
+      columnDetails[column.columnId] = column;
+    }
+
+    for (let cell of cells) {
+      let id = `${cell.columnId},${cell.rowId}`;
+      cellDetails[id] = cell;
+    }
+  };
 
   const handleResizeGrid = () => {
     if (!gridRef.current || !canvasRef.current) return;
@@ -574,6 +593,11 @@ const Grid = () => {
     console.log(text);
   };
 
+  const handleCloseSearch = () => {
+    setShowSearch(false);
+    setHighLightCellIds([]);
+  };
+
   return (
     <Fragment>
       <div
@@ -604,11 +628,13 @@ const Grid = () => {
               onDoubleClick={handleDoubleClickCell}
             />
           )}
-          <HighLightSearch
-            activeIndex={activeSearchIndex}
-            visibleCells={cells}
-            cellIds={highLightCellIds}
-          />
+          {showSearch && highLightCellIds.length > 0 && (
+            <HighLightSearch
+              activeIndex={activeSearchIndex}
+              visibleCells={cells}
+              cellIds={highLightCellIds}
+            />
+          )}
           {selectedColumn && <ColumnOverLay selectedColumn={selectedColumn} />}
           {selectedRow && <RowOverLay selectedRow={selectedRow} />}
         </div>
@@ -620,12 +646,15 @@ const Grid = () => {
           onWheel={handleScroll}
         />
       )}
-      <SeachBox
-        count={highLightCellIds.length}
-        onNext={handleSearchNext}
-        onPrevious={handleSearchPrevious}
-        onSearch={handleSearchSheet}
-      />
+      {showSearch && (
+        <SeachBox
+          count={highLightCellIds.length}
+          onNext={handleSearchNext}
+          onPrevious={handleSearchPrevious}
+          onSearch={handleSearchSheet}
+          onClose={handleCloseSearch}
+        />
+      )}
     </Fragment>
   );
 };

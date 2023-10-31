@@ -6,37 +6,19 @@ type ISearchBox = {
   onPrevious: () => void;
   onNext: () => void;
   onSearch: (val: string) => void;
+  onClose: () => void;
 };
 
-const SeachBox = ({ count, onPrevious, onNext, onSearch }: ISearchBox) => {
-  let [isOpen, setIsOpen] = useState(true);
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
-
-  const handleKeyDown = (event: Event) => {
-    let { ctrlKey, key } = event as KeyboardEvent;
-
-    if (ctrlKey && key === "f" && !isOpen) {
-      event.preventDefault();
-      toggle();
-    }
-  };
-
+const SeachBox = ({
+  count,
+  onPrevious,
+  onNext,
+  onSearch,
+  onClose,
+}: ISearchBox) => {
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     onSearch(event.target.value);
   };
-
-  const toggle = () => {
-    setIsOpen(!isOpen);
-  };
-
-  if (!isOpen) return null;
 
   return (
     <div className="fixed flex items-center gap-2 top-6 right-6 border border-mild-gray rounded-md w-72 px-4 py-5">
@@ -58,7 +40,7 @@ const SeachBox = ({ count, onPrevious, onNext, onSearch }: ISearchBox) => {
         <i className="bx-chevron-down " onClick={onPrevious}></i>
       </button>
       <button className="text-xl text-dark-gray">
-        <i className="bx-x" onClick={toggle}></i>
+        <i className="bx-x" onClick={onClose}></i>
       </button>
     </div>
   );
