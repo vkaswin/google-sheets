@@ -1,6 +1,8 @@
-const TypingBar = () => {
+import { Fragment } from "react";
+
+const FormularBar = () => {
   return (
-    <div className="flex gap-2 px-2 items-center h-[var(--typing-bar-height)]">
+    <div className="flex gap-2 px-2 items-center h-[var(--formula-bar-height)]">
       <input
         name="id"
         className="outline-none w-[100px] px-2 bg-transparent text-sm border-2 rounded-sm border-transparent hover:bg-[#ededed] focus:border-dark-blue"
@@ -17,4 +19,4 @@ const TypingBar = () => {
   );
 };
 
-export default TypingBar;
+export default FormularBar;

@@ -82,6 +82,11 @@ const RowResizer = ({ rows, onClick, onResize }: IRowResizer) => {
     setSelectedRow(null);
   };
 
+  const handleClick = () => {
+    if (!selectedRow) return;
+    onClick(selectedRow.rowId);
+  };
+
   return (
     <Fragment>
       <div
@@ -99,7 +104,8 @@ const RowResizer = ({ rows, onClick, onResize }: IRowResizer) => {
               left: selectedRow.x,
               top: selectedRow.y,
             }}
-            onClick={() => onClick(selectedRow.rowId)}
+            onClick={handleClick}
+            onContextMenu={handleClick}
           >
             <div
               ref={resizeRef}

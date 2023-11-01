@@ -1,3 +1,7 @@
+import { useMemo, useState } from "react";
+import { usePopper } from "react-popper";
+import { VirtualElement } from "@popperjs/core";
+
 import { IRect } from "@/types/Sheets";
 
 const actions = [
@@ -55,10 +59,35 @@ type IContextMenu = {
 };
 
 const ContextMenu = ({ position: { x, y }, ...events }: IContextMenu) => {
+  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
+    null
+  );
+
+  const virtualReference = useMemo(() => {
+    return {
+      getBoundingClientRect: () => {
+        return {
+          width: 0,
+          height: 0,
+          right: 0,
+          bottom: 0,
+          left: x,
+          top: y,
+        };
+      },
+    } as VirtualElement;
+  }, [x, y]);
+
+  const { attributes, styles } = usePopper(virtualReference, popperElement, {
+    placement: "right",
+  });
+
   return (
     <div
-      className="fixed w-72 shadow-[0_2px_6px_2px_rgba(60,64,67,.15)] border border-transparent rounded bg-white z-20"
-      style={{ left: x, top: y - 100 }}
+      ref={setPopperElement}
+      className="w-72 shadow-[0_2px_6px_2px_rgba(60,64,67,.15)] border border-transparent rounded bg-white z-20"
+      style={styles.popper}
+      {...attributes.popper}
     >
       <div className="flex flex-col py-3 font-medium">
         {actions[0].map(({ icon, label, shortcut, eventName }, index) => {

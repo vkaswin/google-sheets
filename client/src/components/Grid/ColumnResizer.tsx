@@ -86,6 +86,11 @@ const CoumnResizer = ({ columns, onClick, onResize }: ICoumnResizer) => {
     setSelectedColumn(null);
   };
 
+  const handleClick = () => {
+    if (!selectedColumn) return;
+    onClick(selectedColumn.columnId);
+  };
+
   return (
     <Fragment>
       <div
@@ -102,7 +107,8 @@ const CoumnResizer = ({ columns, onClick, onResize }: ICoumnResizer) => {
               left: selectedColumn.x,
               top: selectedColumn.y,
             }}
-            onClick={() => onClick(selectedColumn.columnId)}
+            onClick={handleClick}
+            onContextMenu={handleClick}
           >
             <div
               className="absolute top-0 -right-3 w-6 h-full bg-transparent"

@@ -9,16 +9,16 @@ html {
 }
 
 :root {
-  --toolbar-height: 110px;
+  --header-height: 60px;
+  --formula-bar-height: 30px;
   --bottom-bar-height: 45px;
-  --typing-bar-height: 30px;
   --cell-height: 25px;
   --cell-width: 100px;
   --grid-height: calc(
     100% -
       calc(
-        var(--toolbar-height) + var(--bottom-bar-height) +
-          var(--typing-bar-height)
+        var(--header-height) + var(--formula-bar-height) +
+          var(--bottom-bar-height)
       )
   );
   --row-height: 25px;

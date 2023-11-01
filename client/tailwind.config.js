@@ -22,6 +22,7 @@ export default {
         "light-green": "#C7EED1",
         "dark-green": "#79D28F",
         "light-sky-blue": "rgb(14, 101, 235, 0.1)",
+        "mild-blue": "#EDF2FA",
       },
       textColor: {
         "light-gray": "#575a5a",

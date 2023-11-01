@@ -13,7 +13,7 @@ import ColumnResizer from "./ColumnResizer";
 import RowResizer from "./RowResizer";
 import SeachBox from "./SearchBox";
 import { convertToTitle } from "@/utils";
-import { data } from "../data";
+import { data } from "./data";
 
 import {
   ICell,
@@ -180,8 +180,6 @@ const Grid = () => {
     highlight: boolean,
     { height, rowId, width, x, y }: IRow
   ) => {
-    ctx.clearRect(x, y, width, height);
-
     paintRect(ctx, highlight ? "#D3E3FD" : "#FFFFFF", { height, width, x, y });
 
     ctx.save();
@@ -205,8 +203,6 @@ const Grid = () => {
     highlight: boolean,
     { columnId, height, width, x, y }: IColumn
   ) => {
-    ctx.clearRect(x, y, width, height);
-
     paintRect(ctx, highlight ? "#D3E3FD" : "#FFFFFF", { height, width, x, y });
 
     ctx.save();
@@ -278,8 +274,6 @@ const Grid = () => {
 
     let rect = { x, y, width, height };
 
-    ctx.clearRect(x, y, width, height);
-
     paintRect(ctx, backgroundColor, rect);
     paintCellHtml(ctx, html, rect);
     paintCellLine(ctx, rect);
@@ -287,7 +281,6 @@ const Grid = () => {
 
   const paintBox = (ctx: CanvasRenderingContext2D) => {
     ctx.save();
-    ctx.clearRect(0, 0, colWidth, rowHeight);
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, colWidth, rowHeight);
     ctx.strokeStyle = "#C4C7C5";
@@ -333,6 +326,8 @@ const Grid = () => {
 
     let ctx = canvasRef.current.getContext("2d")!;
     let { clientWidth, clientHeight } = gridRef.current;
+
+    ctx.clearRect(0, 0, clientWidth, clientHeight);
 
     let rowData: IRow[] = [];
     let columnData: IColumn[] = [];

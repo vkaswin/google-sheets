@@ -29,6 +29,7 @@ const SeachBox = ({
           placeholder="Find in sheet"
           className="w-full h-full outline-dark-blue border border-mild-gray text-sm rounded px-2 py-2 pr-14"
           onChange={debounce(handleChange, 500)}
+          autoFocus
         />
         {count > 0 && (
           <span className="absolute flex top-1/2 -translate-y-1/2 right-3 text-xs text-light-gray">
