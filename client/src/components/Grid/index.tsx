@@ -184,11 +184,11 @@ const Grid = () => {
 
     ctx.save();
     ctx.beginPath();
-    ctx.moveTo(x + width, y);
-    ctx.lineTo(x + width, y + height);
+    ctx.moveTo(x, y);
     ctx.lineTo(x, y + height);
+    ctx.lineTo(x + width, y + height);
     ctx.strokeStyle = "#C4C7C5";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.2;
     ctx.stroke();
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -204,15 +204,12 @@ const Grid = () => {
     { columnId, height, width, x, y }: IColumn
   ) => {
     paintRect(ctx, highlight ? "#D3E3FD" : "#FFFFFF", { height, width, x, y });
-
     ctx.save();
     ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + width, y);
+    ctx.moveTo(x + width, y);
     ctx.lineTo(x + width, y + height);
-    ctx.lineTo(x, y + height);
     ctx.strokeStyle = "#C4C7C5";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.2;
     ctx.stroke();
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -234,8 +231,8 @@ const Grid = () => {
     ctx.save();
     ctx.fillStyle = backgroundColor;
     ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.fillRect(x, y, width, height);
+    ctx.moveTo(x + 1, y + 1);
+    ctx.fillRect(x + 1, y + 1, width - 1, height - 1);
     ctx.fill();
     ctx.restore();
   };
@@ -247,7 +244,7 @@ const Grid = () => {
     ctx.lineTo(x + width, y + height);
     ctx.lineTo(x + width, y);
     ctx.strokeStyle = "#C4C7C5";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.2;
     ctx.stroke();
     ctx.restore();
   };
@@ -284,8 +281,18 @@ const Grid = () => {
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, colWidth, rowHeight);
     ctx.strokeStyle = "#C4C7C5";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(0, 0, colWidth, rowHeight);
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(0, 1);
+    ctx.lineTo(colWidth, 1);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(0, rowHeight);
+    ctx.lineTo(colWidth, rowHeight);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(colWidth, 0);
+    ctx.lineTo(colWidth, rowHeight);
     ctx.stroke();
     ctx.restore();
   };
@@ -301,6 +308,20 @@ const Grid = () => {
       let highlight = row.rowId === id || selectedColumnId !== Infinity;
       paintRow(ctx, highlight, row);
     }
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(0, rowHeight);
+    ctx.lineTo(0, canvasRef.current.clientHeight);
+    ctx.stroke();
+    ctx.strokeStyle = "#C4C7C5";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(colWidth, rowHeight);
+    ctx.lineTo(colWidth, canvasRef.current.clientHeight);
+    ctx.stroke();
+    ctx.restore();
   };
 
   const paintColumns = (columnData: IColumn[]) => {
@@ -314,6 +335,19 @@ const Grid = () => {
       let highlight = column.columnId === id || selectedRowId !== Infinity;
       paintColumn(ctx, highlight, column);
     }
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.strokeStyle = "#C4C7C5";
+    ctx.lineWidth = 1.2;
+    ctx.moveTo(colWidth, rowHeight);
+    ctx.lineTo(canvasRef.current.clientWidth, rowHeight);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(colWidth, 1);
+    ctx.lineTo(canvasRef.current.clientWidth, 1);
+    ctx.stroke();
+    ctx.restore();
   };
 
   const renderGrid: IRenderGrid = ({
@@ -648,7 +682,6 @@ const Grid = () => {
         onWheel={handleScroll}
       >
         <canvas ref={canvasRef}></canvas>
-        <div className="absolute left-0 top-0 w-[var(--col-width)] h-[var(--row-height)] border-b-4 border-r-4 border-t border-l border-light-gray bg-white z-20"></div>
         <ColumnResizer
           columns={columns}
           onClick={handleClickColumn}

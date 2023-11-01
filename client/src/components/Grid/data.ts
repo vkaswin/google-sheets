@@ -95,13 +95,13 @@ export const data: ISheetDetail = {
       rowId: 50,
       columnId: 2,
     },
-    {
-      backgroundColor: "#EA9999",
-      color: "white",
-      rowId: 1,
-      columnId: 1,
-      html: "<span>Loreum Ispum</span><br><span style='font-size:20px; font-color: red'>Loreum Ispum</span>",
-    },
+    // {
+    //   backgroundColor: "#EA9999",
+    //   color: "white",
+    //   rowId: 1,
+    //   columnId: 1,
+    //   html: "<span>Loreum Ispum</span><br><span style='font-size:20px; font-color: red'>Loreum Ispum</span>",
+    // },
     {
       backgroundColor: "#B7E1CD",
       html: "<b>Loreum Ispum</b>",
