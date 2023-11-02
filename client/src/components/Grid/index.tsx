@@ -36,10 +36,14 @@ import ColumnOverLay from "./ColumnOverLay";
 import RowOverLay from "./RowOverLay";
 import ContextMenu from "./ContextMenu";
 
-const colWidth = 46;
-const rowHeight = 25;
-const cellWidth = 100;
-const cellHeight = 25;
+const config = {
+  lineWidth: 2,
+  strokeStyle: "#C4C7C5",
+  cellHeight: 25,
+  cellWidth: 100,
+  colWidth: 46,
+  rowHeight: 25,
+};
 
 const Grid = () => {
   const [rows, setRows] = useState<IRow[]>([]);
@@ -164,8 +168,8 @@ const Grid = () => {
     canvas.width = clientWidth;
     canvas.height = clientHeight;
 
-    let { rowId = 1, y = rowHeight } = rows[0] ?? {};
-    let { columnId = 1, x = colWidth } = columns[0] ?? {};
+    let { rowId = 1, y = config.rowHeight } = rows[0] ?? {};
+    let { columnId = 1, x = config.colWidth } = columns[0] ?? {};
 
     renderGrid({
       offsetX: x,
@@ -183,17 +187,16 @@ const Grid = () => {
     paintRect(ctx, highlight ? "#D3E3FD" : "#FFFFFF", { height, width, x, y });
 
     ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x, y + height);
-    ctx.lineTo(x + width, y + height);
-    ctx.strokeStyle = "#C4C7C5";
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
+    ctx.strokeStyle = config.strokeStyle;
+    ctx.lineWidth = config.lineWidth;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = highlight ? "12px Open-Sans-Medium" : "12px Open-Sans";
     ctx.fillStyle = highlight ? "#000000" : "#575a5a";
+    ctx.beginPath();
+    ctx.moveTo(x, y + height);
+    ctx.lineTo(x + width, y + height);
+    ctx.stroke();
     ctx.fillText(rowId.toString(), x + width / 2 + 1, y + height / 2 + 1);
     ctx.restore();
   };
@@ -205,16 +208,16 @@ const Grid = () => {
   ) => {
     paintRect(ctx, highlight ? "#D3E3FD" : "#FFFFFF", { height, width, x, y });
     ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(x + width, y);
-    ctx.lineTo(x + width, y + height);
-    ctx.strokeStyle = "#C4C7C5";
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
+    ctx.strokeStyle = config.strokeStyle;
+    ctx.lineWidth = config.lineWidth;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = highlight ? "12px Open-Sans-Medium" : "12px Open-Sans";
     ctx.fillStyle = highlight ? "#000000" : "#575a5a";
+    ctx.beginPath();
+    ctx.moveTo(x + width, y);
+    ctx.lineTo(x + width, y + height);
+    ctx.stroke();
     ctx.fillText(
       convertToTitle(columnId),
       x + width / 2 + 1,
@@ -231,20 +234,20 @@ const Grid = () => {
     ctx.save();
     ctx.fillStyle = backgroundColor;
     ctx.beginPath();
-    ctx.moveTo(x + 1, y + 1);
-    ctx.fillRect(x + 1, y + 1, width - 1, height - 1);
+    ctx.moveTo(x, y);
+    ctx.fillRect(x, y, width, height);
     ctx.fill();
     ctx.restore();
   };
 
   const paintCellLine: IPaintCellLine = (ctx, { height, width, x, y }) => {
     ctx.save();
+    ctx.strokeStyle = config.strokeStyle;
+    ctx.lineWidth = config.lineWidth;
     ctx.beginPath();
     ctx.moveTo(x, y + height);
     ctx.lineTo(x + width, y + height);
     ctx.lineTo(x + width, y);
-    ctx.strokeStyle = "#C4C7C5";
-    ctx.lineWidth = 1.2;
     ctx.stroke();
     ctx.restore();
   };
@@ -279,20 +282,14 @@ const Grid = () => {
   const paintBox = (ctx: CanvasRenderingContext2D) => {
     ctx.save();
     ctx.fillStyle = "#FFFFFF";
-    ctx.fillRect(0, 0, colWidth, rowHeight);
-    ctx.strokeStyle = "#C4C7C5";
-    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = config.strokeStyle;
+    ctx.lineWidth = config.lineWidth - 0.5;
     ctx.beginPath();
-    ctx.moveTo(0, 1);
-    ctx.lineTo(colWidth, 1);
-    ctx.stroke();
+    ctx.moveTo(0, 0);
+    ctx.fillRect(0, 0, config.colWidth, config.rowHeight);
     ctx.beginPath();
-    ctx.moveTo(0, rowHeight);
-    ctx.lineTo(colWidth, rowHeight);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(colWidth, 0);
-    ctx.lineTo(colWidth, rowHeight);
+    ctx.moveTo(0, 0);
+    ctx.strokeRect(0, 1, config.colWidth, config.rowHeight - 1);
     ctx.stroke();
     ctx.restore();
   };
@@ -310,16 +307,15 @@ const Grid = () => {
     }
 
     ctx.save();
+    ctx.strokeStyle = config.strokeStyle;
+    ctx.lineWidth = config.lineWidth - 0.5;
     ctx.beginPath();
-    ctx.moveTo(0, rowHeight);
+    ctx.moveTo(0, config.rowHeight);
     ctx.lineTo(0, canvasRef.current.clientHeight);
     ctx.stroke();
-    ctx.strokeStyle = "#C4C7C5";
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(colWidth, rowHeight);
-    ctx.lineTo(colWidth, canvasRef.current.clientHeight);
+    ctx.moveTo(config.colWidth, config.rowHeight);
+    ctx.lineTo(config.colWidth, canvasRef.current.clientHeight);
     ctx.stroke();
     ctx.restore();
   };
@@ -338,13 +334,13 @@ const Grid = () => {
 
     ctx.save();
     ctx.beginPath();
-    ctx.strokeStyle = "#C4C7C5";
-    ctx.lineWidth = 1.2;
-    ctx.moveTo(colWidth, rowHeight);
-    ctx.lineTo(canvasRef.current.clientWidth, rowHeight);
+    ctx.strokeStyle = config.strokeStyle;
+    ctx.lineWidth = config.lineWidth - 0.5;
+    ctx.moveTo(config.colWidth, config.rowHeight);
+    ctx.lineTo(canvasRef.current.clientWidth, config.rowHeight);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(colWidth, 1);
+    ctx.moveTo(config.colWidth, 1);
     ctx.lineTo(canvasRef.current.clientWidth, 1);
     ctx.stroke();
     ctx.restore();
@@ -368,15 +364,15 @@ const Grid = () => {
     let cellData: ICell[] = [];
 
     for (let i = rowStart, y = offsetY; y < clientHeight; i++) {
-      let height = rowDetails[i]?.height || cellHeight;
+      let height = rowDetails[i]?.height || config.cellHeight;
 
-      if (y + height > rowHeight) {
+      if (y + height > config.rowHeight) {
         rowData.push({
           y,
           x: 0,
           rowId: i,
           height: height,
-          width: colWidth,
+          width: config.colWidth,
         });
       }
 
@@ -384,15 +380,15 @@ const Grid = () => {
     }
 
     for (let i = colStart, x = offsetX; x < clientWidth; i++) {
-      let width = columnDetails[i]?.width || cellWidth;
+      let width = columnDetails[i]?.width || config.cellWidth;
 
-      if (x + width > colWidth) {
+      if (x + width > config.colWidth) {
         columnData.push({
           x,
           y: 0,
           columnId: i,
           width,
-          height: rowHeight,
+          height: config.rowHeight,
         });
       }
 
@@ -492,14 +488,14 @@ const Grid = () => {
       y += -deltaY;
       rowId--;
 
-      while (rowId > 0 && y > rowHeight) {
-        y -= rowDetails[rowId]?.height ?? cellHeight;
+      while (rowId > 0 && y > config.rowHeight) {
+        y -= rowDetails[rowId]?.height ?? config.cellHeight;
         rowId--;
       }
 
       renderGrid({
         offsetX: x,
-        offsetY: Math.min(rowHeight, y),
+        offsetY: Math.min(config.rowHeight, y),
         rowStart: rowId + 1,
         colStart: columnId,
       });
@@ -525,13 +521,13 @@ const Grid = () => {
       x += -deltaX;
       columnId--;
 
-      while (columnId > 0 && x > colWidth) {
-        x -= columnDetails[columnId]?.width ?? cellWidth;
+      while (columnId > 0 && x > config.colWidth) {
+        x -= columnDetails[columnId]?.width ?? config.cellWidth;
         columnId--;
       }
 
       renderGrid({
-        offsetX: Math.min(colWidth, x),
+        offsetX: Math.min(config.colWidth, x),
         offsetY: y,
         rowStart: rowId,
         colStart: columnId + 1,
@@ -567,8 +563,8 @@ const Grid = () => {
       width,
       height,
       rowId,
-      x: Math.max(colWidth, x),
-      y: Math.max(rowHeight + top, y + top),
+      x: Math.max(config.colWidth, x),
+      y: Math.max(config.rowHeight + top, y + top),
     });
   };
 

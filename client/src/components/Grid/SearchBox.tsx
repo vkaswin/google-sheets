@@ -23,7 +23,7 @@ const SeachBox = ({
   };
 
   return (
-    <div className="fixed flex items-center gap-2 top-6 right-6 border border-mild-gray rounded-md px-4 py-5">
+    <div className="fixed flex items-center gap-2 top-6 right-6 bg-white border border-mild-gray rounded-md px-4 py-5">
       <div className="relative w-44 h-9">
         <input
           placeholder="Find in sheet"

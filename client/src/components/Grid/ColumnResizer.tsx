@@ -94,7 +94,7 @@ const CoumnResizer = ({ columns, onClick, onResize }: ICoumnResizer) => {
   return (
     <Fragment>
       <div
-        className="absolute left-0 top-0 w-full h-[var(--row-height)] z-10"
+        className="absolute left-0 top-0 w-full h-[var(--row-height)] z-20"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >

@@ -91,7 +91,7 @@ const RowResizer = ({ rows, onClick, onResize }: IRowResizer) => {
     <Fragment>
       <div
         ref={columnRef}
-        className="absolute left-0 top-0 w-[var(--col-width)] h-full z-10"
+        className="absolute left-0 top-0 w-[var(--col-width)] h-full z-20"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
