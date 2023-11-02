@@ -10,6 +10,7 @@ html {
 
 :root {
   --header-height: 60px;
+  --toolbar-height: 40px;
   --formula-bar-height: 30px;
   --bottom-bar-height: 45px;
   --cell-height: 25px;
@@ -18,7 +19,7 @@ html {
     100% -
       calc(
         var(--header-height) + var(--formula-bar-height) +
-          var(--bottom-bar-height)
+          var(--bottom-bar-height) + var(--toolbar-height)
       )
   );
   --row-height: 25px;

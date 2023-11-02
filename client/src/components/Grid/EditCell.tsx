@@ -41,8 +41,8 @@ const EditCell = ({ cell, data, onWheel }: IEditCell) => {
     <div
       className="absolute flex border-1 outline outline-3 outline-light-blue p-[2px] z-10"
       style={{
-        width,
-        height,
+        minWidth: width,
+        minHeight: height,
         left: x,
         top: y,
         backgroundColor,
@@ -52,7 +52,7 @@ const EditCell = ({ cell, data, onWheel }: IEditCell) => {
     >
       <div
         ref={inputRef}
-        className="w-full h-full text-sm outline outline-2 outline-dark-blue p-[2px]"
+        className="w-full text-sm outline outline-2 outline-dark-blue p-[2px]"
         contentEditable={true}
         dangerouslySetInnerHTML={{ __html: html }}
       ></div>

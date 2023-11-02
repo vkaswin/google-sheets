@@ -1,6 +1,5 @@
 import { Fragment } from "react";
 import Header from "@/components/Header";
-import FormularBar from "@/components/FormularBar";
 import Grid from "@/components/Grid";
 import BottomBar from "@/components/BottomBar";
 
@@ -20,7 +19,6 @@ const SheetDetail = () => {
   return (
     <Fragment>
       <Header user={user} onLogout={onLogout} />
-      <FormularBar />
       <Grid />
       <BottomBar />
     </Fragment>

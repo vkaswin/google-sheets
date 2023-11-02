@@ -5,14 +5,17 @@ export default {
     extend: {
       borderColor: {
         gray: "#C4C7C5",
+        "dark-gray": "#747775",
         blue: "#1973E8",
         "dark-blue": "#0b57d0",
         "light-gray": "#D5D5D5",
         "mild-gray": "#d9d9d9",
+        "light-silver": "#e1e3e1",
       },
       outlineColor: {
         "light-blue": "#a8c7fa",
         "dark-blue": "#0b57d0",
+        "dark-gray": "#747775",
       },
       backgroundColor: {
         "dark-silver": "#C0C0C0",
@@ -23,6 +26,7 @@ export default {
         "dark-green": "#79D28F",
         "light-sky-blue": "rgb(14, 101, 235, 0.1)",
         "mild-blue": "#EDF2FA",
+        "light-silver": "#f9fbfd",
       },
       textColor: {
         "light-gray": "#575a5a",

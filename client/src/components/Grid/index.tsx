@@ -7,6 +7,7 @@ import {
   MouseEvent,
   Fragment,
 } from "react";
+import ToolBar from "./ToolBar";
 import HighlightCell from "./HighLightCell";
 import EditCell from "./EditCell";
 import ColumnResizer from "./ColumnResizer";
@@ -35,6 +36,7 @@ import HighLightRow from "./HighLightRow";
 import ColumnOverLay from "./ColumnOverLay";
 import RowOverLay from "./RowOverLay";
 import ContextMenu from "./ContextMenu";
+import FormularBar from "./FormulaBar";
 
 const config = {
   lineWidth: 2,
@@ -257,9 +259,105 @@ const Grid = () => {
     html,
     { height, width, x, y }
   ) => {
-    ctx.font = "14px Open-Sans";
-    ctx.beginPath();
-    ctx.fillText(html, x, y + 14);
+    if (!html) return;
+
+    let node = document.createElement("div");
+    node.innerHTML = html;
+
+    type IText = {
+      fontSize: string;
+      fontWeight: string;
+      fontStyle: string;
+      fontFamily: string;
+      lineThrough: boolean;
+      color: string;
+      text: string;
+    };
+
+    type ILine = {
+      y: number;
+      texts: IText[];
+    };
+
+    let lines: ILine[] = [{ y: -Infinity, texts: [] }];
+
+    for (let element of node.children) {
+      if (element.tagName === "BR") {
+        lines.push({ y: -Infinity, texts: [] });
+        continue;
+      }
+
+      let {
+        style: {
+          fontSize,
+          fontFamily,
+          fontStyle,
+          fontWeight,
+          color,
+          textDecoration,
+        },
+
+        innerText,
+      } = element as HTMLElement;
+
+      let data: IText = {
+        fontStyle: fontStyle || "normal",
+        fontWeight: fontWeight || "normal",
+        fontSize: fontSize || "14px",
+        fontFamily: fontFamily || "Open-Sans",
+        lineThrough: textDecoration === "line-through",
+        color: color || "#000000",
+        text: innerText,
+      };
+
+      let line = lines.at(-1)!;
+
+      line.y = Math.max(
+        lines.at(-1)!.y,
+        fontSize ? +fontSize.replace("px", "") : 14
+      );
+
+      line.texts.push(data);
+    }
+
+    let offsetY = y;
+
+    for (let { texts, y } of lines) {
+      let offsetX = x;
+      offsetY += y;
+
+      for (let {
+        color,
+        fontFamily,
+        fontSize,
+        fontStyle,
+        fontWeight,
+        lineThrough,
+        text,
+      } of texts) {
+        ctx.save();
+        ctx.font = `${fontStyle} ${fontWeight} ${fontSize} ${fontFamily}`;
+        ctx.fillStyle = color;
+        let { width } = ctx.measureText(text);
+        ctx.beginPath();
+        ctx.moveTo(offsetX, offsetY);
+        ctx.fillText(text, offsetX, offsetY);
+        ctx.fill();
+
+        if (lineThrough) {
+          let offset = lineThrough ? +fontSize.replace("px", "") / 4 : -2;
+          ctx.beginPath();
+          ctx.moveTo(offsetX, offsetY - offset);
+          ctx.lineTo(offsetX + width, offsetY - offset);
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = "#000000";
+          ctx.stroke();
+        }
+
+        ctx.restore();
+        offsetX += width;
+      }
+    }
   };
 
   const paintCell: IPaintCell = (
@@ -670,6 +768,8 @@ const Grid = () => {
 
   return (
     <Fragment>
+      <ToolBar />
+      <FormularBar />
       <div
         ref={gridRef}
         className="relative h-[var(--grid-height)] select-none overflow-hidden"
@@ -690,7 +790,7 @@ const Grid = () => {
         />
         {selectedColumn && <HighLightColumn selectedColumn={selectedColumn} />}
         {selectedRow && <HighLightRow selectedRow={selectedRow} />}
-        <div className="absolute left-[var(--col-width)] top-[var(--row-height)] w-full h-full overflow-hidden">
+        <div className="absolute left-[var(--col-width)] top-[var(--row-height)] w-[calc(100%-var(--col-width))] h-[calc(100%-var(--row-height))] overflow-hidden">
           {!editCell && selectedCell && (
             <HighlightCell
               selectedCell={selectedCell}

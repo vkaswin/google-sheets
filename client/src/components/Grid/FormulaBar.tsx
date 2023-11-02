@@ -1,5 +1,3 @@
-import { Fragment } from "react";
-
 const FormularBar = () => {
   return (
     <div className="flex gap-2 px-2 items-center h-[var(--formula-bar-height)]">

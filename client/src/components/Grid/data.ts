@@ -86,8 +86,12 @@ export const data: ISheetDetail = {
     },
   ],
   cells: [
-    { rowId: 1, columnId: 5, html: "Loreum Ispum" },
-    { rowId: 2, columnId: 2, html: "Loreum Ispum" },
+    {
+      rowId: 1,
+      columnId: 5,
+      html: "<span>Loreum Ispum</span><br/><span>Loreum Ispum</span>",
+    },
+    { rowId: 2, columnId: 2, html: "<span>Loreum Ispum</span>" },
     {
       backgroundColor: "#CADAF8",
       color: "white",
@@ -100,7 +104,7 @@ export const data: ISheetDetail = {
       color: "white",
       rowId: 1,
       columnId: 1,
-      html: "<span>Loreum Ispum</span><br><span style='font-size:20px; font-color: red'>Loreum Ispum</span>",
+      html: "<span style='font-size:26px; color:yellow; text-decoration:line-through'>Loreum Ispum</span><span style='font-size:20px; font-style:italic'>Loreum Ispum Loreum Ispum Loreum Ispum</span><br><span style='font-size:20px; font-color: red; text-decoration:line-through'>Loreum Ispum</span>",
     },
     {
       backgroundColor: "#B7E1CD",
@@ -122,7 +126,7 @@ export const data: ISheetDetail = {
     },
 
     {
-      html: "Lorem Ipsum Lorem Ipsum is simply dummy text of the printing Lorem Ipsum is simply dummy text of the printing",
+      html: "<span>Lorem Ipsum Lorem Ipsum is simply dummy text of the printing Lorem Ipsum is simply dummy text of the printing</span>",
       backgroundColor: "#B3A7D6",
       rowId: 2,
       columnId: 8,
@@ -140,7 +144,7 @@ export const data: ISheetDetail = {
       columnId: 4,
     },
     {
-      html: "Loreum Ispum",
+      html: "<span>Loreum Ispum</span>",
       rowId: 9,
       columnId: 3,
     },
