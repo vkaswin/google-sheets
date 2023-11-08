@@ -133,6 +133,7 @@ const Grid = () => {
   useEffect(() => {
     paintRows(rows);
     paintColumns(columns);
+    paintBox();
   }, [selectedCellId, selectedColumnId, selectedRowId]);
 
   const handleKeyDown = (event: Event) => {
@@ -326,15 +327,17 @@ const Grid = () => {
       let offsetX = x;
       offsetY += y;
 
-      for (let {
-        color,
-        fontFamily,
-        fontSize,
-        fontStyle,
-        fontWeight,
-        lineThrough,
-        text,
-      } of texts) {
+      for (let textData of texts) {
+        let {
+          color,
+          fontFamily,
+          fontSize,
+          fontStyle,
+          fontWeight,
+          lineThrough,
+          text,
+        } = textData;
+
         ctx.save();
         ctx.font = `${fontStyle} ${fontWeight} ${fontSize} ${fontFamily}`;
         ctx.fillStyle = color;
@@ -377,7 +380,10 @@ const Grid = () => {
     paintCellLine(ctx, rect);
   };
 
-  const paintBox = (ctx: CanvasRenderingContext2D) => {
+  const paintBox = () => {
+    if (!canvasRef.current) return;
+
+    let ctx = canvasRef.current.getContext("2d")!;
     ctx.save();
     ctx.fillStyle = "#FFFFFF";
     ctx.strokeStyle = config.strokeStyle;
@@ -513,7 +519,7 @@ const Grid = () => {
 
     paintRows(rowData);
     paintColumns(columnData);
-    paintBox(ctx);
+    paintBox();
 
     setRows(rowData);
     setColumns(columnData);
@@ -726,6 +732,11 @@ const Grid = () => {
     setHighLightCellIds([]);
   };
 
+  const handleCloseEditor = (html: string) => {
+    console.log(html);
+    setEditCell(null);
+  };
+
   const handleCopyCell = () => {
     console.log("copy");
   };
@@ -813,6 +824,7 @@ const Grid = () => {
           cell={editCell}
           data={cellDetails[editCell.cellId]}
           onWheel={handleScroll}
+          onClose={handleCloseEditor}
         />
       )}
       {showSearch && (

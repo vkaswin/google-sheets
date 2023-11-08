@@ -93,18 +93,11 @@ export const data: ISheetDetail = {
     },
     { rowId: 2, columnId: 2, html: "<span>Loreum Ispum</span>" },
     {
-      backgroundColor: "#CADAF8",
-      color: "white",
-      html: "<span>Loreum Ispum</span><br><span style='font-size:20px; font-color: red'>Loreum Ispum</span>",
-      rowId: 50,
-      columnId: 2,
-    },
-    {
       backgroundColor: "#EA9999",
       color: "white",
       rowId: 1,
       columnId: 1,
-      html: "<span style='font-size:26px; color:yellow; text-decoration:line-through'>Loreum Ispum</span><span style='font-size:20px; font-style:italic'>Loreum Ispum Loreum Ispum Loreum Ispum</span><br><span style='font-size:20px; font-color: red; text-decoration:line-through'>Loreum Ispum</span>",
+      html: `<span>Loreum Ispum</span><span style=font-style:italic;>Loreum Isp</span><span style=font-style:italic;font-weight:bold;>um Lore</span><span style=font-style:italic;>um Ispum Loreum Ispum</span><br/><span>Loreum Ispum </span><br/>`,
     },
     {
       backgroundColor: "#B7E1CD",
@@ -114,17 +107,10 @@ export const data: ISheetDetail = {
     },
     {
       backgroundColor: "#CADAF8",
-      html: "<span>Loreum Ispum</span>",
+      html: `<span>sfsf </span><br/><span style=font-weight:bold;>Asff  </span><br/><span style=font-weight:bold;>sf sf</span><br/><span style=font-weight:bold;>sfs fsfs sfs s</span><span style=font-style:italic;>f  s</span><span>fs sfsf </span><br/><span> sfs fa sfs sf s sf s fsf </span><span style=font-weight:bold;>s s  s</span><span>sfsfs </span><br/>`,
       columnId: 3,
-      rowId: 6,
+      rowId: 1,
     },
-    {
-      html: "Lorem Ipsum is simply dummy text of the printing",
-      backgroundColor: "#FEE599",
-      rowId: 5,
-      columnId: 5,
-    },
-
     {
       html: "<span>Lorem Ipsum Lorem Ipsum is simply dummy text of the printing Lorem Ipsum is simply dummy text of the printing</span>",
       backgroundColor: "#B3A7D6",
@@ -138,22 +124,9 @@ export const data: ISheetDetail = {
       columnId: 6,
     },
     {
-      backgroundColor: "#B7B7B7",
-      html: "<span>Loreum</span>",
-      rowId: 25,
-      columnId: 4,
-    },
-    {
       html: "<span>Loreum Ispum</span>",
       rowId: 9,
       columnId: 3,
-    },
-    {
-      html: "Loreum Ispum",
-      backgroundColor: "#766CEB",
-      color: "white",
-      rowId: 80,
-      columnId: 5,
     },
   ],
 };

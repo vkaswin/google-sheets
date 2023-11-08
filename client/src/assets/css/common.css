@@ -43,3 +43,13 @@ input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
+.ql-editor {
+  outline: none;
+}
+
+.ql-clipboard {
+  outline: none;
+  display: none;
+  pointer-events: none;
+}
