@@ -265,98 +265,65 @@ const Grid = () => {
     let node = document.createElement("div");
     node.innerHTML = html;
 
-    type IText = {
-      fontSize: string;
-      fontWeight: string;
-      fontStyle: string;
-      fontFamily: string;
-      lineThrough: boolean;
-      color: string;
+    type ILineProps = {
+      width: number;
       text: string;
+      font: string;
+      color: string;
     };
 
     type ILine = {
       y: number;
-      texts: IText[];
+      props: ILineProps[];
     };
 
-    let lines: ILine[] = [{ y: -Infinity, texts: [] }];
+    let lines: ILine[] = [{ y: -Infinity, props: [] }];
 
     for (let element of node.children) {
       if (element.tagName === "BR") {
-        lines.push({ y: -Infinity, texts: [] });
+        lines.push({ y: -Infinity, props: [] });
         continue;
       }
 
-      let {
-        style: {
-          fontSize,
-          fontFamily,
-          fontStyle,
-          fontWeight,
-          color,
-          textDecoration,
-        },
+      let { style, innerText } = element as HTMLElement;
 
-        innerText,
-      } = element as HTMLElement;
-
-      let data: IText = {
-        fontStyle: fontStyle || "normal",
-        fontWeight: fontWeight || "normal",
-        fontSize: fontSize || "14px",
-        fontFamily: fontFamily || "Open-Sans",
-        lineThrough: textDecoration === "line-through",
-        color: color || "#000000",
-        text: innerText,
-      };
+      let fontSize = style.fontSize || "14px";
+      let font = `${style.fontStyle || "normal"} ${
+        style.fontWeight || "normal"
+      } ${fontSize} ${style.fontFamily || "Open-Sans"}`;
+      let color = style.color || "#000000";
 
       let line = lines.at(-1)!;
 
-      line.y = Math.max(
-        lines.at(-1)!.y,
-        fontSize ? +fontSize.replace("px", "") : 14
-      );
+      ctx.save();
+      ctx.font = font;
+      ctx.fillStyle = color;
 
-      line.texts.push(data);
+      let { width, fontBoundingBoxDescent, fontBoundingBoxAscent } =
+        ctx.measureText(innerText);
+
+      ctx.restore();
+
+      console.log(fontBoundingBoxAscent, fontBoundingBoxDescent);
+      line.y = Math.max(lines.at(-1)!.y, fontBoundingBoxAscent);
+
+      line.props.push({ color, font, text: innerText, width });
     }
 
     let offsetY = y;
 
-    for (let { texts, y } of lines) {
-      let offsetX = x;
-      offsetY += y;
+    for (let i = 0; i < lines.length; i++) {
+      let offsetX = x + 5;
+      offsetY += lines[i].y + 5;
 
-      for (let textData of texts) {
-        let {
-          color,
-          fontFamily,
-          fontSize,
-          fontStyle,
-          fontWeight,
-          lineThrough,
-          text,
-        } = textData;
-
+      for (let { color, font, text, width } of lines[i].props) {
         ctx.save();
-        ctx.font = `${fontStyle} ${fontWeight} ${fontSize} ${fontFamily}`;
+        ctx.font = font;
         ctx.fillStyle = color;
-        let { width } = ctx.measureText(text);
         ctx.beginPath();
         ctx.moveTo(offsetX, offsetY);
         ctx.fillText(text, offsetX, offsetY);
         ctx.fill();
-
-        if (lineThrough) {
-          let offset = lineThrough ? +fontSize.replace("px", "") / 4 : -2;
-          ctx.beginPath();
-          ctx.moveTo(offsetX, offsetY - offset);
-          ctx.lineTo(offsetX + width, offsetY - offset);
-          ctx.lineWidth = 1.5;
-          ctx.strokeStyle = "#000000";
-          ctx.stroke();
-        }
-
         ctx.restore();
         offsetX += width;
       }

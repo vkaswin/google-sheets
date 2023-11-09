@@ -97,7 +97,7 @@ export const data: ISheetDetail = {
       color: "white",
       rowId: 1,
       columnId: 1,
-      html: `<span>Loreum Ispum</span><span style=font-style:italic;>Loreum Isp</span><span style=font-style:italic;font-weight:bold;>um Lore</span><span style=font-style:italic;>um Ispum Loreum Ispum</span><br/><span>Loreum Ispum </span><br/>`,
+      html: `<span style="font-size:32px">Loreum Ispum</span><span style=font-style:italic;>Loreum Isp</span><span style=font-style:italic;font-weight:bold;>um Lore</span><span style=font-style:italic;>um Ispum Loreum Ispum</span><br/><span>Loreum Ispum </span><br/>`,
     },
     {
       backgroundColor: "#B7E1CD",

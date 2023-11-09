@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState, WheelEvent } from "react";
-import Quill from "quill";
+import { useEffect, useMemo, useState, WheelEvent } from "react";
+import useClickOutside from "@/hooks/useClickOutside";
 import { convertToTitle } from "@/utils";
 
 import { ICell, ICellProps } from "@/types/Sheets";
-import useClickOutside from "@/hooks/useClickOutside";
 
 type IEditCell = {
   cell: ICell;
@@ -21,26 +20,18 @@ const EditCell = ({ cell, data, onWheel, onClose }: IEditCell) => {
     html = "",
   } = data ?? {};
 
-  const quillRef = useRef<Quill>();
-
-  const [container, setContainer] = useState<HTMLDivElement | null>(null);
+  const [textEditor, setTextEditor] = useState<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    quillRef.current = new Quill("#editor");
     focusEditor();
-    quillRef.current.on("editor-change", () => {
-      console.log(quillRef.current?.getContents(), quillRef.current?.getText());
-    });
-  }, []);
+  }, [textEditor]);
 
   const focusEditor = () => {
-    if (!quillRef.current) return;
-
-    let element = quillRef.current.root;
+    if (!textEditor) return;
 
     // Create a Range and set its end to the last child of the contentEditable element
     let range = document.createRange();
-    range.selectNodeContents(element);
+    range.selectNodeContents(textEditor);
     range.collapse(false); // Move the cursor to the end
 
     // Create a Selection and add the range to it
@@ -52,52 +43,21 @@ const EditCell = ({ cell, data, onWheel, onClose }: IEditCell) => {
     selection.addRange(range);
 
     // Focus the contentEditable element to ensure the caret is visible
-    element.focus();
+    textEditor.focus();
   };
 
   const handleClose = () => {
-    if (!quillRef.current) return;
-
-    let lines = quillRef.current.getLines();
-    let html = "";
-
-    for (let line of lines) {
-      for (let ops of line.cache.delta.ops) {
-        let {
-          insert = "",
-          attributes: {
-            italic = false,
-            bold = false,
-            background = "",
-            color = "",
-          } = {},
-        } = ops;
-
-        insert = insert.replaceAll("\n", "");
-
-        if (!insert) continue;
-
-        let style = "";
-
-        if (italic) style += "font-style:italic;";
-        if (bold) style += "font-weight:bold;";
-        if (color) style += `color:${color};`;
-        if (background) style += `background:${background};`;
-
-        html += `<span${style ? ` style="${style}"` : ""}>${insert}</span>`;
-      }
-
-      html += "<br/>";
-    }
-
-    onClose(html);
+    onClose("");
   };
 
-  useClickOutside(container, handleClose);
+  const cellId = useMemo(() => {
+    return `${convertToTitle(columnId)}${rowId}`;
+  }, [columnId]);
+
+  useClickOutside(textEditor, handleClose);
 
   return (
     <div
-      ref={setContainer}
       className="absolute flex border-1 outline outline-3 outline-light-blue p-[2px] z-10"
       style={{
         minWidth: width,
@@ -110,13 +70,13 @@ const EditCell = ({ cell, data, onWheel, onClose }: IEditCell) => {
       onWheel={onWheel}
     >
       <div
-        id="editor"
-        className="w-full text-black text-sm outline outline-2 outline-dark-blue p-[2px]"
+        ref={setTextEditor}
+        className="w-full text-black text-[14px] outline outline-2 outline-dark-blue p-1 leading-[1.2]"
         dangerouslySetInnerHTML={{ __html: html }}
+        contentEditable
       ></div>
       <div className="absolute -top-7 left-0 bg-blue text-xs font-medium text-white rounded-sm px-2 py-1">
-        {convertToTitle(columnId)}
-        {rowId}
+        {cellId}
       </div>
     </div>
   );
