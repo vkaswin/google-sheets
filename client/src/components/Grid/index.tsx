@@ -13,23 +13,6 @@ import EditCell from "./EditCell";
 import ColumnResizer from "./ColumnResizer";
 import RowResizer from "./RowResizer";
 import SeachBox from "./SearchBox";
-import { convertToTitle } from "@/utils";
-import { data } from "./data";
-
-import {
-  ICell,
-  IColumn,
-  IRow,
-  IRenderGrid,
-  IColumnDetails,
-  IRowDetails,
-  ICellDetails,
-  IPaintCell,
-  IPaintCellLine,
-  IPaintCellHtml,
-  IPaintRect,
-  IRect,
-} from "@/types/Sheets";
 import HighLightSearch from "./HighLightSearch";
 import HighLightColumn from "./HighLightColumn";
 import HighLightRow from "./HighLightRow";
@@ -37,6 +20,8 @@ import ColumnOverLay from "./ColumnOverLay";
 import RowOverLay from "./RowOverLay";
 import ContextMenu from "./ContextMenu";
 import FormularBar from "./FormulaBar";
+import { convertToTitle, debounce } from "@/utils";
+import { data } from "./data";
 
 const config = {
   lineWidth: 2,
@@ -85,6 +70,8 @@ const Grid = () => {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const editorRef = useRef<IEditorRef | null>(null);
+
   const selectedCell = useMemo(() => {
     return cells.find(({ cellId }) => cellId === selectedCellId);
   }, [rows, columns, selectedCellId]);
@@ -104,6 +91,16 @@ const Grid = () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+
+  const handleEditorChange = (data: string) => {
+    console.log(data);
+  };
+
+  useEffect(() => {
+    if (!editCell || !editorRef.current) return;
+
+    editorRef.current.on("change", handleEditorChange);
+  }, [editCell]);
 
   useEffect(() => {
     if (!gridRef.current || !canvasRef.current) return;
@@ -281,7 +278,15 @@ const Grid = () => {
 
     for (let element of node.children) {
       if (element.tagName === "BR") {
-        lines.push({ y: -Infinity, props: [] });
+        lines.push({ y: 6, props: [] });
+
+        if (
+          element.nextElementSibling &&
+          element.nextElementSibling.tagName !== "BR"
+        ) {
+          lines.push({ y: -Infinity, props: [] });
+        }
+
         continue;
       }
 
@@ -298,13 +303,9 @@ const Grid = () => {
       ctx.save();
       ctx.font = font;
       ctx.fillStyle = color;
-
-      let { width, fontBoundingBoxDescent, fontBoundingBoxAscent } =
-        ctx.measureText(innerText);
-
+      let { width, fontBoundingBoxAscent } = ctx.measureText(innerText);
       ctx.restore();
 
-      console.log(fontBoundingBoxAscent, fontBoundingBoxDescent);
       line.y = Math.max(lines.at(-1)!.y, fontBoundingBoxAscent);
 
       line.props.push({ color, font, text: innerText, width });
@@ -314,7 +315,7 @@ const Grid = () => {
 
     for (let i = 0; i < lines.length; i++) {
       let offsetX = x + 5;
-      offsetY += lines[i].y + 5;
+      offsetY += lines[i].y;
 
       for (let { color, font, text, width } of lines[i].props) {
         ctx.save();
@@ -699,11 +700,6 @@ const Grid = () => {
     setHighLightCellIds([]);
   };
 
-  const handleCloseEditor = (html: string) => {
-    console.log(html);
-    setEditCell(null);
-  };
-
   const handleCopyCell = () => {
     console.log("copy");
   };
@@ -744,9 +740,14 @@ const Grid = () => {
     console.log("insert row top");
   };
 
+  const handleFormatText = (type: IFormatTypes) => {
+    if (!editorRef.current) return;
+    editorRef.current.formatText(type);
+  };
+
   return (
     <Fragment>
-      <ToolBar />
+      <ToolBar onFormatText={handleFormatText} />
       <FormularBar />
       <div
         ref={gridRef}
@@ -788,10 +789,10 @@ const Grid = () => {
       </div>
       {editCell && (
         <EditCell
+          ref={editorRef}
           cell={editCell}
           data={cellDetails[editCell.cellId]}
           onWheel={handleScroll}
-          onClose={handleCloseEditor}
         />
       )}
       {showSearch && (

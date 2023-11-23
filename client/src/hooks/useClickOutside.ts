@@ -1,17 +1,25 @@
 import { useEffect } from "react";
 
-const useClickOutside = (ref: HTMLElement | null, cb: () => void) => {
+type IUseClickOutSide = (
+  ref: HTMLElement | null,
+  options: {
+    onClose: () => void;
+    doNotClose?: (element: HTMLElement) => boolean;
+  }
+) => void;
+
+const useClickOutside: IUseClickOutSide = (ref, { doNotClose, onClose }) => {
   useEffect(() => {
     if (!ref) return;
-    document.addEventListener("click", handleClick);
+    setTimeout(() => document.addEventListener("click", handleClick), 0);
     return () => document.removeEventListener("click", handleClick);
   }, [ref]);
 
   const handleClick = (event: MouseEvent) => {
     if (!ref) return;
     let element = event.target as HTMLElement;
-    if (ref.contains(element)) return;
-    cb();
+    if (ref.contains(element) || doNotClose?.(element)) return;
+    onClose();
   };
 };
 
