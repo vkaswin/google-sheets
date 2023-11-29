@@ -1,16 +1,30 @@
-import { createContext, ReactNode, useEffect, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useEffect,
+  useState,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import jwtDecode from "jwt-decode";
 import { signInUser, signUpUser } from "@/services/User";
 import { cookie } from "@/utils";
-import { AuthContextType, ISignIn, ISignUp, IUser } from "@/types/User";
 import { toast } from "react-toastify";
-
-export const AuthContext = createContext({} as AuthContextType);
 
 type AuthProviderProps = {
   children: ReactNode;
 };
+
+type IAuthContext = {
+  user?: IUser;
+  setUser: Dispatch<SetStateAction<IUser | undefined>>;
+  signIn: (data: ISignIn) => Promise<void>;
+  signUp: (data: ISignUp) => Promise<void>;
+  logout: () => void;
+};
+
+export const AuthContext = createContext({} as IAuthContext);
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
   let [user, setUser] = useState<IUser>();
@@ -61,7 +75,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     setUser(undefined);
   };
 
-  let context: AuthContextType = {
+  let context: IAuthContext = {
     user,
     setUser,
     signIn,

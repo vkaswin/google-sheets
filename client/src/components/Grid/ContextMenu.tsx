@@ -2,8 +2,6 @@ import { useMemo, useState } from "react";
 import { usePopper } from "react-popper";
 import { VirtualElement } from "@popperjs/core";
 
-import { IRect } from "@/types/Sheets";
-
 const actions = [
   [
     { icon: "bx-cut", label: "Cut", shortcut: "Ctrl+X", eventName: "onCut" },

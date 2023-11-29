@@ -27,6 +27,7 @@ export default {
         "light-sky-blue": "rgb(14, 101, 235, 0.1)",
         "mild-blue": "#EDF2FA",
         "light-silver": "#f9fbfd",
+        "light-gray": "#BEC1C6",
       },
       textColor: {
         "light-gray": "#575a5a",

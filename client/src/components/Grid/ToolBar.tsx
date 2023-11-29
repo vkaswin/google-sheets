@@ -1,18 +1,21 @@
 import { Fragment, MouseEvent, useState } from "react";
 import ColorPicker from "./ColorPicker";
 
+type IPickerOptions = "background" | "color" | "border";
+
 type IToolBarProps = {
-  onFormatText: (type: IFormatTypes) => void;
+  onFormatText: IFormatText;
 };
 
 const ToolBar = ({ onFormatText }: IToolBarProps) => {
   const [colorPicker, setColorPicker] = useState<{
     rect: DOMRect;
-    type: "backgroundColor" | "color" | "border";
+    type: IPickerOptions;
   } | null>(null);
 
   const handleSelectColor = (colorCode: string) => {
-    console.log(colorCode);
+    if (!colorPicker) return;
+    formatText(colorPicker.type, colorCode);
     handleCloseColorPicker();
   };
 
@@ -20,9 +23,13 @@ const ToolBar = ({ onFormatText }: IToolBarProps) => {
     setColorPicker(null);
   };
 
+  const formatText: IFormatText = (type, value) => {
+    onFormatText(type, value);
+  };
+
   const handleShowColorPicker = (
     event: MouseEvent<HTMLButtonElement>,
-    type: "backgroundColor" | "color" | "border"
+    type: IPickerOptions
   ) => {
     let element = event.target as HTMLElement;
     setColorPicker({ type, rect: element.getBoundingClientRect() });
@@ -46,25 +53,25 @@ const ToolBar = ({ onFormatText }: IToolBarProps) => {
         <div className="flex items-center gap-3 px-4 text-xl">
           <button
             className="flex items-center"
-            onClick={() => onFormatText("bold")}
+            onClick={() => formatText("bold", true)}
           >
             <i className="bx-bold"></i>
           </button>
           <button
             className="flex items-center"
-            onClick={() => onFormatText("italic")}
+            onClick={() => formatText("italic", true)}
           >
             <i className="bx-italic"></i>
           </button>
           <button
             className="flex items-center"
-            onClick={() => onFormatText("underline")}
+            onClick={() => formatText("underline", true)}
           >
             <i className="bx-underline"></i>
           </button>
           <button
             className="flex items-center"
-            onClick={() => onFormatText("lineThrough")}
+            onClick={() => formatText("strike", true)}
           >
             <i className="bx-strikethrough"></i>
           </button>
@@ -79,7 +86,7 @@ const ToolBar = ({ onFormatText }: IToolBarProps) => {
           </button>
           <button
             className="flex items-center"
-            onClick={(e) => handleShowColorPicker(e, "backgroundColor")}
+            onClick={(e) => handleShowColorPicker(e, "background")}
           >
             <i className="bxs-color-fill"></i>
           </button>
@@ -111,10 +118,6 @@ const ToolBar = ({ onFormatText }: IToolBarProps) => {
             <i className="bx-link-alt"></i>
           </button>
         </div>
-
-        {/* <button className="flex items-center">
-        <i className="bx-search"></i>
-      </button> */}
       </div>
       {colorPicker && (
         <ColorPicker

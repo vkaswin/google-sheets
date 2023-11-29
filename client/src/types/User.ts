@@ -1,29 +1,19 @@
-import { Dispatch, SetStateAction } from "react";
-
-export interface IUser {
+type IUser = {
   _id: string;
   name: string;
   email: string;
-}
+};
 
-export type ISignIn = {
+type ISignIn = {
   email: string;
   password: string;
 };
 
-export interface ISignUp extends ISignIn {
+type ISignUp = {
   name: string;
-}
+} & ISignIn;
 
-export interface IAuthResponse {
+type IAuthResponse = {
   message: string;
   token: string;
-}
-
-export interface AuthContextType {
-  user?: IUser;
-  setUser: Dispatch<SetStateAction<IUser | undefined>>;
-  signIn: (data: ISignIn) => Promise<void>;
-  signUp: (data: ISignUp) => Promise<void>;
-  logout: () => void;
-}
+};

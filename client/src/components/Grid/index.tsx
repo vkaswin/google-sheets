@@ -7,6 +7,7 @@ import {
   MouseEvent,
   Fragment,
 } from "react";
+import Quill from "quill";
 import ToolBar from "./ToolBar";
 import HighlightCell from "./HighLightCell";
 import EditCell from "./EditCell";
@@ -20,7 +21,8 @@ import ColumnOverLay from "./ColumnOverLay";
 import RowOverLay from "./RowOverLay";
 import ContextMenu from "./ContextMenu";
 import FormularBar from "./FormulaBar";
-import { convertToTitle, debounce } from "@/utils";
+import ScrollBar from "./ScrollBar";
+import { convertToTitle } from "@/utils";
 import { data } from "./data";
 
 const config = {
@@ -60,17 +62,21 @@ const Grid = () => {
 
   const [refresh, forceUpdate] = useState(0);
 
-  const { current: rowDetails } = useRef<IRowDetails>({});
+  const rowDetails = useRef<IRowDetails>({});
 
-  const { current: columnDetails } = useRef<IColumnDetails>({});
+  const columnDetails = useRef<IColumnDetails>({});
 
-  const { current: cellDetails } = useRef<ICellDetails>({});
+  const cellDetails = useRef<ICellDetails>({});
+
+  const verticalScroll = useRef<HTMLDivElement | null>(null);
+
+  const horizontalScroll = useRef<HTMLDivElement | null>(null);
 
   const gridRef = useRef<HTMLDivElement>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const editorRef = useRef<IEditorRef | null>(null);
+  const quillRef = useRef<Quill | null>(null);
 
   const selectedCell = useMemo(() => {
     return cells.find(({ cellId }) => cellId === selectedCellId);
@@ -85,22 +91,14 @@ const Grid = () => {
   }, [columns, selectedColumnId]);
 
   useEffect(() => {
+    quillRef.current = new Quill("#editor", {});
+
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
-
-  const handleEditorChange = (data: string) => {
-    console.log(data);
-  };
-
-  useEffect(() => {
-    if (!editCell || !editorRef.current) return;
-
-    editorRef.current.on("change", handleEditorChange);
-  }, [editCell]);
 
   useEffect(() => {
     if (!gridRef.current || !canvasRef.current) return;
@@ -146,16 +144,16 @@ const Grid = () => {
     let { rows, cells, columns } = data;
 
     for (let row of rows) {
-      rowDetails[row.rowId] = row;
+      rowDetails.current[row.rowId] = row;
     }
 
     for (let column of columns) {
-      columnDetails[column.columnId] = column;
+      columnDetails.current[column.columnId] = column;
     }
 
     for (let cell of cells) {
       let id = `${cell.columnId},${cell.rowId}`;
-      cellDetails[id] = cell;
+      cellDetails.current[id] = cell;
     }
   };
 
@@ -252,81 +250,72 @@ const Grid = () => {
     ctx.restore();
   };
 
-  const paintCellHtml: IPaintCellHtml = (
+  const paintCellContent: IPaintCellContent = (
     ctx,
-    html,
+    content,
     { height, width, x, y }
   ) => {
-    if (!html) return;
+    if (!canvasRef.current || !content?.length) return;
 
-    let node = document.createElement("div");
-    node.innerHTML = html;
-
-    type ILineProps = {
-      width: number;
-      text: string;
-      font: string;
-      color: string;
-    };
-
-    type ILine = {
-      y: number;
-      props: ILineProps[];
-    };
-
-    let lines: ILine[] = [{ y: -Infinity, props: [] }];
-
-    for (let element of node.children) {
-      if (element.tagName === "BR") {
-        lines.push({ y: 6, props: [] });
-
-        if (
-          element.nextElementSibling &&
-          element.nextElementSibling.tagName !== "BR"
-        ) {
-          lines.push({ y: -Infinity, props: [] });
-        }
-
-        continue;
-      }
-
-      let { style, innerText } = element as HTMLElement;
-
-      let fontSize = style.fontSize || "14px";
-      let font = `${style.fontStyle || "normal"} ${
-        style.fontWeight || "normal"
-      } ${fontSize} ${style.fontFamily || "Open-Sans"}`;
-      let color = style.color || "#000000";
-
-      let line = lines.at(-1)!;
-
-      ctx.save();
-      ctx.font = font;
-      ctx.fillStyle = color;
-      let { width, fontBoundingBoxAscent } = ctx.measureText(innerText);
-      ctx.restore();
-
-      line.y = Math.max(lines.at(-1)!.y, fontBoundingBoxAscent);
-
-      line.props.push({ color, font, text: innerText, width });
-    }
-
+    const fontOffset = 20;
     let offsetY = y;
 
-    for (let i = 0; i < lines.length; i++) {
+    for (let data of content) {
       let offsetX = x + 5;
-      offsetY += lines[i].y;
+      offsetY += fontOffset;
 
-      for (let { color, font, text, width } of lines[i].props) {
+      for (let opr of data) {
+        if (!opr.insert || opr.insert === "\n") continue;
+
+        let {
+          attributes: {
+            strike = false,
+            background = "",
+            color = "",
+            bold = false,
+            italic = false,
+            underline = false,
+            font = "Open-Sans",
+            size = "14px",
+          } = {},
+          insert,
+        } = opr;
+
         ctx.save();
-        ctx.font = font;
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.moveTo(offsetX, offsetY);
-        ctx.fillText(text, offsetX, offsetY);
-        ctx.fill();
-        ctx.restore();
+
+        let fontStyle = "";
+
+        if (bold) fontStyle += "bold ";
+        if (italic) fontStyle += "italic ";
+        fontStyle += `${size} ${font}`;
+        ctx.font = fontStyle;
+
+        let { fontBoundingBoxAscent, width } = ctx.measureText(insert);
+
+        if (background) {
+          paintRect(ctx, background, {
+            height: fontOffset,
+            width: width + 1,
+            x: offsetX,
+            y: offsetY - 15,
+          });
+        }
+
+        if (color) ctx.fillStyle = color;
+        ctx.fillText(insert, offsetX, offsetY);
+
+        if (underline || strike) {
+          ctx.save();
+          ctx.lineWidth = 0.7;
+          ctx.strokeStyle = color || "#000000";
+          if (underline) ctx.strokeRect(offsetX, offsetY + 2, width, 0);
+          if (strike) ctx.strokeRect(offsetX, offsetY - 5, width, 0);
+          ctx.restore();
+        }
+
         offsetX += width;
+
+        ctx.restore();
       }
     }
   };
@@ -335,16 +324,13 @@ const Grid = () => {
     ctx,
     { cellId, rowId, columnId, height, width, x, y }
   ) => {
-    let {
-      backgroundColor = "#FFFFFF",
-      color = "#000000",
-      html = "",
-    } = cellDetails[cellId] ?? {};
+    let { backgroundColor = "#FFFFFF", content } =
+      cellDetails.current[cellId] ?? {};
 
     let rect = { x, y, width, height };
 
     paintRect(ctx, backgroundColor, rect);
-    paintCellHtml(ctx, html, rect);
+    paintCellContent(ctx, content, rect);
     paintCellLine(ctx, rect);
   };
 
@@ -436,7 +422,7 @@ const Grid = () => {
     let cellData: ICell[] = [];
 
     for (let i = rowStart, y = offsetY; y < clientHeight; i++) {
-      let height = rowDetails[i]?.height || config.cellHeight;
+      let height = rowDetails.current[i]?.height || config.cellHeight;
 
       if (y + height > config.rowHeight) {
         rowData.push({
@@ -452,7 +438,7 @@ const Grid = () => {
     }
 
     for (let i = colStart, x = offsetX; x < clientWidth; i++) {
-      let width = columnDetails[i]?.width || config.cellWidth;
+      let width = columnDetails.current[i]?.width || config.cellWidth;
 
       if (x + width > config.colWidth) {
         columnData.push({
@@ -561,7 +547,7 @@ const Grid = () => {
       rowId--;
 
       while (rowId > 0 && y > config.rowHeight) {
-        y -= rowDetails[rowId]?.height ?? config.cellHeight;
+        y -= rowDetails.current[rowId]?.height ?? config.cellHeight;
         rowId--;
       }
 
@@ -594,7 +580,7 @@ const Grid = () => {
       columnId--;
 
       while (columnId > 0 && x > config.colWidth) {
-        x -= columnDetails[columnId]?.width ?? config.cellWidth;
+        x -= columnDetails.current[columnId]?.width ?? config.cellWidth;
         columnId--;
       }
 
@@ -623,11 +609,15 @@ const Grid = () => {
   };
 
   const handleDoubleClickCell = () => {
-    if (!gridRef.current || !selectedCell) return;
+    if (!gridRef.current || !selectedCell || !quillRef.current) return;
 
     let { columnId, cellId, width, height, rowId, x, y } = selectedCell;
 
     let { top } = gridRef.current.getBoundingClientRect();
+
+    let content = cellDetails.current[cellId]?.content || [];
+
+    quillRef.current.setContents(content.flat() as any);
 
     setEditCell({
       cellId,
@@ -663,16 +653,17 @@ const Grid = () => {
   };
 
   const handleResizeColumn = (columnId: number, value: number) => {
-    if (!columnDetails[columnId])
-      columnDetails[columnId] = { columnId, width: value };
-    else columnDetails[columnId].width = value;
+    if (!columnDetails.current[columnId])
+      columnDetails.current[columnId] = { columnId, width: value };
+    else columnDetails.current[columnId].width = value;
 
     forceUpdate(Math.random());
   };
 
   const handleResizeRow = (rowId: number, value: number) => {
-    if (!rowDetails[rowId]) rowDetails[rowId] = { rowId, height: value };
-    else rowDetails[rowId].height = value;
+    if (!rowDetails.current[rowId])
+      rowDetails.current[rowId] = { rowId, height: value };
+    else rowDetails.current[rowId].height = value;
 
     forceUpdate(Math.random());
   };
@@ -740,9 +731,22 @@ const Grid = () => {
     console.log("insert row top");
   };
 
-  const handleFormatText = (type: IFormatTypes) => {
-    if (!editorRef.current) return;
-    editorRef.current.formatText(type);
+  const handleFormatText: IFormatText = (type, value) => {
+    if (!quillRef.current) return;
+
+    if (type === "bold") {
+      quillRef.current.format("bold", value);
+    } else if (type === "italic") {
+      quillRef.current.format("italic", value);
+    } else if (type === "underline") {
+      quillRef.current.format("underline", value);
+    } else if (type === "strike") {
+      quillRef.current.format("strike", value);
+    } else if (type === "color") {
+      quillRef.current.format("color", value);
+    } else if (type === "background") {
+      quillRef.current.format("background", value);
+    }
   };
 
   return (
@@ -751,7 +755,7 @@ const Grid = () => {
       <FormularBar />
       <div
         ref={gridRef}
-        className="relative h-[var(--grid-height)] select-none overflow-hidden"
+        className="relative w-[var(--grid-width)] h-[var(--grid-height)] select-none overflow-hidden"
         onClick={handleClickGrid}
         onContextMenu={handleContextMenu}
         onWheel={handleScroll}
@@ -787,14 +791,13 @@ const Grid = () => {
           {selectedRow && <RowOverLay selectedRow={selectedRow} />}
         </div>
       </div>
-      {editCell && (
-        <EditCell
-          ref={editorRef}
-          cell={editCell}
-          data={cellDetails[editCell.cellId]}
-          onWheel={handleScroll}
-        />
-      )}
+      <ScrollBar ref={verticalScroll} axis="y" />
+      <ScrollBar ref={horizontalScroll} axis="x" />
+      <EditCell
+        cell={editCell}
+        data={editCell ? cellDetails.current[editCell.cellId] : null}
+        onWheel={handleScroll}
+      />
       {showSearch && (
         <SeachBox
           count={highLightCellIds.length}

@@ -1,6 +1,5 @@
 import axios from "./axios";
 import { User } from "./config";
-import { ISignUp, ISignIn, IAuthResponse } from "@/types/User";
 
 export const signInUser = (data: ISignIn) => {
   return axios<IAuthResponse>({

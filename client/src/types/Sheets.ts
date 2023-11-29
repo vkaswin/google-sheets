@@ -22,9 +22,9 @@ type ICellDetails = Record<
 >;
 
 type ICellProps = {
-  html?: string;
+  text: string;
   backgroundColor?: string;
-  color?: string;
+  content: any[];
 };
 
 type IRowProps = {
@@ -67,23 +67,35 @@ type IPaintRect = (
 
 type IPaintCellLine = (ctx: CanvasRenderingContext2D, rect: IRect) => void;
 
-type IPaintCellHtml = (
+type IPaintCellContent = (
   ctx: CanvasRenderingContext2D,
-  html: string,
+  content: any[][],
   rect: IRect
 ) => void;
 
 type IFormatTypes =
   | "bold"
   | "italic"
+  | "strike"
   | "underline"
-  | "lineThrough"
   | "color"
-  | "backgroundColor";
+  | "background"
+  | "border"
+  | "align"
+  | "direction"
+  | "font"
+  | "size";
 
-type IFormatText = (type: IFormatTypes, value?: string) => void;
+type IFormatText = (type: IFormatTypes, value: string | boolean) => void;
 
-type IEditorRef = {
-  formatText: IFormatText;
-  on: (type: "change", cb: (data: string) => void) => void;
+type ILineProps = {
+  width: number;
+  text: string;
+  font: string;
+  color: string;
+};
+
+type ILine = {
+  y: number;
+  props: ILineProps[];
 };

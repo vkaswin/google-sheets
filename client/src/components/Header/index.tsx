@@ -1,8 +1,6 @@
-import { ChangeEvent, KeyboardEvent, useState } from "react";
+import { ChangeEvent, KeyboardEvent } from "react";
 import Avatar from "../Avatar";
 import { getStaticUrl } from "@/utils";
-
-import { IUser } from "@/types/User";
 
 type IHeader = {
   user: IUser;
