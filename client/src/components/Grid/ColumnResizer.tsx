@@ -1,7 +1,5 @@
 import { Fragment, PointerEvent, useRef, useState, MouseEvent } from "react";
 
-import { IColumn } from "@/types/Sheets";
-
 type ICoumnResizer = {
   columns: IColumn[];
   onClick: (columnId: number) => void;

@@ -1,5 +1,3 @@
-import { IRow } from "@/types/Sheets";
-
 type IRowOverLay = {
   selectedRow: IRow;
 };

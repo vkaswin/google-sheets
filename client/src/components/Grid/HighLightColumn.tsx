@@ -1,8 +1,5 @@
 import { convertToTitle } from "@/utils";
 
-import { IColumn } from "@/types/Sheets";
-import { Fragment } from "react";
-
 type IHighLightColumn = {
   selectedColumn: IColumn;
 };

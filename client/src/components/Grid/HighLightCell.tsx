@@ -1,8 +1,3 @@
-import { Fragment } from "react";
-import { convertToTitle } from "@/utils";
-
-import { ICell } from "@/types/Sheets";
-
 type IActiveCellProps = {
   selectedCell: ICell;
   onDoubleClick: () => void;

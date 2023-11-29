@@ -3,8 +3,6 @@ import Header from "@/components/Header";
 import Grid from "@/components/Grid";
 import BottomBar from "@/components/BottomBar";
 
-import { IUser } from "@/types/User";
-
 const SheetDetail = () => {
   const user: IUser = {
     _id: "1",

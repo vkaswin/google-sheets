@@ -1,7 +1,5 @@
 import { Fragment, PointerEvent, useRef, useState, MouseEvent } from "react";
 
-import { IRow } from "@/types/Sheets";
-
 type IRowResizer = {
   rows: IRow[];
   onClick: (columnId: number) => void;

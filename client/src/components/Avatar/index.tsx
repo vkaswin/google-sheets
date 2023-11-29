@@ -1,7 +1,5 @@
 import { Fragment, useMemo } from "react";
 
-import { IUser } from "@/types/User";
-
 type AvatarProps = {
   user?: IUser;
   logout: () => void;

@@ -1,7 +1,5 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useMemo } from "react";
 import classNames from "classnames";
-
-import { ICell } from "@/types/Sheets";
 
 type IHighLightSearch = {
   activeIndex: number;

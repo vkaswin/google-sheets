@@ -1,5 +1,3 @@
-import { IColumn } from "@/types/Sheets";
-
 type IColumnOverLay = {
   selectedColumn: IColumn;
 };
