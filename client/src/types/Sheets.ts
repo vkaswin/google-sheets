@@ -22,9 +22,11 @@ type ICellDetails = Record<
 >;
 
 type ICellProps = {
-  text: string;
+  text?: string;
+  content?: any[];
   backgroundColor?: string;
-  content: any[];
+  color?: string;
+  textAlign?: string;
 };
 
 type IRowProps = {
@@ -70,10 +72,11 @@ type IPaintCellLine = (ctx: CanvasRenderingContext2D, rect: IRect) => void;
 type IPaintCellContent = (
   ctx: CanvasRenderingContext2D,
   content: any[][],
+  cellColor: string,
   rect: IRect
 ) => void;
 
-type IPickerOptions = "background" | "color" | "border";
+type IPickerOptions = "background" | "color";
 
 type IFormatTypes =
   | "bold"
@@ -99,7 +102,10 @@ type IActiveStyle = {
   alignLeft: boolean;
   alignRight: boolean;
   alignMiddle: boolean;
-  alignJustify: boolean;
   link: boolean;
-  border: boolean;
 };
+
+type ICellFormat = (
+  key: "backgroundColor" | "textAlign" | "color",
+  value: string
+) => void;

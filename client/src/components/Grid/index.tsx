@@ -20,9 +20,8 @@ import HighLightRow from "./HighLightRow";
 import ColumnOverLay from "./ColumnOverLay";
 import RowOverLay from "./RowOverLay";
 import ContextMenu from "./ContextMenu";
-import FormularBar from "./FormulaBar";
 import ScrollBar from "./ScrollBar";
-import { convertToTitle } from "@/utils";
+import { convertToTitle, debounce } from "@/utils";
 import { GRIDCONFIG, CUSTOM_FONTS } from "./Config";
 import { data } from "./data";
 
@@ -122,11 +121,30 @@ const Grid = () => {
     paintBox();
   }, [selectedCellId, selectedColumnId, selectedRowId]);
 
+  useEffect(() => {
+    if (!quill) return;
+
+    const handleChange = debounce(handleEditorChange, 1000);
+    quill.on("text-change", handleChange);
+
+    return () => {
+      quill.off("text-change", handleChange);
+    };
+  }, [quill]);
+
   const initQuill = () => {
     const fontFormat = Quill.import("formats/font");
     fontFormat.whitelist = CUSTOM_FONTS;
     Quill.register(fontFormat, true);
-    setQuill(new Quill("#editor"));
+    const quill = new Quill("#editor");
+    setQuill(quill);
+  };
+
+  const handleEditorChange = () => {
+    if (!quill) return;
+    const text = quill.getText();
+    const content = quill.getContents();
+    console.log(content, text);
   };
 
   const handleKeyDown = (event: Event) => {
@@ -251,6 +269,7 @@ const Grid = () => {
   const paintCellContent: IPaintCellContent = (
     ctx,
     content,
+    cellColor,
     { height, width, x, y }
   ) => {
     if (!canvasRef.current || !content?.length) return;
@@ -278,6 +297,8 @@ const Grid = () => {
           } = {},
           insert,
         } = opr;
+
+        if (cellColor) color = cellColor;
 
         ctx.save();
 
@@ -322,13 +343,16 @@ const Grid = () => {
     ctx,
     { cellId, rowId, columnId, height, width, x, y }
   ) => {
-    let { backgroundColor = "#FFFFFF", content } =
-      cellDetails.current[cellId] ?? {};
+    let {
+      backgroundColor = "#FFFFFF",
+      content = [],
+      color = "",
+    } = cellDetails.current[cellId] ?? {};
 
     let rect = { x, y, width, height };
 
     paintRect(ctx, backgroundColor, rect);
-    paintCellContent(ctx, content, rect);
+    paintCellContent(ctx, content, color, rect);
     paintCellLine(ctx, rect);
   };
 
@@ -759,10 +783,26 @@ const Grid = () => {
     console.log("insert row top");
   };
 
+  const handleCellFormat: ICellFormat = (key, value: string) => {
+    if (!selectedCell) return;
+
+    if (!cellDetails.current[selectedCellId]) {
+      cellDetails.current[selectedCellId] = {
+        columnId: selectedCell.columnId,
+        rowId: selectedCell.rowId,
+      };
+    }
+
+    cellDetails.current[selectedCellId][key] = value;
+    forceUpdate(Math.random());
+  };
   return (
     <Fragment>
-      <ToolBar quill={quill} cellId={selectedCellId} />
-      <FormularBar />
+      <ToolBar
+        quill={quill}
+        cellId={selectedCellId}
+        onCellFormat={handleCellFormat}
+      />
       <div
         ref={gridRef}
         className="relative w-[var(--grid-width)] h-[var(--grid-height)] select-none overflow-hidden"

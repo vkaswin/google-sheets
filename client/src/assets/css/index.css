@@ -1,7 +1,4 @@
 @import "./fonts.css";
 @import "./icons.css";
 @import "./common.css";
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "./tailwind.css";

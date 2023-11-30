@@ -11,7 +11,7 @@ type IEditCellProps = {
 const EditCell = ({ cell, data, onWheel }: IEditCellProps) => {
   let { x, y, rowId, height, columnId, width } = cell || {};
 
-  let { backgroundColor = "#FFFFFF" } = data ?? {};
+  let { backgroundColor = "#FFFFFF", color } = data ?? {};
 
   const editorRef = useRef<HTMLDivElement | null>(null);
 

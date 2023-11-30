@@ -10,20 +10,16 @@ html {
 
 :root {
   --header-height: 60px;
-  --toolbar-height: 40px;
-  --formula-bar-height: 30px;
+  --toolbar-height: 50px;
   --bottom-bar-height: 45px;
   --cell-height: 25px;
   --cell-width: 100px;
   --scrollbar-size: 13px;
-  --scrollbar-top: calc(
-    var(--header-height) + var(--formula-bar-height) + var(--toolbar-height)
-  );
+  --scrollbar-top: calc(var(--header-height) + var(--toolbar-height));
   --grid-height: calc(
     100% -
       calc(
-        var(--header-height) + var(--formula-bar-height) +
-          var(--bottom-bar-height) + var(--toolbar-height) +
+        var(--header-height) + var(--bottom-bar-height) + var(--toolbar-height) +
           var(--scrollbar-size)
       )
   );
@@ -58,8 +54,4 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .ql-clipboard {
   display: none;
-}
-
-canvas {
-  image-rendering: optimizeQuality;
 }
