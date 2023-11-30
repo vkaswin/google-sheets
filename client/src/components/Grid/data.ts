@@ -86,6 +86,258 @@ export const data: ISheetDetail = {
   cells: [
     {
       rowId: 1,
+      columnId: 2,
+      text: "",
+      content: [
+        [
+          {
+            insert: "s ",
+          },
+          {
+            insert: "fas",
+            attributes: {
+              font: "pacifico",
+            },
+          },
+          {
+            insert: " f",
+          },
+          {
+            insert: "a",
+            attributes: {
+              font: "montserrat",
+            },
+          },
+          {
+            insert: "s ff ",
+            attributes: {
+              font: "montserrat",
+              italic: true,
+            },
+          },
+          {
+            insert: "s",
+            attributes: {
+              italic: true,
+              font: "montserrat",
+              bold: true,
+            },
+          },
+          {
+            insert: "f",
+            attributes: {
+              italic: true,
+              bold: true,
+            },
+          },
+          {
+            insert: " sa",
+            attributes: {
+              italic: true,
+            },
+          },
+          {
+            insert: " \n",
+          },
+        ],
+        [
+          {
+            insert: "fs s",
+          },
+          {
+            insert: "fsa js j lwrfw iwf ",
+            attributes: {
+              underline: true,
+            },
+          },
+          {
+            insert: "\n",
+          },
+        ],
+        [
+          {
+            insert: "sf ",
+            attributes: {
+              underline: true,
+            },
+          },
+          {
+            insert: "sa",
+            attributes: {
+              font: "lobster",
+              underline: true,
+            },
+          },
+          {
+            insert: "fjwjo ",
+            attributes: {
+              font: "lobster",
+            },
+          },
+          {
+            insert: "isj",
+            attributes: {
+              bold: true,
+            },
+          },
+          {
+            insert: " i",
+            attributes: {
+              strike: true,
+            },
+          },
+          {
+            insert: "sjfw ",
+            attributes: {
+              strike: true,
+              bold: true,
+            },
+          },
+          {
+            insert: "oi",
+            attributes: {
+              strike: true,
+              background: "#e06666",
+              color: "#ffffff",
+              bold: true,
+            },
+          },
+          {
+            insert: "nifoiwjno",
+            attributes: {
+              background: "#e06666",
+              color: "#ffffff",
+              strike: true,
+            },
+          },
+          {
+            insert: " ",
+            attributes: {
+              strike: true,
+            },
+          },
+          {
+            insert: "fsf",
+            attributes: {
+              color: "#ff0000",
+              strike: true,
+            },
+          },
+          {
+            insert: " sa ",
+            attributes: {
+              strike: true,
+            },
+          },
+          {
+            insert: "\n",
+          },
+        ],
+        [
+          {
+            insert: " ",
+            attributes: {
+              strike: true,
+            },
+          },
+          {
+            insert: "sfs ",
+            attributes: {
+              font: "dancing-script",
+              strike: true,
+            },
+          },
+          {
+            insert: "ajk",
+            attributes: {
+              strike: true,
+            },
+          },
+          {
+            insert: "s flk;ma ",
+            attributes: {
+              font: "inter",
+              strike: true,
+            },
+          },
+          {
+            insert: "sref  sfa ",
+            attributes: {
+              strike: true,
+            },
+          },
+          {
+            insert: "\n",
+          },
+        ],
+        [
+          {
+            insert: "s",
+            attributes: {
+              strike: true,
+            },
+          },
+          {
+            insert: "faf ",
+            attributes: {
+              font: "oswald",
+              strike: true,
+            },
+          },
+          {
+            insert: "s a ",
+            attributes: {
+              strike: true,
+            },
+          },
+          {
+            insert: "\n",
+          },
+        ],
+        [
+          {
+            insert: "      ",
+            attributes: {
+              strike: true,
+            },
+          },
+          {
+            insert: "sfsa",
+            attributes: {
+              background: "#76a5af",
+              strike: true,
+            },
+          },
+          {
+            insert: " afs ",
+            attributes: {
+              font: "poppins",
+              strike: true,
+            },
+          },
+          {
+            insert: "aas",
+            attributes: {
+              color: "#1155cc",
+              font: "poppins",
+              strike: true,
+            },
+          },
+          {
+            insert: " ",
+            attributes: {
+              font: "poppins",
+              strike: true,
+            },
+          },
+          {
+            insert: "\n",
+          },
+        ],
+      ],
+    },
+    {
+      rowId: 1,
       columnId: 1,
       text: "",
       content: [

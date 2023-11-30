@@ -27,3 +27,76 @@
   src: url("../fonts/open-sans/OpenSans-Bold.ttf");
   font-display: swap;
 }
+
+.ql-font-open-sans {
+  font-family: "Open-Sans", sans-serif;
+}
+
+.ql-font-barlow-condensed {
+  font-family: "Barlow Condensed", sans-serif;
+}
+
+.ql-font-caveat {
+  font-family: "Caveat", cursive;
+}
+.ql-font-crimson-text {
+  font-family: "Crimson Text", serif;
+}
+.ql-font-inter {
+  font-family: "Inter", sans-serif;
+}
+.ql-font-lato {
+  font-family: "Lato", sans-serif;
+}
+
+.ql-font-lobster {
+  font-family: "Lobster", sans-serif;
+}
+
+.ql-font-dancing-script {
+  font-family: "Dancing Script", cursive;
+}
+
+.ql-font-montserrat {
+  font-family: "Montserrat", sans-serif;
+}
+
+.ql-font-nunito-sans {
+  font-family: "Nunito Sans", sans-serif;
+}
+
+.ql-font-oswald {
+  font-family: "Oswald", sans-serif;
+}
+
+.ql-font-oxygen {
+  font-family: "Oxygen", sans-serif;
+}
+
+.ql-font-pacifico {
+  font-family: "Pacifico", cursive;
+}
+
+.ql-font-poppins {
+  font-family: "Poppins", sans-serif;
+}
+
+.ql-font-quicksand {
+  font-family: "Quicksand", sans-serif;
+}
+
+.ql-font-roboto {
+  font-family: "Roboto", sans-serif;
+}
+
+.ql-font-roboto-mono {
+  font-family: "Roboto Mono", monospace;
+}
+
+.ql-font-rubik {
+  font-family: "Rubik", sans-serif;
+}
+
+.ql-font-ubuntu {
+  font-family: "Ubuntu", sans-serif;
+}

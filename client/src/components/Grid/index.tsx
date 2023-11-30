@@ -23,16 +23,8 @@ import ContextMenu from "./ContextMenu";
 import FormularBar from "./FormulaBar";
 import ScrollBar from "./ScrollBar";
 import { convertToTitle } from "@/utils";
+import { GRIDCONFIG, CUSTOM_FONTS } from "./Config";
 import { data } from "./data";
-
-const config = {
-  lineWidth: 2,
-  strokeStyle: "#C4C7C5",
-  cellHeight: 25,
-  cellWidth: 100,
-  colWidth: 46,
-  rowHeight: 25,
-};
 
 const Grid = () => {
   const [rows, setRows] = useState<IRow[]>([]);
@@ -60,6 +52,8 @@ const Grid = () => {
     "x" | "y"
   > | null>(null);
 
+  const [quill, setQuill] = useState<Quill | null>(null);
+
   const [refresh, forceUpdate] = useState(0);
 
   const rowDetails = useRef<IRowDetails>({});
@@ -76,8 +70,6 @@ const Grid = () => {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const quillRef = useRef<Quill | null>(null);
-
   const selectedCell = useMemo(() => {
     return cells.find(({ cellId }) => cellId === selectedCellId);
   }, [rows, columns, selectedCellId]);
@@ -91,8 +83,6 @@ const Grid = () => {
   }, [columns, selectedColumnId]);
 
   useEffect(() => {
-    quillRef.current = new Quill("#editor", {});
-
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
@@ -110,6 +100,7 @@ const Grid = () => {
     canvas.width = clientWidth;
     canvas.height = clientHeight;
 
+    initQuill();
     getSheetDetails();
   }, []);
 
@@ -130,6 +121,13 @@ const Grid = () => {
     paintColumns(columns);
     paintBox();
   }, [selectedCellId, selectedColumnId, selectedRowId]);
+
+  const initQuill = () => {
+    const fontFormat = Quill.import("formats/font");
+    fontFormat.whitelist = CUSTOM_FONTS;
+    Quill.register(fontFormat, true);
+    setQuill(new Quill("#editor"));
+  };
 
   const handleKeyDown = (event: Event) => {
     let { ctrlKey, key } = event as KeyboardEvent;
@@ -166,8 +164,8 @@ const Grid = () => {
     canvas.width = clientWidth;
     canvas.height = clientHeight;
 
-    let { rowId = 1, y = config.rowHeight } = rows[0] ?? {};
-    let { columnId = 1, x = config.colWidth } = columns[0] ?? {};
+    let { rowId = 1, y = GRIDCONFIG.rowHeight } = rows[0] ?? {};
+    let { columnId = 1, x = GRIDCONFIG.colWidth } = columns[0] ?? {};
 
     renderGrid({
       offsetX: x,
@@ -185,8 +183,8 @@ const Grid = () => {
     paintRect(ctx, highlight ? "#D3E3FD" : "#FFFFFF", { height, width, x, y });
 
     ctx.save();
-    ctx.strokeStyle = config.strokeStyle;
-    ctx.lineWidth = config.lineWidth;
+    ctx.strokeStyle = GRIDCONFIG.strokeStyle;
+    ctx.lineWidth = GRIDCONFIG.lineWidth;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = highlight ? "12px Open-Sans-Medium" : "12px Open-Sans";
@@ -206,8 +204,8 @@ const Grid = () => {
   ) => {
     paintRect(ctx, highlight ? "#D3E3FD" : "#FFFFFF", { height, width, x, y });
     ctx.save();
-    ctx.strokeStyle = config.strokeStyle;
-    ctx.lineWidth = config.lineWidth;
+    ctx.strokeStyle = GRIDCONFIG.strokeStyle;
+    ctx.lineWidth = GRIDCONFIG.lineWidth;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = highlight ? "12px Open-Sans-Medium" : "12px Open-Sans";
@@ -240,8 +238,8 @@ const Grid = () => {
 
   const paintCellLine: IPaintCellLine = (ctx, { height, width, x, y }) => {
     ctx.save();
-    ctx.strokeStyle = config.strokeStyle;
-    ctx.lineWidth = config.lineWidth;
+    ctx.strokeStyle = GRIDCONFIG.strokeStyle;
+    ctx.lineWidth = GRIDCONFIG.lineWidth;
     ctx.beginPath();
     ctx.moveTo(x, y + height);
     ctx.lineTo(x + width, y + height);
@@ -340,14 +338,14 @@ const Grid = () => {
     let ctx = canvasRef.current.getContext("2d")!;
     ctx.save();
     ctx.fillStyle = "#FFFFFF";
-    ctx.strokeStyle = config.strokeStyle;
-    ctx.lineWidth = config.lineWidth - 0.5;
+    ctx.strokeStyle = GRIDCONFIG.strokeStyle;
+    ctx.lineWidth = GRIDCONFIG.lineWidth - 0.5;
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.fillRect(0, 0, config.colWidth, config.rowHeight);
+    ctx.fillRect(0, 0, GRIDCONFIG.colWidth, GRIDCONFIG.rowHeight);
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.strokeRect(0, 1, config.colWidth, config.rowHeight - 1);
+    ctx.strokeRect(0, 1, GRIDCONFIG.colWidth, GRIDCONFIG.rowHeight - 1);
     ctx.stroke();
     ctx.restore();
   };
@@ -365,15 +363,15 @@ const Grid = () => {
     }
 
     ctx.save();
-    ctx.strokeStyle = config.strokeStyle;
-    ctx.lineWidth = config.lineWidth - 0.5;
+    ctx.strokeStyle = GRIDCONFIG.strokeStyle;
+    ctx.lineWidth = GRIDCONFIG.lineWidth - 0.5;
     ctx.beginPath();
-    ctx.moveTo(0, config.rowHeight);
+    ctx.moveTo(0, GRIDCONFIG.rowHeight);
     ctx.lineTo(0, canvasRef.current.clientHeight);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(config.colWidth, config.rowHeight);
-    ctx.lineTo(config.colWidth, canvasRef.current.clientHeight);
+    ctx.moveTo(GRIDCONFIG.colWidth, GRIDCONFIG.rowHeight);
+    ctx.lineTo(GRIDCONFIG.colWidth, canvasRef.current.clientHeight);
     ctx.stroke();
     ctx.restore();
   };
@@ -392,13 +390,13 @@ const Grid = () => {
 
     ctx.save();
     ctx.beginPath();
-    ctx.strokeStyle = config.strokeStyle;
-    ctx.lineWidth = config.lineWidth - 0.5;
-    ctx.moveTo(config.colWidth, config.rowHeight);
-    ctx.lineTo(canvasRef.current.clientWidth, config.rowHeight);
+    ctx.strokeStyle = GRIDCONFIG.strokeStyle;
+    ctx.lineWidth = GRIDCONFIG.lineWidth - 0.5;
+    ctx.moveTo(GRIDCONFIG.colWidth, GRIDCONFIG.rowHeight);
+    ctx.lineTo(canvasRef.current.clientWidth, GRIDCONFIG.rowHeight);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(config.colWidth, 1);
+    ctx.moveTo(GRIDCONFIG.colWidth, 1);
     ctx.lineTo(canvasRef.current.clientWidth, 1);
     ctx.stroke();
     ctx.restore();
@@ -422,15 +420,15 @@ const Grid = () => {
     let cellData: ICell[] = [];
 
     for (let i = rowStart, y = offsetY; y < clientHeight; i++) {
-      let height = rowDetails.current[i]?.height || config.cellHeight;
+      let height = rowDetails.current[i]?.height || GRIDCONFIG.cellHeight;
 
-      if (y + height > config.rowHeight) {
+      if (y + height > GRIDCONFIG.rowHeight) {
         rowData.push({
           y,
           x: 0,
           rowId: i,
           height: height,
-          width: config.colWidth,
+          width: GRIDCONFIG.colWidth,
         });
       }
 
@@ -438,15 +436,15 @@ const Grid = () => {
     }
 
     for (let i = colStart, x = offsetX; x < clientWidth; i++) {
-      let width = columnDetails.current[i]?.width || config.cellWidth;
+      let width = columnDetails.current[i]?.width || GRIDCONFIG.cellWidth;
 
-      if (x + width > config.colWidth) {
+      if (x + width > GRIDCONFIG.colWidth) {
         columnData.push({
           x,
           y: 0,
           columnId: i,
           width,
-          height: config.rowHeight,
+          height: GRIDCONFIG.rowHeight,
         });
       }
 
@@ -536,7 +534,13 @@ const Grid = () => {
   };
 
   const handleVerticalScroll = (deltaY: number) => {
-    if (!rows.length || !columns.length) return;
+    if (
+      !gridRef.current ||
+      !verticalScroll.current ||
+      !rows.length ||
+      !columns.length
+    )
+      return;
 
     let { rowId, y } = rows[0];
     let { columnId, x } = columns[0];
@@ -546,14 +550,16 @@ const Grid = () => {
       y += -deltaY;
       rowId--;
 
-      while (rowId > 0 && y > config.rowHeight) {
-        y -= rowDetails.current[rowId]?.height ?? config.cellHeight;
+      while (rowId > 0 && y > GRIDCONFIG.rowHeight) {
+        y -= rowDetails.current[rowId]?.height ?? GRIDCONFIG.cellHeight;
         rowId--;
       }
 
+      let offsetY = Math.min(GRIDCONFIG.rowHeight, y);
+
       renderGrid({
         offsetX: x,
-        offsetY: Math.min(config.rowHeight, y),
+        offsetY,
         rowStart: rowId + 1,
         colStart: columnId,
       });
@@ -565,11 +571,25 @@ const Grid = () => {
         rowStart: rowId,
         colStart: columnId,
       });
+
+      let { clientHeight: gridHeight } = gridRef.current;
+      let { style, clientHeight: scrollBarHeight } = verticalScroll.current;
+
+      let top = +style.top.replace("px", "") + deltaY;
+      if (top + scrollBarHeight >= gridHeight) top = gridHeight / 2;
+
+      verticalScroll.current.style.top = `${top}px`;
     }
   };
 
   const handleHorizontalScroll = (deltaX: number) => {
-    if (!rows.length || !columns.length) return;
+    if (
+      !gridRef.current ||
+      !horizontalScroll.current ||
+      !rows.length ||
+      !columns.length
+    )
+      return;
 
     let { rowId, y } = rows[0];
     let { columnId, x } = columns[0];
@@ -579,13 +599,13 @@ const Grid = () => {
       x += -deltaX;
       columnId--;
 
-      while (columnId > 0 && x > config.colWidth) {
-        x -= columnDetails.current[columnId]?.width ?? config.cellWidth;
+      while (columnId > 0 && x > GRIDCONFIG.colWidth) {
+        x -= columnDetails.current[columnId]?.width ?? GRIDCONFIG.cellWidth;
         columnId--;
       }
 
       renderGrid({
-        offsetX: Math.min(config.colWidth, x),
+        offsetX: Math.min(GRIDCONFIG.colWidth, x),
         offsetY: y,
         rowStart: rowId,
         colStart: columnId + 1,
@@ -598,6 +618,14 @@ const Grid = () => {
         rowStart: rowId,
         colStart: columnId,
       });
+
+      let { clientWidth: gridWidth } = gridRef.current;
+      let { style, clientWidth: scrollBarWidth } = horizontalScroll.current;
+
+      let left = +style.left.replace("px", "") + deltaX;
+      if (left + scrollBarWidth >= gridWidth) left = gridWidth / 2;
+
+      horizontalScroll.current.style.left = `${left}px`;
     }
   };
 
@@ -609,7 +637,7 @@ const Grid = () => {
   };
 
   const handleDoubleClickCell = () => {
-    if (!gridRef.current || !selectedCell || !quillRef.current) return;
+    if (!gridRef.current || !selectedCell || !quill) return;
 
     let { columnId, cellId, width, height, rowId, x, y } = selectedCell;
 
@@ -617,7 +645,7 @@ const Grid = () => {
 
     let content = cellDetails.current[cellId]?.content || [];
 
-    quillRef.current.setContents(content.flat() as any);
+    quill.setContents(content.flat() as any);
 
     setEditCell({
       cellId,
@@ -625,8 +653,8 @@ const Grid = () => {
       width,
       height,
       rowId,
-      x: Math.max(config.colWidth, x),
-      y: Math.max(config.rowHeight + top, y + top),
+      x: Math.max(GRIDCONFIG.colWidth, x),
+      y: Math.max(GRIDCONFIG.rowHeight + top, y + top),
     });
   };
 
@@ -731,27 +759,9 @@ const Grid = () => {
     console.log("insert row top");
   };
 
-  const handleFormatText: IFormatText = (type, value) => {
-    if (!quillRef.current) return;
-
-    if (type === "bold") {
-      quillRef.current.format("bold", value);
-    } else if (type === "italic") {
-      quillRef.current.format("italic", value);
-    } else if (type === "underline") {
-      quillRef.current.format("underline", value);
-    } else if (type === "strike") {
-      quillRef.current.format("strike", value);
-    } else if (type === "color") {
-      quillRef.current.format("color", value);
-    } else if (type === "background") {
-      quillRef.current.format("background", value);
-    }
-  };
-
   return (
     <Fragment>
-      <ToolBar onFormatText={handleFormatText} />
+      <ToolBar quill={quill} cellId={selectedCellId} />
       <FormularBar />
       <div
         ref={gridRef}
@@ -761,16 +771,6 @@ const Grid = () => {
         onWheel={handleScroll}
       >
         <canvas ref={canvasRef}></canvas>
-        <ColumnResizer
-          columns={columns}
-          onClick={handleClickColumn}
-          onResize={handleResizeColumn}
-        />
-        <RowResizer
-          rows={rows}
-          onClick={handleClickRow}
-          onResize={handleResizeRow}
-        />
         {selectedColumn && <HighLightColumn selectedColumn={selectedColumn} />}
         {selectedRow && <HighLightRow selectedRow={selectedRow} />}
         <div className="absolute left-[var(--col-width)] top-[var(--row-height)] w-[calc(100%-var(--col-width))] h-[calc(100%-var(--row-height))] overflow-hidden">
@@ -790,6 +790,16 @@ const Grid = () => {
           {selectedColumn && <ColumnOverLay selectedColumn={selectedColumn} />}
           {selectedRow && <RowOverLay selectedRow={selectedRow} />}
         </div>
+        <ColumnResizer
+          columns={columns}
+          onClick={handleClickColumn}
+          onResize={handleResizeColumn}
+        />
+        <RowResizer
+          rows={rows}
+          onClick={handleClickRow}
+          onResize={handleResizeRow}
+        />
       </div>
       <ScrollBar ref={verticalScroll} axis="y" />
       <ScrollBar ref={horizontalScroll} axis="x" />

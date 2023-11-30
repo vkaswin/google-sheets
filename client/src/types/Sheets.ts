@@ -73,29 +73,33 @@ type IPaintCellContent = (
   rect: IRect
 ) => void;
 
+type IPickerOptions = "background" | "color" | "border";
+
 type IFormatTypes =
   | "bold"
   | "italic"
   | "strike"
   | "underline"
-  | "color"
-  | "background"
-  | "border"
   | "align"
   | "direction"
   | "font"
-  | "size";
+  | "size"
+  | IPickerOptions;
 
 type IFormatText = (type: IFormatTypes, value: string | boolean) => void;
 
-type ILineProps = {
-  width: number;
-  text: string;
+type IActiveStyle = {
+  bold: boolean;
+  strike: boolean;
+  italic: boolean;
   font: string;
+  underline: boolean;
+  background: string;
   color: string;
-};
-
-type ILine = {
-  y: number;
-  props: ILineProps[];
+  alignLeft: boolean;
+  alignRight: boolean;
+  alignMiddle: boolean;
+  alignJustify: boolean;
+  link: boolean;
+  border: boolean;
 };
