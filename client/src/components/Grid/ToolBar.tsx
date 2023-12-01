@@ -1,4 +1,11 @@
-import { Fragment, MouseEvent, useEffect, useState } from "react";
+import {
+  Fragment,
+  MouseEvent,
+  useEffect,
+  useRef,
+  useState,
+  CSSProperties,
+} from "react";
 import Quill from "quill";
 import classNames from "classnames";
 import {
@@ -15,7 +22,7 @@ import { CUSTOM_FONTS, FONTS } from "./Config";
 type IToolBarProps = {
   quill: Quill | null;
   cellId?: string;
-  onCellFormat: ICellFormat;
+  onFormat: IFormatText;
 };
 
 const activeClassName = "bg-light-blue rounded";
@@ -35,7 +42,7 @@ const DEFAULT_ACTIVE_STYLE: IActiveStyle = {
   link: false,
 };
 
-const ToolBar = ({ quill, cellId, onCellFormat }: IToolBarProps) => {
+const ToolBar = ({ quill, cellId, onFormat }: IToolBarProps) => {
   const [colorPicker, setColorPicker] = useState<{
     rect: DOMRect;
     type: IPickerOptions;
@@ -46,6 +53,9 @@ const ToolBar = ({ quill, cellId, onCellFormat }: IToolBarProps) => {
   useEffect(() => {
     if (!quill) return;
     quill.on("selection-change", handleSelectionChange);
+    return () => {
+      quill.off("selection-change", handleSelectionChange);
+    };
   }, [quill]);
 
   useEffect(() => {
@@ -89,13 +99,11 @@ const ToolBar = ({ quill, cellId, onCellFormat }: IToolBarProps) => {
 
     let selection = quill.getSelection();
 
-    if (!selection) {
-      if (type === "background") {
-        onCellFormat("backgroundColor", value as string);
-      } else if (type === "color") {
-        onCellFormat("color", value as string);
-      }
+    if (!selection || selection.length === 0) {
+      onFormat(type, value as string);
+      setActiveStyle({ ...activeStyle, [type]: value });
     } else if (type === "align") {
+      console.log(type, value);
     } else {
       quill.format(type, value);
     }
@@ -114,6 +122,7 @@ const ToolBar = ({ quill, cellId, onCellFormat }: IToolBarProps) => {
     let selection = quill.getSelection();
     if (!selection) return;
     quill.removeFormat(selection.index, selection.length);
+    handleSelectionChange();
   };
 
   const Divider = () => <div className="border border-r-[#c7c7c7] h-2/3"></div>;

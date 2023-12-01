@@ -113,12 +113,3 @@ export const clickOutside = <T extends HTMLElement>({
 
   return removeEventListener;
 };
-
-export const hexToRgb = (hex: string) => {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!result) return "";
-  let red = parseInt(result[1], 16);
-  let green = parseInt(result[2], 16);
-  let blue = parseInt(result[3], 16);
-  return `rgb(${red}, ${green}, ${blue})`;
-};

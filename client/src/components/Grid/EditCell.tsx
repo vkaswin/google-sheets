@@ -1,17 +1,18 @@
-import { useEffect, useMemo, useRef, WheelEvent } from "react";
-import { convertToTitle } from "@/utils";
+import { useCallback, useEffect, useMemo, useRef, WheelEvent } from "react";
+import { convertToTitle, debounce } from "@/utils";
 import classNames from "classnames";
 
 type IEditCellProps = {
   cell: ICell | null;
   data: ICellProps | null;
   onWheel: (event: WheelEvent<HTMLDivElement>) => void;
+  onEditorChange: (cell: ICell) => void;
 };
 
-const EditCell = ({ cell, data, onWheel }: IEditCellProps) => {
+const EditCell = ({ cell, data, onWheel, onEditorChange }: IEditCellProps) => {
   let { x, y, rowId, height, columnId, width } = cell || {};
 
-  let { backgroundColor = "#FFFFFF", color } = data ?? {};
+  let { background = "#FFFFFF", color } = data ?? {};
 
   const editorRef = useRef<HTMLDivElement | null>(null);
 
@@ -44,10 +45,18 @@ const EditCell = ({ cell, data, onWheel }: IEditCellProps) => {
     return `${convertToTitle(columnId)}${rowId}`;
   }, [columnId]);
 
+  const handleKeyDown = useCallback(
+    debounce(() => {
+      if (!cell) return;
+      onEditorChange(cell);
+    }, 500),
+    [cell]
+  );
+
   return (
     <div
       className={classNames(
-        "absolute flex border-1 outline outline-3 outline-light-blue p-[2px] z-10",
+        "absolute flex border-1 outline outline-3 outline-light-blue leading-5 p-[2px] z-10",
         {
           "hidden pointer-events-none": !cell,
         }
@@ -57,14 +66,15 @@ const EditCell = ({ cell, data, onWheel }: IEditCellProps) => {
         minHeight: height,
         left: x,
         top: y,
-        backgroundColor,
       }}
       onWheel={onWheel}
+      onKeyDown={handleKeyDown}
     >
       <div
         id="editor"
         ref={editorRef}
         className="w-full text-black text-[14px] outline outline-2 outline-dark-blue px-[5px]"
+        style={{ background, color }}
       ></div>
       <div className="absolute -top-7 left-0 bg-blue text-xs font-medium text-white rounded-sm px-2 py-1">
         {cellId}

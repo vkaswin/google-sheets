@@ -24,7 +24,7 @@ type ICellDetails = Record<
 type ICellProps = {
   text?: string;
   content?: any[];
-  backgroundColor?: string;
+  background?: string;
   color?: string;
   textAlign?: string;
 };
@@ -71,7 +71,7 @@ type IPaintCellLine = (ctx: CanvasRenderingContext2D, rect: IRect) => void;
 
 type IPaintCellContent = (
   ctx: CanvasRenderingContext2D,
-  content: any[][],
+  content: any[],
   cellColor: string,
   rect: IRect
 ) => void;
@@ -87,6 +87,7 @@ type IFormatTypes =
   | "direction"
   | "font"
   | "size"
+  | "textAlign"
   | IPickerOptions;
 
 type IFormatText = (type: IFormatTypes, value: string | boolean) => void;

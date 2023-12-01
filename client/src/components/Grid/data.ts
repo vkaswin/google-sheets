@@ -89,251 +89,252 @@ export const data: ISheetDetail = {
       columnId: 2,
       text: "",
       content: [
-        [
-          {
-            insert: "s ",
+        {
+          insert: "s ",
+        },
+        {
+          attributes: {
+            font: "pacifico",
           },
-          {
-            insert: "fas",
-            attributes: {
-              font: "pacifico",
-            },
+          insert: "fas",
+        },
+        {
+          insert: " f",
+        },
+        {
+          attributes: {
+            font: "montserrat",
           },
-          {
-            insert: " f",
+          insert: "a",
+        },
+        {
+          attributes: {
+            font: "montserrat",
+            italic: true,
           },
-          {
-            insert: "a",
-            attributes: {
-              font: "montserrat",
-            },
+          insert: "s ff ",
+        },
+        {
+          attributes: {
+            italic: true,
+            font: "montserrat",
+            bold: true,
           },
-          {
-            insert: "s ff ",
-            attributes: {
-              font: "montserrat",
-              italic: true,
-            },
+          insert: "s",
+        },
+        {
+          attributes: {
+            italic: true,
+            bold: true,
           },
-          {
-            insert: "s",
-            attributes: {
-              italic: true,
-              font: "montserrat",
-              bold: true,
-            },
+          insert: "f",
+        },
+        {
+          attributes: {
+            italic: true,
           },
-          {
-            insert: "f",
-            attributes: {
-              italic: true,
-              bold: true,
-            },
+          insert: " sa",
+        },
+        {
+          insert: " ",
+        },
+        {
+          insert: "\n",
+        },
+        {
+          insert: "fs s",
+        },
+        {
+          attributes: {
+            underline: true,
           },
-          {
-            insert: " sa",
-            attributes: {
-              italic: true,
-            },
+          insert: "fsa js j lwrfw iwf ",
+        },
+        {
+          insert: "\n",
+        },
+        {
+          attributes: {
+            underline: true,
           },
-          {
-            insert: " \n",
+          insert: "sf ",
+        },
+        {
+          attributes: {
+            font: "lobster",
+            underline: true,
           },
-        ],
-        [
-          {
-            insert: "fs s",
+          insert: "sa",
+        },
+        {
+          attributes: {
+            font: "lobster",
           },
-          {
-            insert: "fsa js j lwrfw iwf ",
-            attributes: {
-              underline: true,
-            },
+          insert: "fjwjo ",
+        },
+        {
+          attributes: {
+            bold: true,
           },
-          {
-            insert: "\n",
+          insert: "isj",
+        },
+        {
+          attributes: {
+            strike: true,
           },
-        ],
-        [
-          {
-            insert: "sf ",
-            attributes: {
-              underline: true,
-            },
+          insert: " i",
+        },
+        {
+          attributes: {
+            strike: true,
+            bold: true,
           },
-          {
-            insert: "sa",
-            attributes: {
-              font: "lobster",
-              underline: true,
-            },
+          insert: "sjfw ",
+        },
+        {
+          attributes: {
+            strike: true,
+            background: "#e06666",
+            color: "#ffffff",
+            bold: true,
           },
-          {
-            insert: "fjwjo ",
-            attributes: {
-              font: "lobster",
-            },
+          insert: "oi",
+        },
+        {
+          attributes: {
+            background: "#e06666",
+            color: "#ffffff",
+            strike: true,
           },
-          {
-            insert: "isj",
-            attributes: {
-              bold: true,
-            },
+          insert: "nifoiwjno",
+        },
+        {
+          attributes: {
+            strike: true,
           },
-          {
-            insert: " i",
-            attributes: {
-              strike: true,
-            },
+          insert: " ",
+        },
+        {
+          attributes: {
+            color: "#ff0000",
+            strike: true,
           },
-          {
-            insert: "sjfw ",
-            attributes: {
-              strike: true,
-              bold: true,
-            },
+          insert: "fsf",
+        },
+        {
+          attributes: {
+            strike: true,
           },
-          {
-            insert: "oi",
-            attributes: {
-              strike: true,
-              background: "#e06666",
-              color: "#ffffff",
-              bold: true,
-            },
+          insert: " sa ",
+        },
+        {
+          insert: "\n",
+        },
+        {
+          attributes: {
+            strike: true,
           },
-          {
-            insert: "nifoiwjno",
-            attributes: {
-              background: "#e06666",
-              color: "#ffffff",
-              strike: true,
-            },
+          insert: " ",
+        },
+        {
+          attributes: {
+            font: "dancing-script",
+            strike: true,
           },
-          {
-            insert: " ",
-            attributes: {
-              strike: true,
-            },
+          insert: "sfs ",
+        },
+        {
+          attributes: {
+            strike: true,
           },
-          {
-            insert: "fsf",
-            attributes: {
-              color: "#ff0000",
-              strike: true,
-            },
+          insert: "ajk",
+        },
+        {
+          attributes: {
+            font: "inter",
+            strike: true,
           },
-          {
-            insert: " sa ",
-            attributes: {
-              strike: true,
-            },
+          insert: "s flk;ma ",
+        },
+        {
+          attributes: {
+            strike: true,
           },
-          {
-            insert: "\n",
+          insert: "sref  sfa ",
+        },
+        {
+          insert: "\n",
+        },
+        {
+          attributes: {
+            strike: true,
           },
-        ],
-        [
-          {
-            insert: " ",
-            attributes: {
-              strike: true,
-            },
+          insert: "s",
+        },
+        {
+          attributes: {
+            font: "oswald",
+            strike: true,
           },
-          {
-            insert: "sfs ",
-            attributes: {
-              font: "dancing-script",
-              strike: true,
-            },
+          insert: "faf ",
+        },
+        {
+          attributes: {
+            strike: true,
           },
-          {
-            insert: "ajk",
-            attributes: {
-              strike: true,
-            },
+          insert: "s a ",
+        },
+        {
+          insert: "\n",
+        },
+        {
+          attributes: {
+            strike: true,
           },
-          {
-            insert: "s flk;ma ",
-            attributes: {
-              font: "inter",
-              strike: true,
-            },
+          insert: "      ",
+        },
+        {
+          attributes: {
+            background: "#76a5af",
+            strike: true,
           },
-          {
-            insert: "sref  sfa ",
-            attributes: {
-              strike: true,
-            },
+          insert: "sfsa",
+        },
+        {
+          attributes: {
+            font: "poppins",
+            strike: true,
           },
-          {
-            insert: "\n",
+          insert: " afs ",
+        },
+        {
+          attributes: {
+            font: "poppins",
+            color: "#1155cc",
+            strike: true,
           },
-        ],
-        [
-          {
-            insert: "s",
-            attributes: {
-              strike: true,
-            },
+          insert: "aas",
+        },
+        {
+          attributes: {
+            font: "poppins",
+            strike: true,
           },
-          {
-            insert: "faf ",
-            attributes: {
-              font: "oswald",
-              strike: true,
-            },
+          insert: " ",
+        },
+        {
+          insert: "\n",
+        },
+        {
+          attributes: {
+            font: "poppins",
+            strike: true,
           },
-          {
-            insert: "s a ",
-            attributes: {
-              strike: true,
-            },
-          },
-          {
-            insert: "\n",
-          },
-        ],
-        [
-          {
-            insert: "      ",
-            attributes: {
-              strike: true,
-            },
-          },
-          {
-            insert: "sfsa",
-            attributes: {
-              background: "#76a5af",
-              strike: true,
-            },
-          },
-          {
-            insert: " afs ",
-            attributes: {
-              font: "poppins",
-              strike: true,
-            },
-          },
-          {
-            insert: "aas",
-            attributes: {
-              color: "#1155cc",
-              font: "poppins",
-              strike: true,
-            },
-          },
-          {
-            insert: " ",
-            attributes: {
-              font: "poppins",
-              strike: true,
-            },
-          },
-          {
-            insert: "\n",
-          },
-        ],
+          insert: " s as",
+        },
+        {
+          insert: "\n",
+        },
       ],
     },
     {
@@ -341,175 +342,252 @@ export const data: ISheetDetail = {
       columnId: 1,
       text: "",
       content: [
-        [
-          {
-            insert: "s fas fa",
+        {
+          insert: "s ",
+        },
+        {
+          attributes: {
+            font: "pacifico",
           },
-          {
-            insert: "s ff ",
-            attributes: {
-              italic: true,
-            },
+          insert: "fas",
+        },
+        {
+          insert: " f",
+        },
+        {
+          attributes: {
+            font: "montserrat",
           },
-          {
-            insert: "sf",
-            attributes: {
-              italic: true,
-              bold: true,
-            },
+          insert: "a",
+        },
+        {
+          attributes: {
+            font: "montserrat",
+            italic: true,
           },
-          {
-            insert: " sa",
-            attributes: {
-              italic: true,
-            },
+          insert: "s ff ",
+        },
+        {
+          attributes: {
+            italic: true,
+            font: "montserrat",
+            bold: true,
           },
-          {
-            insert: " \n",
+          insert: "s",
+        },
+        {
+          attributes: {
+            italic: true,
+            bold: true,
           },
-        ],
-        [
-          {
-            insert: "fs s",
+          insert: "f",
+        },
+        {
+          attributes: {
+            italic: true,
           },
-          {
-            insert: "fsa js j lwrfw iwf ",
-            attributes: {
-              underline: true,
-            },
+          insert: " sa",
+        },
+        {
+          insert: " ",
+        },
+        {
+          insert: "\n",
+        },
+        {
+          insert: "fs s",
+        },
+        {
+          attributes: {
+            underline: true,
           },
-          {
-            insert: "\n",
+          insert: "fsa js j lwrfw iwf ",
+        },
+        {
+          insert: "\n",
+        },
+        {
+          attributes: {
+            underline: true,
           },
-        ],
-        [
-          {
-            insert: "sf sa",
-            attributes: {
-              underline: true,
-            },
+          insert: "sf ",
+        },
+        {
+          attributes: {
+            font: "lobster",
+            underline: true,
           },
-          {
-            insert: "fjwjo ",
+          insert: "sa",
+        },
+        {
+          attributes: {
+            font: "lobster",
           },
-          {
-            insert: "isj",
-            attributes: {
-              bold: true,
-            },
+          insert: "fjwjo ",
+        },
+        {
+          attributes: {
+            bold: true,
           },
-          {
-            insert: " i",
-            attributes: {
-              strike: true,
-            },
+          insert: "isj",
+        },
+        {
+          attributes: {
+            strike: true,
           },
-          {
-            insert: "sjfw ",
-            attributes: {
-              strike: true,
-              bold: true,
-            },
+          insert: " i",
+        },
+        {
+          attributes: {
+            strike: true,
+            bold: true,
           },
-          {
-            insert: "oi",
-            attributes: {
-              strike: true,
-              background: "#e06666",
-              color: "#ffffff",
-              bold: true,
-            },
+          insert: "sjfw ",
+        },
+        {
+          attributes: {
+            strike: true,
+            background: "#e06666",
+            color: "#ffffff",
+            bold: true,
           },
-          {
-            insert: "nifoiwjno",
-            attributes: {
-              background: "#e06666",
-              color: "#ffffff",
-              strike: true,
-            },
+          insert: "oi",
+        },
+        {
+          attributes: {
+            background: "#e06666",
+            color: "#ffffff",
+            strike: true,
           },
-          {
-            insert: " ",
-            attributes: {
-              strike: true,
-            },
+          insert: "nifoiwjno",
+        },
+        {
+          attributes: {
+            strike: true,
           },
-          {
-            insert: "fsf",
-            attributes: {
-              color: "#ff0000",
-              strike: true,
-            },
+          insert: " ",
+        },
+        {
+          attributes: {
+            color: "#ff0000",
+            strike: true,
           },
-          {
-            insert: " sa ",
-            attributes: {
-              strike: true,
-            },
+          insert: "fsf",
+        },
+        {
+          attributes: {
+            strike: true,
           },
-          {
-            insert: "\n",
+          insert: " sa ",
+        },
+        {
+          insert: "\n",
+        },
+        {
+          attributes: {
+            strike: true,
           },
-        ],
-        [
-          {
-            insert: " sfs ajks flk;ma sref  sfa ",
-            attributes: {
-              strike: true,
-            },
+          insert: " ",
+        },
+        {
+          attributes: {
+            font: "dancing-script",
+            strike: true,
           },
-          {
-            insert: "\n",
+          insert: "sfs ",
+        },
+        {
+          attributes: {
+            strike: true,
           },
-        ],
-        [
-          {
-            insert: "sfaf s a ",
-            attributes: {
-              strike: true,
-            },
+          insert: "ajk",
+        },
+        {
+          attributes: {
+            font: "inter",
+            strike: true,
           },
-          {
-            insert: "\n",
+          insert: "s flk;ma ",
+        },
+        {
+          attributes: {
+            strike: true,
           },
-        ],
-        [
-          {
-            insert: "      ",
-            attributes: {
-              strike: true,
-            },
+          insert: "sref  sfa ",
+        },
+        {
+          insert: "\n",
+        },
+        {
+          attributes: {
+            strike: true,
           },
-          {
-            insert: "sfsa",
-            attributes: {
-              background: "#76a5af",
-              strike: true,
-            },
+          insert: "s",
+        },
+        {
+          attributes: {
+            font: "oswald",
+            strike: true,
           },
-          {
-            insert: " afs ",
-            attributes: {
-              strike: true,
-            },
+          insert: "faf ",
+        },
+        {
+          attributes: {
+            strike: true,
           },
-          {
-            insert: "aas",
-            attributes: {
-              color: "#1155cc",
-              strike: true,
-            },
+          insert: "s a ",
+        },
+        {
+          insert: "\n",
+        },
+        {
+          attributes: {
+            strike: true,
           },
-          {
-            insert: " ",
-            attributes: {
-              strike: true,
-            },
+          insert: "      ",
+        },
+        {
+          attributes: {
+            background: "#76a5af",
+            strike: true,
           },
-          {
-            insert: "\n",
+          insert: "sfsa",
+        },
+        {
+          attributes: {
+            font: "poppins",
+            strike: true,
           },
-        ],
+          insert: " afs ",
+        },
+        {
+          attributes: {
+            font: "poppins",
+            color: "#1155cc",
+            strike: true,
+          },
+          insert: "aas",
+        },
+        {
+          attributes: {
+            font: "poppins",
+            strike: true,
+          },
+          insert: " ",
+        },
+        {
+          insert: "\n",
+        },
+        {
+          attributes: {
+            font: "poppins",
+            strike: true,
+          },
+          insert: " s as",
+        },
+        {
+          insert: "\n",
+        },
       ],
     },
   ],

@@ -53,7 +53,7 @@ const Grid = () => {
 
   const [quill, setQuill] = useState<Quill | null>(null);
 
-  const [refresh, forceUpdate] = useState(0);
+  const [refresh, setRefresh] = useState(0);
 
   const rowDetails = useRef<IRowDetails>({});
 
@@ -90,6 +90,14 @@ const Grid = () => {
   }, []);
 
   useEffect(() => {
+    window.addEventListener("resize", handleResizeGrid);
+
+    return () => {
+      window.removeEventListener("resize", handleResizeGrid);
+    };
+  }, [rows, columns]);
+
+  useEffect(() => {
     if (!gridRef.current || !canvasRef.current) return;
 
     let canvas = canvasRef.current;
@@ -108,29 +116,10 @@ const Grid = () => {
   }, [refresh]);
 
   useEffect(() => {
-    window.addEventListener("resize", handleResizeGrid);
-
-    return () => {
-      window.removeEventListener("resize", handleResizeGrid);
-    };
-  }, [rows, columns]);
-
-  useEffect(() => {
     paintRows(rows);
     paintColumns(columns);
     paintBox();
   }, [selectedCellId, selectedColumnId, selectedRowId]);
-
-  useEffect(() => {
-    if (!quill) return;
-
-    const handleChange = debounce(handleEditorChange, 1000);
-    quill.on("text-change", handleChange);
-
-    return () => {
-      quill.off("text-change", handleChange);
-    };
-  }, [quill]);
 
   const initQuill = () => {
     const fontFormat = Quill.import("formats/font");
@@ -140,11 +129,33 @@ const Grid = () => {
     setQuill(quill);
   };
 
-  const handleEditorChange = () => {
+  const handleEditorChange = ({ cellId, rowId, columnId }: ICell) => {
     if (!quill) return;
+
     const text = quill.getText();
-    const content = quill.getContents();
-    console.log(content, text);
+    const content: any[] = [];
+
+    quill.getContents().eachLine(({ ops }) => {
+      content.push(...ops, { insert: "\n" });
+    });
+
+    console.log(content, text, cellId);
+
+    if (!cellDetails.current[cellId]) {
+      cellDetails.current[cellId] = {
+        rowId,
+        columnId,
+      };
+    }
+
+    cellDetails.current[cellId].text = text;
+    cellDetails.current[cellId].content = content;
+
+    forceUpdate();
+  };
+
+  const forceUpdate = () => {
+    setRefresh(Math.random());
   };
 
   const handleKeyDown = (event: Event) => {
@@ -275,67 +286,67 @@ const Grid = () => {
     if (!canvasRef.current || !content?.length) return;
 
     const fontOffset = 20;
-    let offsetY = y;
+    let offsetX = x + 5;
+    let offsetY = y + fontOffset;
 
-    for (let data of content) {
-      let offsetX = x + 5;
-      offsetY += fontOffset;
+    for (let ops of content) {
+      if (ops.insert === "\n") {
+        offsetY += fontOffset;
+        offsetX = x + 5;
+        continue;
+      }
 
-      for (let opr of data) {
-        if (!opr.insert || opr.insert === "\n") continue;
+      let {
+        attributes: {
+          strike = false,
+          background = "",
+          color = "",
+          bold = false,
+          italic = false,
+          underline = false,
+          font = "Open-Sans",
+          size = "14px",
+        } = {},
+        insert,
+      } = ops;
 
-        let {
-          attributes: {
-            strike = false,
-            background = "",
-            color = "",
-            bold = false,
-            italic = false,
-            underline = false,
-            font = "Open-Sans",
-            size = "14px",
-          } = {},
-          insert,
-        } = opr;
+      if (cellColor) color = cellColor;
 
-        if (cellColor) color = cellColor;
+      ctx.save();
 
+      let fontStyle = "";
+
+      if (bold) fontStyle += "bold ";
+      if (italic) fontStyle += "italic ";
+      fontStyle += `${size} ${font}`;
+      ctx.font = fontStyle;
+
+      let { fontBoundingBoxAscent, width } = ctx.measureText(insert);
+
+      if (background) {
+        paintRect(ctx, background, {
+          height: fontOffset,
+          width: width + 1,
+          x: offsetX,
+          y: offsetY - 15,
+        });
+      }
+
+      if (color) ctx.fillStyle = color;
+      ctx.fillText(insert, offsetX, offsetY);
+
+      if (underline || strike) {
         ctx.save();
-
-        let fontStyle = "";
-
-        if (bold) fontStyle += "bold ";
-        if (italic) fontStyle += "italic ";
-        fontStyle += `${size} ${font}`;
-        ctx.font = fontStyle;
-
-        let { fontBoundingBoxAscent, width } = ctx.measureText(insert);
-
-        if (background) {
-          paintRect(ctx, background, {
-            height: fontOffset,
-            width: width + 1,
-            x: offsetX,
-            y: offsetY - 15,
-          });
-        }
-
-        if (color) ctx.fillStyle = color;
-        ctx.fillText(insert, offsetX, offsetY);
-
-        if (underline || strike) {
-          ctx.save();
-          ctx.lineWidth = 0.7;
-          ctx.strokeStyle = color || "#000000";
-          if (underline) ctx.strokeRect(offsetX, offsetY + 2, width, 0);
-          if (strike) ctx.strokeRect(offsetX, offsetY - 5, width, 0);
-          ctx.restore();
-        }
-
-        offsetX += width;
-
+        ctx.lineWidth = 0.7;
+        ctx.strokeStyle = color || "#000000";
+        if (underline) ctx.strokeRect(offsetX, offsetY + 2, width, 0);
+        if (strike) ctx.strokeRect(offsetX, offsetY - 5, width, 0);
         ctx.restore();
       }
+
+      offsetX += width;
+
+      ctx.restore();
     }
   };
 
@@ -344,14 +355,14 @@ const Grid = () => {
     { cellId, rowId, columnId, height, width, x, y }
   ) => {
     let {
-      backgroundColor = "#FFFFFF",
+      background = "#FFFFFF",
       content = [],
       color = "",
     } = cellDetails.current[cellId] ?? {};
 
     let rect = { x, y, width, height };
 
-    paintRect(ctx, backgroundColor, rect);
+    paintRect(ctx, background, rect);
     paintCellContent(ctx, content, color, rect);
     paintCellLine(ctx, rect);
   };
@@ -669,7 +680,7 @@ const Grid = () => {
 
     let content = cellDetails.current[cellId]?.content || [];
 
-    quill.setContents(content.flat() as any);
+    quill.setContents(content as any);
 
     setEditCell({
       cellId,
@@ -709,7 +720,7 @@ const Grid = () => {
       columnDetails.current[columnId] = { columnId, width: value };
     else columnDetails.current[columnId].width = value;
 
-    forceUpdate(Math.random());
+    forceUpdate();
   };
 
   const handleResizeRow = (rowId: number, value: number) => {
@@ -717,7 +728,7 @@ const Grid = () => {
       rowDetails.current[rowId] = { rowId, height: value };
     else rowDetails.current[rowId].height = value;
 
-    forceUpdate(Math.random());
+    forceUpdate();
   };
 
   const handleSearchNext = () => {
@@ -783,7 +794,7 @@ const Grid = () => {
     console.log("insert row top");
   };
 
-  const handleCellFormat: ICellFormat = (key, value: string) => {
+  const handleFormatCell: IFormatText = (type, value) => {
     if (!selectedCell) return;
 
     if (!cellDetails.current[selectedCellId]) {
@@ -793,15 +804,18 @@ const Grid = () => {
       };
     }
 
-    cellDetails.current[selectedCellId][key] = value;
-    forceUpdate(Math.random());
+    cellDetails.current[selectedCellId][
+      type as "background" | "color" | "textAlign"
+    ] = value as string;
+
+    forceUpdate();
   };
   return (
     <Fragment>
       <ToolBar
         quill={quill}
         cellId={selectedCellId}
-        onCellFormat={handleCellFormat}
+        onFormat={handleFormatCell}
       />
       <div
         ref={gridRef}
@@ -847,6 +861,7 @@ const Grid = () => {
         cell={editCell}
         data={editCell ? cellDetails.current[editCell.cellId] : null}
         onWheel={handleScroll}
+        onEditorChange={handleEditorChange}
       />
       {showSearch && (
         <SeachBox
