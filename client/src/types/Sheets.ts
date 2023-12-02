@@ -42,7 +42,7 @@ type IColumnProps = {
 type ISheetDetail = {
   rows: { rowId: number; height: number }[];
   columns: { columnId: number; width: number }[];
-  cells: (ICellProps & { rowId: number; columnId: number })[];
+  cells: ({ _id: string; rowId: number; columnId: number } & ICellProps)[];
 };
 
 type IRenderGrid = (data: {

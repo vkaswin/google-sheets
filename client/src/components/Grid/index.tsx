@@ -21,7 +21,7 @@ import ColumnOverLay from "./ColumnOverLay";
 import RowOverLay from "./RowOverLay";
 import ContextMenu from "./ContextMenu";
 import ScrollBar from "./ScrollBar";
-import { convertToTitle, debounce } from "@/utils";
+import { convertToTitle } from "@/utils";
 import { GRIDCONFIG, CUSTOM_FONTS } from "./Config";
 import { data } from "./data";
 
@@ -61,6 +61,8 @@ const Grid = () => {
 
   const cellDetails = useRef<ICellDetails>({});
 
+  const cellIds = useRef<Record<string, string>>({});
+
   const verticalScroll = useRef<HTMLDivElement | null>(null);
 
   const horizontalScroll = useRef<HTMLDivElement | null>(null);
@@ -82,6 +84,7 @@ const Grid = () => {
   }, [columns, selectedColumnId]);
 
   useEffect(() => {
+    document.fonts.onloadingdone = handleResizeGrid;
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
@@ -139,19 +142,30 @@ const Grid = () => {
       content.push(...ops, { insert: "\n" });
     });
 
-    console.log(content, text, cellId);
+    let cellData = getCellDataById(cellId);
 
-    if (!cellDetails.current[cellId]) {
-      cellDetails.current[cellId] = {
+    if (cellData) {
+      cellData.text = text;
+      cellData.content = content;
+    } else {
+      //*TODO send the data to the server and get the cellId
+      let id = crypto.randomUUID();
+      cellIds.current[cellId] = id;
+      cellDetails.current[id] = {
         rowId,
         columnId,
       };
     }
 
-    cellDetails.current[cellId].text = text;
-    cellDetails.current[cellId].content = content;
-
     forceUpdate();
+  };
+
+  const getCellDataById = (cellId?: string) => {
+    if (!cellId || !(cellId in cellIds.current)) return;
+
+    let _id = cellIds.current[cellId];
+
+    return cellDetails.current[_id];
   };
 
   const forceUpdate = () => {
@@ -179,8 +193,9 @@ const Grid = () => {
     }
 
     for (let cell of cells) {
-      let id = `${cell.columnId},${cell.rowId}`;
-      cellDetails.current[id] = cell;
+      let cellId = `${cell.columnId},${cell.rowId}`;
+      cellIds.current[cellId] = cell._id;
+      cellDetails.current[cell._id] = cell;
     }
   };
 
@@ -358,7 +373,7 @@ const Grid = () => {
       background = "#FFFFFF",
       content = [],
       color = "",
-    } = cellDetails.current[cellId] ?? {};
+    } = getCellDataById(cellId) ?? {};
 
     let rect = { x, y, width, height };
 
@@ -678,7 +693,7 @@ const Grid = () => {
 
     let { top } = gridRef.current.getBoundingClientRect();
 
-    let content = cellDetails.current[cellId]?.content || [];
+    let content = getCellDataById(cellId)?.content || [];
 
     quill.setContents(content as any);
 
@@ -767,46 +782,138 @@ const Grid = () => {
   };
 
   const handleDeleteCell = () => {
-    console.log("delete cell");
+    if (!selectedCell) return;
+
+    let _id = cellIds.current[selectedCell.cellId];
+    delete cellIds.current[selectedCell.cellId];
+    delete cellDetails.current[_id];
+
+    forceUpdate();
+    setContextMenuPositon(null);
   };
 
   const handleDeleteRow = () => {
-    console.log("delete row");
+    let rowId = selectedCell?.rowId || selectedRow?.rowId;
+
+    if (!rowId) return;
+
+    for (let key in cellDetails.current) {
+      let cellData = cellDetails.current[key];
+      if (cellData.rowId !== rowId) continue;
+      let cellId = `${cellData.columnId},${cellData.rowId}`;
+      delete cellIds.current[cellId];
+      delete cellDetails.current[key];
+    }
+
+    forceUpdate();
+    setContextMenuPositon(null);
   };
 
   const handleDeleteColumn = () => {
-    console.log("delete column");
+    let columnId = selectedCell?.columnId || selectedColumn?.columnId;
+
+    if (!columnId) return;
+
+    for (let key in cellDetails.current) {
+      let cellData = cellDetails.current[key];
+      if (cellData.columnId !== columnId) continue;
+      let cellId = `${cellData.columnId},${cellData.rowId}`;
+      delete cellIds.current[cellId];
+      delete cellDetails.current[key];
+    }
+
+    forceUpdate();
+    setContextMenuPositon(null);
   };
 
-  const handleInsertColumnLeft = () => {
-    console.log("insert column left");
+  const handleInsertColumn = (direction: "left" | "right") => {
+    let columnId = selectedCell?.columnId || selectedColumn?.columnId;
+
+    if (!columnId) return;
+
+    for (let key in cellDetails.current) {
+      let cellData = cellDetails.current[key];
+
+      if (
+        direction === "right"
+          ? cellData.columnId <= columnId
+          : cellData.columnId < columnId
+      )
+        continue;
+
+      let oldCellId = `${cellData.columnId},${cellData.rowId}`;
+      let newColumnId = cellData.columnId + 1;
+      let newCellId = `${newColumnId},${cellData.rowId}`;
+
+      delete cellIds.current[oldCellId];
+      cellIds.current[newCellId] = key;
+
+      if (cellData.columnId in columnDetails.current) {
+        let columnData = columnDetails.current[cellData.columnId];
+        delete columnDetails.current[cellData.columnId];
+        columnDetails.current[newColumnId] = columnData;
+      }
+
+      cellData.columnId = newColumnId;
+    }
+
+    forceUpdate();
+    setContextMenuPositon(null);
   };
 
-  const handleInsertColumnRight = () => {
-    console.log("insert column right");
-  };
+  const handleInsertRow = (direction: "top" | "bottom") => {
+    let rowId = selectedCell?.rowId || selectedRow?.rowId;
 
-  const handleInsertRowBottom = () => {
-    console.log("insert row bottom");
-  };
+    if (!rowId) return;
 
-  const handleInsertRowTop = () => {
-    console.log("insert row top");
+    for (let key in cellDetails.current) {
+      let cellData = cellDetails.current[key];
+
+      if (
+        direction === "bottom"
+          ? cellData.rowId <= rowId
+          : cellData.rowId < rowId
+      )
+        continue;
+
+      let oldCellId = `${cellData.columnId},${cellData.rowId}`;
+      let newRowId = cellData.rowId + 1;
+      let newCellId = `${cellData.columnId},${newRowId}`;
+
+      delete cellIds.current[oldCellId];
+      cellIds.current[newCellId] = key;
+
+      if (cellData.rowId in rowDetails.current) {
+        let rowData = rowDetails.current[cellData.rowId];
+        delete rowDetails.current[cellData.rowId];
+        rowDetails.current[newRowId] = rowData;
+      }
+
+      cellData.rowId = newRowId;
+    }
+
+    forceUpdate();
+    setContextMenuPositon(null);
   };
 
   const handleFormatCell: IFormatText = (type, value) => {
     if (!selectedCell) return;
 
-    if (!cellDetails.current[selectedCellId]) {
-      cellDetails.current[selectedCellId] = {
+    let cellData = getCellDataById(selectedCellId);
+
+    if (cellData) {
+      cellDetails.current[selectedCellId][
+        type as "background" | "color" | "textAlign"
+      ] = value as string;
+    } else {
+      //*TODO send the data to the server and get the cellId
+      let _id = crypto.randomUUID();
+      cellIds.current[selectedCell.cellId] = _id;
+      cellDetails.current[_id] = {
         columnId: selectedCell.columnId,
         rowId: selectedCell.rowId,
       };
     }
-
-    cellDetails.current[selectedCellId][
-      type as "background" | "color" | "textAlign"
-    ] = value as string;
 
     forceUpdate();
   };
@@ -859,7 +966,7 @@ const Grid = () => {
       <ScrollBar ref={horizontalScroll} axis="x" />
       <EditCell
         cell={editCell}
-        data={editCell ? cellDetails.current[editCell.cellId] : null}
+        data={getCellDataById(editCell?.cellId) || null}
         onWheel={handleScroll}
         onEditorChange={handleEditorChange}
       />
@@ -882,10 +989,10 @@ const Grid = () => {
           onDeleteCell={handleDeleteCell}
           onDeleteColumn={handleDeleteColumn}
           onDeleteRow={handleDeleteRow}
-          onInsertColumnLeft={handleInsertColumnLeft}
-          onInsertColumnRight={handleInsertColumnRight}
-          onInsertRowBottom={handleInsertRowBottom}
-          onInsertRowTop={handleInsertRowTop}
+          onInsertColumnLeft={() => handleInsertColumn("left")}
+          onInsertColumnRight={() => handleInsertColumn("right")}
+          onInsertRowBottom={() => handleInsertRow("bottom")}
+          onInsertRowTop={() => handleInsertRow("top")}
         />
       )}
     </Fragment>

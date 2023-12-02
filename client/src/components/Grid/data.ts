@@ -85,6 +85,7 @@ export const data: ISheetDetail = {
   ],
   cells: [
     {
+      _id: crypto.randomUUID(),
       rowId: 1,
       columnId: 2,
       text: "",
@@ -338,6 +339,7 @@ export const data: ISheetDetail = {
       ],
     },
     {
+      _id: crypto.randomUUID(),
       rowId: 1,
       columnId: 1,
       text: "",

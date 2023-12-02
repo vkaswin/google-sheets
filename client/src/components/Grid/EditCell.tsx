@@ -10,11 +10,16 @@ type IEditCellProps = {
 };
 
 const EditCell = ({ cell, data, onWheel, onEditorChange }: IEditCellProps) => {
+  const editorRef = useRef<HTMLDivElement | null>(null);
+
   let { x, y, rowId, height, columnId, width } = cell || {};
 
   let { background = "#FFFFFF", color } = data ?? {};
 
-  const editorRef = useRef<HTMLDivElement | null>(null);
+  const cellId = useMemo(() => {
+    if (!columnId) return "";
+    return `${convertToTitle(columnId)}${rowId}`;
+  }, [columnId]);
 
   useEffect(() => {
     if (!cell) return;
@@ -40,18 +45,12 @@ const EditCell = ({ cell, data, onWheel, onEditorChange }: IEditCellProps) => {
     element.focus();
   };
 
-  const cellId = useMemo(() => {
-    if (!columnId) return "";
-    return `${convertToTitle(columnId)}${rowId}`;
-  }, [columnId]);
+  const handleChange = () => {
+    if (!cell) return;
+    onEditorChange(cell);
+  };
 
-  const handleKeyDown = useCallback(
-    debounce(() => {
-      if (!cell) return;
-      onEditorChange(cell);
-    }, 500),
-    [cell]
-  );
+  const handleKeyDown = useCallback(debounce(handleChange, 500), [cell]);
 
   return (
     <div
