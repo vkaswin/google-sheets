@@ -46,7 +46,7 @@ button:disabled {
 }
 
 .ql-editor {
-  @apply w-full h-full outline-none text-inherit;
+  @apply w-full h-full outline-none font-regular;
 }
 
 .ql-clipboard {

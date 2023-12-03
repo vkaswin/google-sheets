@@ -1,35 +1,35 @@
 @font-face {
-  font-family: "Open-Sans";
+  font-family: "Open Sans";
   src: url("../fonts/open-sans/OpenSans-Regular.ttf");
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Open-Sans-Light";
+  font-family: "Open Sans Light";
   src: url("../fonts/open-sans/OpenSans-Light.ttf");
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Open-Sans-SemiBold";
+  font-family: "Open Sans SemiBold";
   src: url("../fonts/open-sans/OpenSans-SemiBold.ttf");
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Open-Sans-Medium";
+  font-family: "Open Sans Medium";
   src: url("../fonts/open-sans/OpenSans-Medium.ttf");
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Open-Sans-Bold";
+  font-family: "Open Sans Bold";
   src: url("../fonts/open-sans/OpenSans-Bold.ttf");
   font-display: swap;
 }
 
 .ql-font-open-sans {
-  font-family: "Open-Sans", sans-serif;
+  font-family: "Open Sans", sans-serif;
 }
 
 .ql-font-barlow-condensed {

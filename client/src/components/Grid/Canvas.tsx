@@ -178,7 +178,7 @@ const Canvas = ({ gridRef }: ICanvasProps) => {
           italic = false,
           underline = false,
           font = "open-sans",
-          size = "16px",
+          size = "15px",
         } = {},
         insert,
       } = ops;
@@ -197,15 +197,16 @@ const Canvas = ({ gridRef }: ICanvasProps) => {
 
       if (color) ctx.fillStyle = color;
       ctx.fillText(insert, offsetX, offsetY);
+      console.log(ctx.font);
 
-      //   if (underline || strike) {
-      //     ctx.save();
-      //     ctx.lineWidth = 0.7;
-      //     ctx.strokeStyle = color || "#000000";
-      //     if (underline) ctx.strokeRect(offsetX, offsetY + 2, width, 0);
-      //     if (strike) ctx.strokeRect(offsetX, offsetY - 5, width, 0);
-      //     ctx.restore();
-      //   }
+      if (underline || strike) {
+        ctx.save();
+        ctx.lineWidth = 0.7;
+        ctx.strokeStyle = color || "#000000";
+        if (underline) ctx.strokeRect(offsetX, offsetY + 2, width, 0);
+        if (strike) ctx.strokeRect(offsetX, offsetY - 5, width, 0);
+        ctx.restore();
+      }
 
       offsetX += width;
 
