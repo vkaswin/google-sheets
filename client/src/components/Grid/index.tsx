@@ -12,7 +12,6 @@ import HighLightRow from "./HighLightRow";
 import ColumnOverLay from "./ColumnOverLay";
 import RowOverLay from "./RowOverLay";
 import ContextMenu from "./ContextMenu";
-import ScrollBar from "./ScrollBar";
 import SheetProvider from "@/context/SheetContext";
 import useSheet from "@/hooks/useSheet";
 import Loader from "./Loader";
@@ -50,12 +49,6 @@ const Grid = () => {
     setSelectedRowId,
     setContextMenuRect,
   } = useSheet();
-
-  const editorRef = useRef<HTMLDivElement | null>(null);
-
-  const verticalScroll = useRef<HTMLDivElement | null>(null);
-
-  const horizontalScroll = useRef<HTMLDivElement | null>(null);
 
   const [gridRef, setGridRef] = useState<HTMLDivElement | null>(null);
 
@@ -234,8 +227,6 @@ const Grid = () => {
           onResize={handleResizeRow}
         />
       </div>
-      <ScrollBar ref={verticalScroll} axis="y" />
-      <ScrollBar ref={horizontalScroll} axis="x" />
       <EditCell />
       {showSearch && (
         <SeachBox
@@ -264,7 +255,7 @@ const Grid = () => {
   );
 };
 
-const Wrapper = () => {
+const GridWrapper = () => {
   return (
     <SheetProvider>
       <Grid />
@@ -272,4 +263,4 @@ const Wrapper = () => {
   );
 };
 
-export default Wrapper;
+export default GridWrapper;

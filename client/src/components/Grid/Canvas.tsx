@@ -1,6 +1,7 @@
-import { useEffect, useRef, WheelEvent } from "react";
+import { Fragment, useEffect, useRef, WheelEvent } from "react";
 import useSheet from "@/hooks/useSheet";
 import { convertToTitle } from "@/utils";
+import ScrollBar from "./ScrollBar";
 
 type ICanvasProps = {
   gridRef: HTMLDivElement | null;
@@ -8,7 +9,12 @@ type ICanvasProps = {
 
 const Canvas = ({ gridRef }: ICanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+
+  const verticalScroll = useRef<HTMLDivElement | null>(null);
+
+  const horizontalScroll = useRef<HTMLDivElement | null>(null);
 
   const { config } = useSheet();
 
@@ -171,21 +177,20 @@ const Canvas = ({ gridRef }: ICanvasProps) => {
           bold = false,
           italic = false,
           underline = false,
-          font = "Open-Sans",
+          font = "open-sans",
           size = "14px",
         } = {},
         insert,
       } = ops;
 
-      if (cellColor) color = cellColor;
-
       ctx.save();
 
       let fontStyle = "";
 
+      if (cellColor) color = cellColor;
       if (bold) fontStyle += "bold ";
       if (italic) fontStyle += "italic ";
-      fontStyle += `${size} ${font}`;
+      fontStyle += `${size} ${config.fonts[font]}`;
       ctx.font = fontStyle;
 
       let { width } = ctx.measureText(insert);
@@ -419,6 +424,11 @@ const Canvas = ({ gridRef }: ICanvasProps) => {
         colStart: columnId,
       });
     }
+
+    if (!verticalScroll.current) return;
+
+    let top = +verticalScroll.current.style.top.replace("px", "");
+    verticalScroll.current.style.top = `${top + deltaY}px`;
   };
 
   const handleHorizontalScroll = (deltaX: number) => {
@@ -452,6 +462,11 @@ const Canvas = ({ gridRef }: ICanvasProps) => {
         colStart: columnId,
       });
     }
+
+    if (!horizontalScroll.current) return;
+
+    let left = +horizontalScroll.current.style.left.replace("px", "");
+    horizontalScroll.current.style.left = `${left + deltaX}px`;
   };
 
   const handleScroll = (event: any) => {
@@ -461,7 +476,13 @@ const Canvas = ({ gridRef }: ICanvasProps) => {
     else handleHorizontalScroll(deltaX);
   };
 
-  return <canvas ref={canvasRef}></canvas>;
+  return (
+    <Fragment>
+      <canvas ref={canvasRef}></canvas>;
+      <ScrollBar ref={verticalScroll} axis="y" />
+      <ScrollBar ref={horizontalScroll} axis="x" />
+    </Fragment>
+  );
 };
 
 export default Canvas;

@@ -368,15 +368,15 @@ const ColorPicker = ({ rect, onClick, onClose }: IColorPickerProps) => {
   }, [rect]);
 
   const { attributes, styles } = usePopper(virtualReference, popperElement, {
-    placement: "right-start",
-    modifiers: [{ name: "offset", options: { offset: [25, -20] } }],
+    placement: "bottom",
+    modifiers: [{ name: "offset", options: { offset: [0, 15] } }],
   });
 
   useClickOutside(popperElement, {
     onClose,
     doNotClose: (element) => {
-      return ["bx-font-color", "bxs-color-fill", "bx-border-all"].some(
-        (className) => element.classList.contains(className)
+      return ["bx-font-color", "bxs-color-fill"].some((className) =>
+        element.classList.contains(className)
       );
     },
   });

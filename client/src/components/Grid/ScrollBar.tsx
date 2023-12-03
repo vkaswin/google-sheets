@@ -10,10 +10,10 @@ const ScrollBar = forwardRef<HTMLDivElement, IScrollBarProps>(
     return (
       <div
         className={classNames(
-          "absolute flex justify-centerbg-white border border-light-gray",
+          "absolute flex justify-center bg-white border border-light-gray z-50",
           isVertical
-            ? "w-[var(--scrollbar-size)] h-[var(--grid-height)] right-0 top-[var(--scrollbar-top)]"
-            : "h-[var(--scrollbar-size)] w-[var(--grid-width)] left-0 bottom-[var(--bottom-bar-height)]"
+            ? "w-[var(--scrollbar-size)] h-[calc(100%-var(--scrollbar-size))] right-0 top-0"
+            : "h-[var(--scrollbar-size)] w-[calc(100%-var(--scrollbar-size))] left-0 bottom-0"
         )}
       >
         <div
@@ -24,6 +24,7 @@ const ScrollBar = forwardRef<HTMLDivElement, IScrollBarProps>(
               ? "left-1/2 -translate-x-1/2 w-[90%] h-12"
               : "top-1/2 -translate-y-1/2 w-12 h-[90%]"
           )}
+          style={isVertical ? { top: "0px" } : { left: "0px" }}
         ></div>
       </div>
     );

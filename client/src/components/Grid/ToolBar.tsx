@@ -73,6 +73,14 @@ const ToolBar = () => {
     });
   };
 
+  const handleBackgroundColor = (colorCode: string) => {
+    formatText("background", colorCode);
+  };
+
+  const handleColor = (colorCode: string) => {
+    formatText("color", colorCode);
+  };
+
   const handleSelectColor = (colorCode: string) => {
     if (!colorPicker) return;
     formatText(colorPicker.type, colorCode);
@@ -132,32 +140,42 @@ const ToolBar = () => {
         <Divider />
         <div>
           <Menu placement="bottom">
-            <Tooltip label="Font" placement="bottom" className="tooltip">
-              <MenuButton className="w-40">
-                <div className="flex justify-between items-center gap-4 pl-4 pr-2">
-                  <span>{config.fonts[activeStyle.font]}</span>
-                  <i className="bx-chevron-down"></i>
-                </div>
-              </MenuButton>
-            </Tooltip>
-            <Portal>
-              <MenuList
-                className="relative bg-white max-h-60 w-40 overflow-y-scroll"
-                zIndex={999}
-              >
-                {config.customFonts.map((value, index) => {
-                  return (
-                    <MenuItem
-                      key={index}
-                      className={`ql-font-${value} py-1 px-4`}
-                      onClick={() => formatText("font", value)}
-                    >
-                      {config.fonts[value]}
-                    </MenuItem>
-                  );
-                })}
-              </MenuList>
-            </Portal>
+            {({ isOpen }) => (
+              <Fragment>
+                <Tooltip label="Font" placement="bottom" className="tooltip">
+                  <MenuButton className="w-40">
+                    <div className="flex justify-between items-center gap-4 pl-4 pr-2">
+                      <span>{config.fonts[activeStyle.font]}</span>
+                      <i
+                        className={classNames(
+                          "bx-chevron-down transition-transform",
+                          isOpen ? "rotate-180" : "rotate-0"
+                        )}
+                      ></i>
+                    </div>
+                  </MenuButton>
+                </Tooltip>
+
+                <Portal>
+                  <MenuList
+                    className="relative bg-white max-h-60 w-40 overflow-y-scroll"
+                    zIndex={999}
+                  >
+                    {config.customFonts.map((value, index) => {
+                      return (
+                        <MenuItem
+                          key={index}
+                          className={`ql-font-${value} py-1 px-4`}
+                          onClick={() => formatText("font", value)}
+                        >
+                          {config.fonts[value]}
+                        </MenuItem>
+                      );
+                    })}
+                  </MenuList>
+                </Portal>
+              </Fragment>
+            )}
           </Menu>
         </div>
         <Divider />
@@ -285,6 +303,7 @@ const ToolBar = () => {
           </Tooltip>
         </div>
       </div>
+
       {colorPicker && (
         <ColorPicker
           rect={colorPicker.rect}
