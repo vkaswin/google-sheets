@@ -1,12 +1,4 @@
-import {
-  Fragment,
-  MouseEvent,
-  useEffect,
-  useRef,
-  useState,
-  CSSProperties,
-} from "react";
-import Quill from "quill";
+import { Fragment, MouseEvent, useEffect, useState } from "react";
 import classNames from "classnames";
 import {
   Menu,
@@ -17,13 +9,7 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 import ColorPicker from "./ColorPicker";
-import { CUSTOM_FONTS, FONTS } from "./Config";
-
-type IToolBarProps = {
-  quill: Quill | null;
-  cellId?: string;
-  onFormat: IFormatText;
-};
+import useSheet from "@/hooks/useSheet";
 
 const activeClassName = "bg-light-blue rounded";
 const btnClassName = "flex justify-center items-center w-[24px] h-[24px]";
@@ -42,7 +28,7 @@ const DEFAULT_ACTIVE_STYLE: IActiveStyle = {
   link: false,
 };
 
-const ToolBar = ({ quill, cellId, onFormat }: IToolBarProps) => {
+const ToolBar = () => {
   const [colorPicker, setColorPicker] = useState<{
     rect: DOMRect;
     type: IPickerOptions;
@@ -50,8 +36,11 @@ const ToolBar = ({ quill, cellId, onFormat }: IToolBarProps) => {
 
   const [activeStyle, setActiveStyle] = useState(DEFAULT_ACTIVE_STYLE);
 
+  const { quill, selectedCell, config, handleFormatCell } = useSheet();
+
   useEffect(() => {
     if (!quill) return;
+
     quill.on("selection-change", handleSelectionChange);
     return () => {
       quill.off("selection-change", handleSelectionChange);
@@ -59,9 +48,9 @@ const ToolBar = ({ quill, cellId, onFormat }: IToolBarProps) => {
   }, [quill]);
 
   useEffect(() => {
-    if (!cellId) return;
+    if (!selectedCell) return;
     setActiveStyle(DEFAULT_ACTIVE_STYLE);
-  }, [cellId]);
+  }, [selectedCell]);
 
   const handleSelectionChange = () => {
     if (!quill) return;
@@ -95,15 +84,17 @@ const ToolBar = ({ quill, cellId, onFormat }: IToolBarProps) => {
   };
 
   const formatText: IFormatText = (type, value) => {
-    if (!quill) return;
+    if (!quill || !selectedCell) return;
 
     let selection = quill.getSelection();
 
-    if (!selection || selection.length === 0) {
-      onFormat(type, value as string);
+    if (
+      ((!selection || selection.length === 0) &&
+        (type === "background" || type === "color")) ||
+      type === "align"
+    ) {
+      handleFormatCell(type, value as string);
       setActiveStyle({ ...activeStyle, [type]: value });
-    } else if (type === "align") {
-      console.log(type, value);
     } else {
       quill.format(type, value);
     }
@@ -144,7 +135,7 @@ const ToolBar = ({ quill, cellId, onFormat }: IToolBarProps) => {
             <Tooltip label="Font" placement="bottom" className="tooltip">
               <MenuButton className="w-40">
                 <div className="flex justify-between items-center gap-4 pl-4 pr-2">
-                  <span>{FONTS[activeStyle.font]}</span>
+                  <span>{config.fonts[activeStyle.font]}</span>
                   <i className="bx-chevron-down"></i>
                 </div>
               </MenuButton>
@@ -154,14 +145,14 @@ const ToolBar = ({ quill, cellId, onFormat }: IToolBarProps) => {
                 className="relative bg-white max-h-60 w-40 overflow-y-scroll"
                 zIndex={999}
               >
-                {CUSTOM_FONTS.map((value, index) => {
+                {config.customFonts.map((value, index) => {
                   return (
                     <MenuItem
                       key={index}
                       className={`ql-font-${value} py-1 px-4`}
                       onClick={() => formatText("font", value)}
                     >
-                      {FONTS[value]}
+                      {config.fonts[value]}
                     </MenuItem>
                   );
                 })}

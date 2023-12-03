@@ -8,6 +8,7 @@ const SheetDetail = () => {
     _id: "1",
     email: "vkaswin@gmail.com",
     name: "Aswin Kumar",
+    colorCode: "#4589eb",
   };
 
   const onLogout = () => {

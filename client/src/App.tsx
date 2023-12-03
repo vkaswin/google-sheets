@@ -6,20 +6,23 @@ import AuthProvider from "@/context/AuthContext";
 
 import "react-toastify/dist/ReactToastify.css";
 import "@/assets/css/index.css";
+import { ChakraProvider } from "@chakra-ui/react";
 
 export const App = () => {
   return (
     <HashRouter>
       <AuthProvider>
-        <Suspense fallback="loading...">
-          <Router />
-        </Suspense>
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          pauseOnHover
-          closeButton
-        />
+        <ChakraProvider>
+          <Suspense fallback="loading...">
+            <Router />
+          </Suspense>
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            pauseOnHover
+            closeButton
+          />
+        </ChakraProvider>
       </AuthProvider>
     </HashRouter>
   );

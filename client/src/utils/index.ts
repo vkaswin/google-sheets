@@ -113,3 +113,9 @@ export const clickOutside = <T extends HTMLElement>({
 
   return removeEventListener;
 };
+
+export const sleep = (delay: number) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, delay);
+  });
+};

@@ -11,6 +11,7 @@ export default {
         "light-gray": "#D5D5D5",
         "mild-gray": "#d9d9d9",
         "light-silver": "#e1e3e1",
+        "light-green": "#4eac6e",
       },
       outlineColor: {
         "light-blue": "#a8c7fa",
@@ -33,6 +34,7 @@ export default {
         "light-gray": "#575a5a",
         "dark-gray": "#444746",
         "mild-black": "#202124",
+        "light-green": "#4eac6e",
       },
       fontFamily: {
         medium: "Open-Sans-Medium",

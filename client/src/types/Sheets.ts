@@ -12,14 +12,11 @@ type ICell = {
   columnId: number;
 } & IRect;
 
-type IRowDetails = Record<string, { rowId: number; height: number }>;
+type IColumnDetail = { columnId: number; width: number };
 
-type IColumnDetails = Record<string, { columnId: number; width: number }>;
+type IRowDetail = { rowId: number; height: number };
 
-type ICellDetails = Record<
-  string,
-  ICellProps & Pick<ICell, "rowId" | "columnId">
->;
+type ICellDetail = ICellProps & Pick<ICell, "rowId" | "columnId">;
 
 type ICellProps = {
   text?: string;
@@ -110,3 +107,18 @@ type ICellFormat = (
   key: "backgroundColor" | "textAlign" | "color",
   value: string
 ) => void;
+
+type IDirection = "top" | "bottom" | "left" | "right";
+
+type IGrid = { rows: IRow[]; columns: IColumn[]; cells: ICell[] };
+
+type IConfig = {
+  lineWidth: number;
+  strokeStyle: string;
+  cellHeight: number;
+  cellWidth: number;
+  colWidth: number;
+  rowHeight: number;
+  customFonts: string[];
+  fonts: Record<string, string>;
+};

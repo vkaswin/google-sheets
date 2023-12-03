@@ -2,8 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
-  .tooltip {
-    @apply text-white text-sm rounded bg-black shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),_0_2px_4px_-1px_rgba(0,0,0,0.06)] px-[10px] py-[2px];
-  }
+:root {
+  --header-height: 60px;
+  --toolbar-height: 50px;
+  --bottom-bar-height: 45px;
+  --cell-height: 25px;
+  --cell-width: 100px;
+  --scrollbar-size: 13px;
+  --scrollbar-top: calc(var(--header-height) + var(--toolbar-height));
+  --grid-height: calc(
+    100% -
+      calc(
+        var(--header-height) + var(--bottom-bar-height) + var(--toolbar-height) +
+          var(--scrollbar-size)
+      )
+  );
+  --grid-width: calc(100% - var(--scrollbar-size));
+  --row-height: 25px;
+  --col-width: 46px;
 }
+
+* {
+  @apply m-0 p-0 box-border;
+}
+
+html {
+  @apply h-full;
+}
+
+body {
+  @apply font-regular h-full overflow-hidden;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  @apply appearance-none m-0;
+}
+
+button:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+#root {
+  @apply h-full;
+}
+
+.ql-editor {
+  @apply w-full h-full outline-none text-inherit;
+}
+
+.ql-clipboard {
+  @apply hidden;
+}
+
+.loader {
+  @apply flex w-9 h-9 border-[5px] border-light-green border-b-transparent rounded-full animate-spin;
+}
+
+/* @keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+} */

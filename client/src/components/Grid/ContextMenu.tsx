@@ -17,22 +17,26 @@ const actions = [
     {
       icon: "bx-plus",
       label: "Insert one row top",
-      eventName: "onInsertRowTop",
+      eventName: "onInsertRow",
+      direction: "top",
     },
     {
       icon: "bx-plus",
       label: "Insert one row bottom",
-      eventName: "onInsertRowBottom",
+      eventName: "onInsertRow",
+      direction: "bottom",
     },
     {
       icon: "bx-plus",
       label: "Insert one column left",
-      eventName: "onInsertColumnLeft",
+      eventName: "onInsertColumn",
+      direction: "left",
     },
     {
       icon: "bx-plus",
       label: "Insert one column right",
-      eventName: "onInsertColumnRight",
+      eventName: "onInsertColumn",
+      direction: "right",
     },
   ],
   [
@@ -43,20 +47,18 @@ const actions = [
 ] as const;
 
 type IContextMenu = {
-  position: Pick<IRect, "x" | "y">;
+  rect: Pick<IRect, "x" | "y">;
   onCut: () => void;
   onPaste: () => void;
   onCopy: () => void;
   onDeleteColumn: () => void;
   onDeleteCell: () => void;
   onDeleteRow: () => void;
-  onInsertRowTop: () => void;
-  onInsertRowBottom: () => void;
-  onInsertColumnRight: () => void;
-  onInsertColumnLeft: () => void;
+  onInsertRow: (direction: IDirection) => void;
+  onInsertColumn: (direction: IDirection) => void;
 };
 
-const ContextMenu = ({ position: { x, y }, ...events }: IContextMenu) => {
+const ContextMenu = ({ rect: { x, y }, ...events }: IContextMenu) => {
   const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
     null
   );
@@ -104,12 +106,12 @@ const ContextMenu = ({ position: { x, y }, ...events }: IContextMenu) => {
           );
         })}
         <div className="w-full h-[1px] bg-[#dadce0] my-3"></div>
-        {actions[1].map(({ icon, label, eventName }, index) => {
+        {actions[1].map(({ icon, label, eventName, direction }, index) => {
           return (
             <button
               key={index}
               className="flex gap-3 items-center h-8 hover:bg-[#F1F3F4] text-mild-black font-medium px-3"
-              onClick={events[eventName]}
+              onClick={() => events[eventName](direction)}
             >
               <i className={`${icon} text-xl`}></i>
               <span>{label}</span>
