@@ -1,4 +1,4 @@
-import { Fragment, MouseEvent, useEffect, useState } from "react";
+import { ChangeEvent, Fragment, MouseEvent, useEffect, useState } from "react";
 import classNames from "classnames";
 import {
   Menu,
@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react";
 import ColorPicker from "./ColorPicker";
 import useSheet from "@/hooks/useSheet";
+import { debounce } from "@/utils";
 
 const activeClassName = "bg-light-blue rounded";
 const btnClassName = "flex justify-center items-center w-[24px] h-[24px]";
@@ -36,7 +37,17 @@ const ToolBar = () => {
 
   const [activeStyle, setActiveStyle] = useState(DEFAULT_ACTIVE_STYLE);
 
-  const { quill, selectedCell, config, handleFormatCell } = useSheet();
+  const {
+    quill,
+    selectedCell,
+    config,
+    activeSearchIndex,
+    highLightCellIds,
+    handleSearchSheet,
+    handleFormatCell,
+    handleSearchNext,
+    handleSearchPrevious,
+  } = useSheet();
 
   useEffect(() => {
     if (!quill) return;
@@ -71,14 +82,6 @@ const ToolBar = () => {
       background: background || DEFAULT_ACTIVE_STYLE.background,
       color: color || DEFAULT_ACTIVE_STYLE.color,
     });
-  };
-
-  const handleBackgroundColor = (colorCode: string) => {
-    formatText("background", colorCode);
-  };
-
-  const handleColor = (colorCode: string) => {
-    formatText("color", colorCode);
   };
 
   const handleSelectColor = (colorCode: string) => {
@@ -117,6 +120,11 @@ const ToolBar = () => {
     quill.removeFormat(selection.index, selection.length);
     handleSelectionChange();
   };
+
+  const handleSearch = debounce<ChangeEvent<HTMLInputElement>>(
+    (e) => handleSearchSheet(e.target.value),
+    500
+  );
 
   const Divider = () => <div className="border border-r-[#c7c7c7] h-2/3"></div>;
 
@@ -296,8 +304,35 @@ const ToolBar = () => {
             </button>
           </Tooltip>
         </div>
+        <Divider />
+        <div className="flex items-center gap-3 px-4">
+          <div className="relative w-56 h-7">
+            <input
+              placeholder="Find in sheet"
+              className="w-full h-full text-sm focus:outline-2 focus:outline-dark-blue pl-3 pr-8 rounded"
+              onChange={handleSearch}
+            />
+            <i className="absolute right-2 top-1/2 -translate-y-1/2 bx-search text-gray-500 text-lg"></i>
+          </div>
+          <button disabled={!highLightCellIds.length}>
+            <i
+              className="bx-chevron-up text-xl text-gray-500"
+              onClick={handleSearchPrevious}
+            ></i>
+          </button>
+          <button disabled={!highLightCellIds.length}>
+            <i
+              className="bx-chevron-down text-xl text-gray-500"
+              onClick={handleSearchNext}
+            ></i>
+          </button>
+          {!!highLightCellIds.length && (
+            <span className="text-xs text-light-gray">
+              {activeSearchIndex + 1} of {highLightCellIds.length}
+            </span>
+          )}
+        </div>
       </div>
-
       {colorPicker && (
         <ColorPicker
           rect={colorPicker.rect}

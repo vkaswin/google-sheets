@@ -69,7 +69,7 @@ type IPaintCellLine = (ctx: CanvasRenderingContext2D, rect: IRect) => void;
 type IPaintCellContent = (
   ctx: CanvasRenderingContext2D,
   content: any[],
-  cellColor: string,
+
   rect: IRect
 ) => void;
 

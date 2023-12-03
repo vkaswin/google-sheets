@@ -10,7 +10,7 @@ import {
 } from "react";
 import { useParams } from "react-router-dom";
 import Quill from "quill";
-import { debounce, sleep } from "@/utils";
+import { debounce } from "@/utils";
 import { data } from "./data";
 
 const config: IConfig = {
@@ -73,6 +73,8 @@ type ISheetContext = {
   isSyncNeeded: number;
   config: IConfig;
   isLoading: boolean;
+  highLightCellIds: string[];
+  activeSearchIndex: number;
   getCellById: (cellId?: string) => ICellDetail | undefined;
   getRowById: (rowId?: number) => IRowDetail | undefined;
   getColumnById: (columnId?: number) => IColumnDetail | undefined;
@@ -87,7 +89,10 @@ type ISheetContext = {
   handleCutCell: () => void;
   handlePasteCell: () => void;
   handleEditorChange: () => void;
+  handleSearchNext: () => void;
+  handleSearchPrevious: () => void;
   handleFormatCell: (type: string, value: string) => void;
+  handleSearchSheet: (q: string) => void;
   setGrid: Dispatch<SetStateAction<IGrid>>;
   setContextMenuRect: Dispatch<SetStateAction<Pick<IRect, "x" | "y"> | null>>;
   setEditCell: Dispatch<SetStateAction<ICell | null>>;
@@ -117,6 +122,10 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
   const [contextMenuRect, setContextMenuRect] =
     useState<ISheetContext["contextMenuRect"]>(null);
+
+  const [activeSearchIndex, setActiveSearchIndex] = useState(0);
+
+  const [highLightCellIds, setHighLightCellIds] = useState<string[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -458,6 +467,24 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     console.log("paste");
   };
 
+  const handleSearchNext = () => {
+    setActiveSearchIndex((activeIndex) => {
+      activeIndex++;
+      return activeIndex === highLightCellIds.length ? 0 : activeIndex;
+    });
+  };
+
+  const handleSearchPrevious = () => {
+    setActiveSearchIndex((activeIndex) => {
+      activeIndex--;
+      return activeIndex < 0 ? highLightCellIds.length - 1 : activeIndex;
+    });
+  };
+
+  const handleSearchSheet = (q: string) => {
+    setHighLightCellIds(["1,1", "2,5", "4,5", "5,1", "2,2"]);
+  };
+
   const context: ISheetContext = {
     quill,
     grid,
@@ -469,6 +496,8 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     contextMenuRect,
     isSyncNeeded,
     isLoading,
+    activeSearchIndex,
+    highLightCellIds,
     setGrid,
     getCellById,
     getRowById,
@@ -484,7 +513,10 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     handleCopyCell,
     handleCutCell,
     handlePasteCell,
+    handleSearchNext,
+    handleSearchPrevious,
     handleEditorChange,
+    handleSearchSheet,
     setEditCell,
     setSelectedCellId,
     setSelectedColumnId,

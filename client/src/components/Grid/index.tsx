@@ -1,28 +1,21 @@
 import { useState, MouseEvent, Fragment } from "react";
+import SheetProvider from "@/context/SheetContext";
+import useSheet from "@/hooks/useSheet";
 import ToolBar from "./ToolBar";
 import Canvas from "./Canvas";
 import HighlightCell from "./HighLightCell";
 import EditCell from "./EditCell";
 import ColumnResizer from "./ColumnResizer";
 import RowResizer from "./RowResizer";
-import SeachBox from "./SearchBox";
 import HighLightSearch from "./HighLightSearch";
 import HighLightColumn from "./HighLightColumn";
 import HighLightRow from "./HighLightRow";
 import ColumnOverLay from "./ColumnOverLay";
 import RowOverLay from "./RowOverLay";
 import ContextMenu from "./ContextMenu";
-import SheetProvider from "@/context/SheetContext";
-import useSheet from "@/hooks/useSheet";
 import Loader from "./Loader";
 
 const Grid = () => {
-  const [activeSearchIndex, setActiveSearchIndex] = useState(0);
-
-  const [highLightCellIds, setHighLightCellIds] = useState<string[]>([]);
-
-  const [showSearch, setShowSearch] = useState(false);
-
   const {
     quill,
     grid,
@@ -33,6 +26,7 @@ const Grid = () => {
     selectedColumn,
     contextMenuRect,
     isLoading,
+    highLightCellIds,
     handleResizeColumn,
     handleResizeRow,
     handleDeleteCell,
@@ -147,29 +141,6 @@ const Grid = () => {
     setContextMenuRect(null);
   };
 
-  const handleSearchNext = () => {
-    setActiveSearchIndex((activeIndex) => {
-      activeIndex++;
-      return activeIndex === highLightCellIds.length ? 0 : activeIndex;
-    });
-  };
-
-  const handleSearchPrevious = () => {
-    setActiveSearchIndex((activeIndex) => {
-      activeIndex--;
-      return activeIndex < 0 ? highLightCellIds.length - 1 : activeIndex;
-    });
-  };
-
-  const handleSearchSheet = (text: string) => {
-    setHighLightCellIds(["1,1", "2,5", "4,5", "5,1", "2,2"]);
-  };
-
-  const handleCloseSearch = () => {
-    setShowSearch(false);
-    setHighLightCellIds([]);
-  };
-
   return (
     <Fragment>
       <ToolBar />
@@ -191,13 +162,7 @@ const Grid = () => {
           )}
           {selectedColumn && <ColumnOverLay selectedColumn={selectedColumn} />}
           {selectedRow && <RowOverLay selectedRow={selectedRow} />}
-          {!!highLightCellIds.length && (
-            <HighLightSearch
-              activeIndex={activeSearchIndex}
-              visibleCells={grid.cells}
-              cellIds={highLightCellIds}
-            />
-          )}
+          {!!highLightCellIds.length && <HighLightSearch />}
         </div>
         <ColumnResizer
           columns={grid.columns}
@@ -211,16 +176,6 @@ const Grid = () => {
         />
       </div>
       <EditCell />
-      {showSearch && (
-        <SeachBox
-          count={highLightCellIds.length}
-          activeIndex={activeSearchIndex}
-          onNext={handleSearchNext}
-          onPrevious={handleSearchPrevious}
-          onSearch={handleSearchSheet}
-          onClose={handleCloseSearch}
-        />
-      )}
       {contextMenuRect && (
         <ContextMenu
           rect={contextMenuRect}

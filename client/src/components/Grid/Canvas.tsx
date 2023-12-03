@@ -153,7 +153,7 @@ const Canvas = ({ gridRef }: ICanvasProps) => {
   const paintCellContent: IPaintCellContent = (
     ctx,
     content,
-    cellColor,
+
     { height, width, x, y }
   ) => {
     if (!canvasRef.current || !content?.length) return;
@@ -172,8 +172,7 @@ const Canvas = ({ gridRef }: ICanvasProps) => {
       let {
         attributes: {
           strike = false,
-          background = "",
-          color = "",
+          color = "#000000",
           bold = false,
           italic = false,
           underline = false,
@@ -187,7 +186,7 @@ const Canvas = ({ gridRef }: ICanvasProps) => {
 
       let fontStyle = "";
 
-      if (cellColor) color = cellColor;
+      ctx.fillStyle = color;
       if (bold) fontStyle += "bold ";
       if (italic) fontStyle += "italic ";
       fontStyle += `${size} ${config.fonts[font]}`;
@@ -195,9 +194,7 @@ const Canvas = ({ gridRef }: ICanvasProps) => {
 
       let { width } = ctx.measureText(insert);
 
-      if (color) ctx.fillStyle = color;
       ctx.fillText(insert, offsetX, offsetY);
-      console.log(ctx.font);
 
       if (underline || strike) {
         ctx.save();
@@ -227,7 +224,7 @@ const Canvas = ({ gridRef }: ICanvasProps) => {
     let rect = { x, y, width, height };
 
     paintRect(ctx, background, rect);
-    paintCellContent(ctx, content, color, rect);
+    paintCellContent(ctx, content, rect);
     paintCellLine(ctx, rect);
   };
 
