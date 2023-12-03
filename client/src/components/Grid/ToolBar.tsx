@@ -92,15 +92,9 @@ const ToolBar = () => {
   };
 
   const formatText: IFormatText = (type, value) => {
-    if (!quill || !selectedCell) return;
+    if (!quill) return;
 
-    let selection = quill.getSelection();
-
-    if (
-      ((!selection || selection.length === 0) &&
-        (type === "background" || type === "color")) ||
-      type === "align"
-    ) {
+    if (type === "background" || type === "align") {
       handleFormatCell(type, value as string);
       setActiveStyle({ ...activeStyle, [type]: value });
     } else {

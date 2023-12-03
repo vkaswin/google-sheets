@@ -196,7 +196,7 @@ export const data: ISheetDetail = {
           attributes: {
             strike: true,
             background: "#e06666",
-            color: "#ffffff",
+            color: "#000000",
             bold: true,
           },
           insert: "oi",
@@ -204,7 +204,7 @@ export const data: ISheetDetail = {
         {
           attributes: {
             background: "#e06666",
-            color: "#ffffff",
+            color: "#000000",
             strike: true,
           },
           insert: "nifoiwjno",
@@ -450,7 +450,7 @@ export const data: ISheetDetail = {
           attributes: {
             strike: true,
             background: "#e06666",
-            color: "#ffffff",
+            color: "#000000",
             bold: true,
           },
           insert: "oi",
@@ -458,7 +458,7 @@ export const data: ISheetDetail = {
         {
           attributes: {
             background: "#e06666",
-            color: "#ffffff",
+            color: "#000000",
             strike: true,
           },
           insert: "nifoiwjno",

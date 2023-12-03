@@ -235,11 +235,12 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
         rowId: editCell.rowId,
         columnId: editCell.columnId,
       };
+
       setCellById(id, editCell.cellId, cell);
-    } else {
-      cell.text = text;
-      cell.content = content as any;
     }
+
+    cell.text = text;
+    cell.content = content as any;
 
     forceUpdate();
   };
@@ -259,12 +260,12 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
         columnId: selectedCell.columnId,
         rowId: selectedCell.rowId,
       };
+
       setCellById(_id, selectedCell.cellId, cell);
-    } else {
-      if (type === "background") cell.background = value;
-      else if (type === "color") cell.color = value;
-      else if (type === "textAlign") cell.textAlign = value;
     }
+
+    if (type === "background") cell.background = value;
+    else if (type === "textAlign") cell.textAlign = value;
 
     forceUpdate();
   };
@@ -278,7 +279,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
   const setCellById = (id: string, cellId: string, data: ICellDetail) => {
     cellIds.set(cellId, id);
-    cellDetails.set(cellId, data);
+    cellDetails.set(id, data);
   };
 
   const removeCellById = (cellId: string) => {

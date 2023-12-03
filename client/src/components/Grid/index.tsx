@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, MouseEvent, Fragment } from "react";
+import { useState, MouseEvent, Fragment } from "react";
 import ToolBar from "./ToolBar";
 import Canvas from "./Canvas";
 import HighlightCell from "./HighLightCell";
@@ -51,23 +51,6 @@ const Grid = () => {
   } = useSheet();
 
   const [gridRef, setGridRef] = useState<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
-
-  const handleKeyDown = (event: Event) => {
-    let { ctrlKey, key } = event as KeyboardEvent;
-
-    if (ctrlKey && key === "f" && !showSearch) {
-      event.preventDefault();
-      setShowSearch(true);
-    }
-  };
 
   const handleClickGrid = (event: MouseEvent<HTMLDivElement>) => {
     if (!gridRef) return;
