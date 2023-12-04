@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { usePopper } from "react-popper";
 import { VirtualElement } from "@popperjs/core";
+import useSheet from "@/hooks/useSheet";
 
 const actions = [
   [
@@ -46,24 +47,37 @@ const actions = [
   ],
 ] as const;
 
-type IContextMenu = {
-  rect: Pick<IRect, "x" | "y">;
-  onCut: () => void;
-  onPaste: () => void;
-  onCopy: () => void;
-  onDeleteColumn: () => void;
-  onDeleteCell: () => void;
-  onDeleteRow: () => void;
-  onInsertRow: (direction: IDirection) => void;
-  onInsertColumn: (direction: IDirection) => void;
-};
-
-const ContextMenu = ({ rect: { x, y }, ...events }: IContextMenu) => {
+const ContextMenu = () => {
   const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
     null
   );
 
+  const {
+    contextMenuRect,
+    handleDeleteCell,
+    handleDeleteColumn,
+    handleDeleteRow,
+    handleInsertColumn,
+    handleInsertRow,
+    handleCopyCell,
+    handleCutCell,
+    handlePasteCell,
+  } = useSheet();
+
+  const events: Record<string, Function> = {
+    handleCopyCell,
+    handleDeleteCell,
+    handleCutCell,
+    handlePasteCell,
+    handleDeleteColumn,
+    handleInsertColumn,
+    handleInsertRow,
+    handleDeleteRow,
+  };
+
   const virtualReference = useMemo(() => {
+    if (!contextMenuRect) return;
+
     return {
       getBoundingClientRect: () => {
         return {
@@ -71,16 +85,18 @@ const ContextMenu = ({ rect: { x, y }, ...events }: IContextMenu) => {
           height: 0,
           right: 0,
           bottom: 0,
-          left: x,
-          top: y,
+          left: contextMenuRect.x,
+          top: contextMenuRect.y,
         };
       },
     } as VirtualElement;
-  }, [x, y]);
+  }, [contextMenuRect]);
 
   const { attributes, styles } = usePopper(virtualReference, popperElement, {
     placement: "right",
   });
+
+  if (!contextMenuRect) return;
 
   return (
     <div
@@ -95,7 +111,7 @@ const ContextMenu = ({ rect: { x, y }, ...events }: IContextMenu) => {
             <button
               key={index}
               className="flex justify-between items-center h-8 hover:bg-[#F1F3F4] text-mild-black font-medium px-3"
-              onClick={events[eventName]}
+              onClick={() => events[eventName]}
             >
               <span className="flex items-center gap-3">
                 <i className={`${icon} text-xl`}></i>
@@ -124,7 +140,7 @@ const ContextMenu = ({ rect: { x, y }, ...events }: IContextMenu) => {
             <button
               key={index}
               className="flex gap-3 items-center h-8 hover:bg-[#F1F3F4] text-mild-black font-medium px-3"
-              onClick={events[eventName]}
+              onClick={() => events[eventName]}
             >
               <i className={`${icon} text-xl`}></i>
               <span>{label}</span>

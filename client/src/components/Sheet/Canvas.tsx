@@ -2,12 +2,9 @@ import { Fragment, useEffect, useRef, WheelEvent } from "react";
 import useSheet from "@/hooks/useSheet";
 import { convertToTitle } from "@/utils";
 import ScrollBar from "./ScrollBar";
+import Loader from "./Loader";
 
-type ICanvasProps = {
-  gridRef: HTMLDivElement | null;
-};
-
-const Canvas = ({ gridRef }: ICanvasProps) => {
+const Canvas = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -16,10 +13,11 @@ const Canvas = ({ gridRef }: ICanvasProps) => {
 
   const horizontalScroll = useRef<HTMLDivElement | null>(null);
 
-  const { config } = useSheet();
-
-  let {
+  const {
     grid,
+    config,
+    isLoading,
+    gridRef,
     selectedCell,
     selectedColumn,
     selectedRow,
@@ -31,9 +29,15 @@ const Canvas = ({ gridRef }: ICanvasProps) => {
   } = useSheet();
 
   useEffect(() => {
+    document.fonts.addEventListener("loadingdone", handleResizeGrid);
+    return () => {
+      document.fonts.removeEventListener("loadingdone", handleResizeGrid);
+    };
+  }, [gridRef]);
+
+  useEffect(() => {
     if (!gridRef || !canvasRef.current) return;
     ctxRef.current = canvasRef.current.getContext("2d");
-    document.fonts.onloadingdone = handleResizeGrid;
     handleResizeGrid();
   }, [gridRef]);
 
@@ -464,6 +468,8 @@ const Canvas = ({ gridRef }: ICanvasProps) => {
     if (deltaX === 0) handleVerticalScroll(deltaY);
     else handleHorizontalScroll(deltaX);
   };
+
+  if (isLoading) return <Loader />;
 
   return (
     <Fragment>

@@ -7,6 +7,8 @@ const HighLightSearch = () => {
 
   const cellIds = useMemo(() => new Set(highLightCellIds), [highLightCellIds]);
 
+  if (!highLightCellIds.length) return;
+
   return (
     <Fragment>
       {grid.cells.map(({ cellId, columnId, height, rowId, width, x, y }) => {

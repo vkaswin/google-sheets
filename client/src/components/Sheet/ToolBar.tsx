@@ -8,8 +8,8 @@ import {
   Portal,
   Tooltip,
 } from "@chakra-ui/react";
-import ColorPicker from "./ColorPicker";
 import useSheet from "@/hooks/useSheet";
+import ColorPicker from "./ColorPicker";
 import { debounce } from "@/utils";
 
 const activeClassName = "bg-light-blue rounded";
@@ -157,7 +157,6 @@ const ToolBar = () => {
                     </div>
                   </MenuButton>
                 </Tooltip>
-
                 <Portal>
                   <MenuList
                     className="relative bg-white max-h-60 w-40 overflow-y-scroll"
@@ -314,22 +313,25 @@ const ToolBar = () => {
             />
             <i className="absolute right-2 top-1/2 -translate-y-1/2 bx-search text-gray-500 text-lg"></i>
           </div>
-          <button disabled={!highLightCellIds.length}>
-            <i
-              className="bx-chevron-up text-xl text-gray-500"
-              onClick={handleSearchPrevious}
-            ></i>
-          </button>
-          <button disabled={!highLightCellIds.length}>
-            <i
-              className="bx-chevron-down text-xl text-gray-500"
-              onClick={handleSearchNext}
-            ></i>
-          </button>
           {!!highLightCellIds.length && (
-            <span className="text-xs text-light-gray">
-              {activeSearchIndex + 1} of {highLightCellIds.length}
-            </span>
+            <Fragment>
+              <button disabled={!highLightCellIds.length}>
+                <i
+                  className="bx-chevron-up text-xl text-gray-500"
+                  onClick={handleSearchPrevious}
+                ></i>
+              </button>
+              <button disabled={!highLightCellIds.length}>
+                <i
+                  className="bx-chevron-down text-xl text-gray-500"
+                  onClick={handleSearchNext}
+                ></i>
+              </button>
+
+              <span className="text-xs text-light-gray">
+                {activeSearchIndex + 1} of {highLightCellIds.length}
+              </span>
+            </Fragment>
           )}
         </div>
       </div>

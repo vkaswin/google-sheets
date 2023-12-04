@@ -1,10 +1,11 @@
+import useSheet from "@/hooks/useSheet";
 import { convertToTitle } from "@/utils";
 
-type IHighLightColumn = {
-  selectedColumn: IColumn;
-};
+const HighLightColumn = () => {
+  const { selectedColumn } = useSheet();
 
-const HighLightColumn = ({ selectedColumn }: IHighLightColumn) => {
+  if (!selectedColumn) return;
+
   const { columnId, height, width, x, y } = selectedColumn;
 
   let left = `calc(${x}px - var(--col-width))`;

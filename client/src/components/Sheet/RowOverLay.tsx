@@ -1,8 +1,10 @@
-type IRowOverLay = {
-  selectedRow: IRow;
-};
+import useSheet from "@/hooks/useSheet";
 
-const RowOverLay = ({ selectedRow }: IRowOverLay) => {
+const RowOverLay = () => {
+  const { selectedRow } = useSheet();
+
+  if (!selectedRow) return;
+
   let { height, y } = selectedRow;
 
   let top = `calc(${y}px - var(--row-height))`;

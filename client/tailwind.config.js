@@ -25,6 +25,7 @@ export default {
         blue: "#4589eb",
         "light-green": "#C7EED1",
         "dark-green": "#79D28F",
+        "sky-blue": "#e1e9f7",
         "light-sky-blue": "rgb(14, 101, 235, 0.1)",
         "mild-blue": "#EDF2FA",
         "light-silver": "#f9fbfd",
@@ -35,6 +36,7 @@ export default {
         "dark-gray": "#444746",
         "mild-black": "#202124",
         "light-green": "#4eac6e",
+        "dark-blue": "#0b57d0",
       },
       fontFamily: {
         medium: "Open Sans Medium",

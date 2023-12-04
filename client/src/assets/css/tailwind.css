@@ -5,19 +5,19 @@
 :root {
   --header-height: 60px;
   --toolbar-height: 50px;
-  --bottom-bar-height: 45px;
+  --bottom-bar-height: 36px;
   --cell-height: 25px;
   --cell-width: 100px;
+  --col-width: 46px;
+  --row-height: 25px;
   --scrollbar-size: 13px;
+  --grid-width: 100%;
   --grid-height: calc(
     100% -
       calc(
         var(--header-height) + var(--bottom-bar-height) + var(--toolbar-height)
       )
   );
-  --grid-width: 100%;
-  --row-height: 25px;
-  --col-width: 46px;
 }
 
 * {

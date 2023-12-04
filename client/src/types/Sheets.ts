@@ -122,3 +122,15 @@ type IConfig = {
   customFonts: string[];
   fonts: Record<string, string>;
 };
+
+type ISubSheetMetaData = {
+  _id: string;
+  title: string;
+  color: string;
+};
+
+type ISheetMetaData = {
+  _id: string;
+  title: string;
+  sheets: ISubSheetMetaData[];
+};

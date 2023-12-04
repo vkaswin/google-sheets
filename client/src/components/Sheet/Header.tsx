@@ -7,14 +7,15 @@ import {
   MenuItem,
   Portal,
 } from "@chakra-ui/react";
+import useAuth from "@/hooks/useAuth";
 import { getStaticUrl } from "@/utils";
+import useSheet from "@/hooks/useSheet";
 
-type IHeader = {
-  user: IUser;
-  onLogout: () => void;
-};
+const Header = () => {
+  const { user, logout } = useAuth();
 
-const Header = ({ user, onLogout }: IHeader) => {
+  const { metaData, handleTitleChange } = useSheet();
+
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     console.log(event.target.value);
   };
@@ -25,17 +26,20 @@ const Header = ({ user, onLogout }: IHeader) => {
         <img className="w-[40px] h-[40px]" src={getStaticUrl("/logo.svg")} />
         <input
           className="text-dark-gray font-medium text-lg outline outline-1 outline-transparent hover:outline-dark-gray rounded-sm focus:outline-2 focus:outline-dark-blue px-2"
-          defaultValue="Untitled Spreadsheet"
+          defaultValue={metaData?.title}
           onChange={handleChange}
         />
       </div>
+
       <Menu placement="bottom-end">
-        <MenuButton>
-          <Avatar name={user.name} bg={user.colorCode} color="white" />
-        </MenuButton>
+        {user && (
+          <MenuButton>
+            <Avatar name={user?.name} bg={user?.colorCode} color="white" />
+          </MenuButton>
+        )}
         <Portal>
           <MenuList zIndex={999}>
-            <MenuItem onClick={onLogout}>Logout</MenuItem>
+            <MenuItem onClick={logout}>Logout</MenuItem>
           </MenuList>
         </Portal>
       </Menu>

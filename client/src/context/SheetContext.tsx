@@ -10,7 +10,7 @@ import {
 } from "react";
 import { useParams } from "react-router-dom";
 import Quill from "quill";
-import { debounce } from "@/utils";
+import { debounce, sleep } from "@/utils";
 import { data } from "./data";
 
 const config: IConfig = {
@@ -65,6 +65,9 @@ const config: IConfig = {
 type ISheetContext = {
   quill: Quill | null;
   grid: IGrid;
+  metaData: ISheetMetaData | null;
+  activeSheetId: string | null;
+  gridRef: HTMLDivElement | null;
   editCell: ICell | null;
   selectedCell: ICell | undefined;
   selectedRow: IRow | undefined;
@@ -85,6 +88,7 @@ type ISheetContext = {
   handleDeleteRow: () => void;
   handleInsertRow: (direction: IDirection) => void;
   handleInsertColumn: (direction: IDirection) => void;
+  handleTitleChange: (title: string) => void;
   handleCopyCell: () => void;
   handleCutCell: () => void;
   handlePasteCell: () => void;
@@ -95,8 +99,10 @@ type ISheetContext = {
   handleSearchSheet: (q: string) => void;
   setGrid: Dispatch<SetStateAction<IGrid>>;
   setContextMenuRect: Dispatch<SetStateAction<Pick<IRect, "x" | "y"> | null>>;
+  setGridRef: Dispatch<SetStateAction<HTMLDivElement | null>>;
   setEditCell: Dispatch<SetStateAction<ICell | null>>;
   setSelectedCellId: Dispatch<SetStateAction<string | null>>;
+  setActiveSheetId: Dispatch<SetStateAction<string | null>>;
   setSelectedRowId: Dispatch<SetStateAction<number | null>>;
   setSelectedColumnId: Dispatch<SetStateAction<number | null>>;
 };
@@ -123,11 +129,25 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   const [contextMenuRect, setContextMenuRect] =
     useState<ISheetContext["contextMenuRect"]>(null);
 
+  const [gridRef, setGridRef] = useState<HTMLDivElement | null>(null);
+
   const [activeSearchIndex, setActiveSearchIndex] = useState(0);
 
   const [highLightCellIds, setHighLightCellIds] = useState<string[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
+
+  const [grid, setGrid] = useState<IGrid>({
+    cells: [],
+    columns: [],
+    rows: [],
+  });
+
+  const [title, setTitle] = useState("");
+
+  const [metaData, setMetaData] = useState<ISheetMetaData | null>(null);
+
+  const [activeSheetId, setActiveSheetId] = useState<string | null>(null);
 
   const { current: rowDetails } = useRef<Map<number, IRowDetail>>(new Map());
 
@@ -139,13 +159,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
   const { current: cellIds } = useRef<Map<string, string>>(new Map());
 
-  const [grid, setGrid] = useState<IGrid>({
-    cells: [],
-    columns: [],
-    rows: [],
-  });
-
-  const { sheetId } = useParams();
+  const { id } = useParams();
 
   const selectedCell = useMemo(() => {
     return grid.cells.find(({ cellId }) => cellId === selectedCellId);
@@ -164,8 +178,13 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   }, []);
 
   useEffect(() => {
-    getSheetDetails();
-  }, [sheetId]);
+    getSheetMetaData();
+  }, [id]);
+
+  useEffect(() => {
+    if (!activeSheetId) return;
+    getSheetById();
+  }, [activeSheetId]);
 
   useEffect(() => {
     if (!quill || !editCell) return;
@@ -199,7 +218,28 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     setQuill(quill);
   };
 
-  const getSheetDetails = async () => {
+  const getSheetMetaData = () => {
+    const data: ISheetMetaData = {
+      _id: id as string,
+      title: "Untitled Spreadsheet",
+      sheets: [
+        {
+          _id: crypto.randomUUID(),
+          title: "Sheet 1",
+          color: "blue",
+        },
+        {
+          _id: crypto.randomUUID(),
+          title: "Sheet 2",
+          color: "orange",
+        },
+      ],
+    };
+    setActiveSheetId(data.sheets[0]._id);
+    setMetaData(data);
+  };
+
+  const getSheetById = async () => {
     try {
       setIsLoading(true);
 
@@ -218,6 +258,8 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
         cellIds.set(cellId, cell._id);
         cellDetails.set(cell._id, cell);
       }
+
+      setTitle("Untitled Spreadsheet");
     } catch (error) {
       console.log(error);
     } finally {
@@ -481,15 +523,22 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     });
   };
 
-  const handleSearchSheet = (q: string) => {
+  const handleSearchSheet: ISheetContext["handleSearchSheet"] = (q) => {
     setHighLightCellIds(["1,1", "2,5", "4,5", "5,1", "2,2"]);
+  };
+
+  const handleTitleChange: ISheetContext["handleTitleChange"] = (title) => {
+    console.log(title);
   };
 
   const context: ISheetContext = {
     quill,
     grid,
+    metaData,
+    gridRef,
     config,
     editCell,
+    activeSheetId,
     selectedCell,
     selectedColumn,
     selectedRow,
@@ -499,6 +548,8 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     activeSearchIndex,
     highLightCellIds,
     setGrid,
+    setGridRef,
+    setActiveSheetId,
     getCellById,
     getRowById,
     getColumnById,
@@ -515,6 +566,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     handlePasteCell,
     handleSearchNext,
     handleSearchPrevious,
+    handleTitleChange,
     handleEditorChange,
     handleSearchSheet,
     setEditCell,
