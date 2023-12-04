@@ -3,7 +3,11 @@ import classNames from "classnames";
 import useSheet from "@/hooks/useSheet";
 
 const HighLightSearch = () => {
-  const { grid, highLightCellIds, activeSearchIndex } = useSheet();
+  const {
+    grid: { cells },
+    highLightCellIds,
+    activeSearchIndex,
+  } = useSheet();
 
   const cellIds = useMemo(() => new Set(highLightCellIds), [highLightCellIds]);
 
@@ -11,7 +15,7 @@ const HighLightSearch = () => {
 
   return (
     <Fragment>
-      {grid.cells.map(({ cellId, columnId, height, rowId, width, x, y }) => {
+      {cells.map(({ cellId, columnId, height, rowId, width, x, y }) => {
         if (!cellIds.has(cellId)) return null;
 
         let left = `calc(${x}px - var(--col-width))`;

@@ -351,44 +351,12 @@ const lightColors = new Set([
 ]);
 
 type IColorPickerProps = {
-  rect: ReturnType<VirtualElement["getBoundingClientRect"]>;
   onClick: (colorCode: string) => void;
-  onClose: () => void;
 };
 
-const ColorPicker = ({ rect, onClick, onClose }: IColorPickerProps) => {
-  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
-    null
-  );
-
-  const virtualReference = useMemo<VirtualElement>(() => {
-    return {
-      getBoundingClientRect: () => rect,
-    };
-  }, [rect]);
-
-  const { attributes, styles } = usePopper(virtualReference, popperElement, {
-    placement: "bottom",
-    modifiers: [{ name: "offset", options: { offset: [0, 15] } }],
-  });
-
-  useClickOutside(popperElement, {
-    onClose,
-    doNotClose: (element) => {
-      return ["bx-font-color", "bxs-color-fill"].some((className) =>
-        element.classList.contains(className)
-      );
-    },
-  });
-
+const ColorPicker = ({ onClick }: IColorPickerProps) => {
   return (
-    <div
-      id="color-picker"
-      ref={setPopperElement}
-      className="flex gap-1 flex-col w-fit shadow-[0_2px_6px_2px_rgba(60,64,67,.15)] border border-transparent rounded bg-white z-30 p-4"
-      style={styles.popper}
-      {...attributes.popper}
-    >
+    <div className="flex gap-1 flex-col w-fit shadow-[0_2px_6px_2px_rgba(60,64,67,.15)] border border-transparent rounded bg-white z-30 p-4">
       {colorsData.map((colors, index) => {
         return (
           <div key={index} className="flex gap-1">

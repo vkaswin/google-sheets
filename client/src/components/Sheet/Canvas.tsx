@@ -1,13 +1,11 @@
 import { Fragment, useEffect, useRef, WheelEvent } from "react";
 import useSheet from "@/hooks/useSheet";
-import { convertToTitle } from "@/utils";
 import ScrollBar from "./ScrollBar";
 import Loader from "./Loader";
+import { convertToTitle } from "@/utils";
 
 const Canvas = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
 
   const verticalScroll = useRef<HTMLDivElement | null>(null);
 
@@ -16,49 +14,40 @@ const Canvas = () => {
   const {
     grid,
     config,
-    isLoading,
     gridRef,
+    isLoading,
+    syncState,
     selectedCell,
     selectedColumn,
     selectedRow,
-    isSyncNeeded,
     setGrid,
     getCellById,
     getColumnById,
     getRowById,
   } = useSheet();
 
-  useEffect(() => {
-    document.fonts.addEventListener("loadingdone", handleResizeGrid);
-    return () => {
-      document.fonts.removeEventListener("loadingdone", handleResizeGrid);
-    };
-  }, [gridRef]);
+  let { rows, columns } = grid;
 
   useEffect(() => {
-    if (!gridRef || !canvasRef.current) return;
-    ctxRef.current = canvasRef.current.getContext("2d");
+    document.fonts.addEventListener("loadingdone", handleResizeGrid, {
+      once: true,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!syncState) return;
     handleResizeGrid();
-  }, [gridRef]);
+  }, [syncState]);
 
   useEffect(() => {
     if (!gridRef) return;
-    window.addEventListener("resize", handleResizeGrid);
-    gridRef.addEventListener("wheel", handleScroll);
-    return () => {
-      window.removeEventListener("resize", handleResizeGrid);
-      gridRef.removeEventListener("wheel", handleScroll);
-    };
-  }, [gridRef, grid]);
-
-  useEffect(() => {
-    if (!isSyncNeeded) return;
-    handleResizeGrid();
-  }, [isSyncNeeded]);
+    window.addEventListener("resize", handleResizeGrid, { once: true });
+    gridRef.addEventListener("wheel", handleScroll, { once: true });
+  }, [grid]);
 
   useEffect(() => {
     if (!selectedCell && !selectedColumn && !selectedRow) return;
-    paintHeaders(grid.rows, grid.columns);
+    paintHeaders(rows, columns);
   }, [selectedCell, selectedColumn, selectedRow]);
 
   const handleResizeGrid = () => {
@@ -70,8 +59,8 @@ const Canvas = () => {
     canvas.width = clientWidth;
     canvas.height = clientHeight;
 
-    let { rowId = 1, y = config.rowHeight } = grid.rows[0] ?? {};
-    let { columnId = 1, x = config.colWidth } = grid.columns[0] ?? {};
+    let { rowId = 1, y = config.rowHeight } = rows[0] ?? {};
+    let { columnId = 1, x = config.colWidth } = columns[0] ?? {};
 
     renderGrid({
       offsetX: x,
@@ -314,6 +303,7 @@ const Canvas = () => {
     rowStart,
     colStart,
   }) => {
+    console.log("render");
     if (!gridRef || !canvasRef.current) return;
 
     let ctx = canvasRef.current.getContext("2d")!;
@@ -378,17 +368,17 @@ const Canvas = () => {
     paintHeaders(rowData, columnData);
 
     setGrid({
-      rows: rowData,
-      columns: columnData,
       cells: cellData,
+      columns: columnData,
+      rows: rowData,
     });
   };
 
   const handleVerticalScroll = (deltaY: number) => {
-    if (!gridRef || !grid.rows.length || !grid.columns.length) return;
+    if (!gridRef || !rows.length || !columns.length) return;
 
-    let { rowId, y } = grid.rows[0];
-    let { columnId, x } = grid.columns[0];
+    let { rowId, y } = rows[0];
+    let { columnId, x } = columns[0];
 
     if (deltaY < 0) {
       // Scroll upwards
@@ -418,17 +408,17 @@ const Canvas = () => {
       });
     }
 
-    if (!verticalScroll.current) return;
+    // if (!verticalScroll.current) return;
 
-    let top = +verticalScroll.current.style.top.replace("px", "");
-    verticalScroll.current.style.top = `${top + deltaY}px`;
+    // let top = +verticalScroll.current.style.top.replace("px", "");
+    // verticalScroll.current.style.top = `${top + deltaY}px`;
   };
 
   const handleHorizontalScroll = (deltaX: number) => {
-    if (!gridRef || !grid.rows.length || !grid.columns.length) return;
+    if (!gridRef || !rows.length || !columns.length) return;
 
-    let { rowId, y } = grid.rows[0];
-    let { columnId, x } = grid.columns[0];
+    let { rowId, y } = rows[0];
+    let { columnId, x } = columns[0];
 
     if (deltaX < 0) {
       // Scroll leftwards
@@ -456,10 +446,10 @@ const Canvas = () => {
       });
     }
 
-    if (!horizontalScroll.current) return;
+    // if (!horizontalScroll.current) return;
 
-    let left = +horizontalScroll.current.style.left.replace("px", "");
-    horizontalScroll.current.style.left = `${left + deltaX}px`;
+    // let left = +horizontalScroll.current.style.left.replace("px", "");
+    // horizontalScroll.current.style.left = `${left + deltaX}px`;
   };
 
   const handleScroll = (event: any) => {
@@ -469,11 +459,9 @@ const Canvas = () => {
     else handleHorizontalScroll(deltaX);
   };
 
-  if (isLoading) return <Loader />;
-
   return (
     <Fragment>
-      <canvas ref={canvasRef}></canvas>;
+      <canvas ref={canvasRef}></canvas>
       <ScrollBar ref={verticalScroll} axis="y" />
       <ScrollBar ref={horizontalScroll} axis="x" />
     </Fragment>

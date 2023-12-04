@@ -1,3 +1,4 @@
+import { Fragment, WheelEvent, useRef } from "react";
 import useSheet from "@/hooks/useSheet";
 import classNames from "classnames";
 import {
@@ -8,48 +9,87 @@ import {
   Portal,
   Tooltip,
 } from "@chakra-ui/react";
-import { Fragment } from "react";
 
 const GridPages = () => {
-  const { metaData, activeSheetId, setActiveSheetId } = useSheet();
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const { metaData, activeSheetId, setActiveSheetId, handleCreateSheet } =
+    useSheet();
+
+  const handleScroll = (event: WheelEvent<HTMLDivElement>) => {
+    if (!scrollContainerRef.current) return;
+
+    scrollContainerRef.current.scrollBy({
+      behavior: "smooth",
+      left: event.deltaY,
+    });
+  };
 
   let { sheets = [] } = metaData || {};
 
-  const handleClick = (id: string) => {
-    setActiveSheetId(id);
-  };
-
   return (
     <div className="fixed flex gap-4 left-0 bottom-0 w-full h-[var(--bottom-bar-height)] pl-[var(--col-width)] after:absolute after:top-[-1px] after:right-0 after:w-[var(--scrollbar-size)] after:h-[1px] after:bg-light-gray">
-      <div className="flex gap-3">
-        <button>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={handleCreateSheet}
+          className="w-8 h-8 rounded-full bg-transparent hover:bg-dark-silver transition-colors"
+        >
           <Tooltip label="Add Sheet">
             <i className="bx-plus text-xl"></i>
           </Tooltip>
         </button>
-        <button>
-          <Tooltip label="All Sheets">
-            <i className="bx-menu text-xl"></i>
+        <Menu placement="top-start">
+          <Tooltip label="All Sheets" offset={[0, 3]}>
+            <MenuButton className="w-8 h-8 rounded-full bg-transparent hover:bg-dark-silver transition-colors">
+              <i className="bx-menu text-xl"></i>
+            </MenuButton>
           </Tooltip>
-        </button>
+          <Portal>
+            <MenuList zIndex={999}>
+              {sheets.map(({ _id, title, color = "transperant" }) => {
+                let isActive = _id === activeSheetId;
+                return (
+                  <MenuItem key={_id} className="flex items-center gap-2">
+                    <i
+                      className={classNames(
+                        "bx-check text-xl text-dark-gray",
+                        isActive ? "visible" : "invisible"
+                      )}
+                    ></i>
+                    <span
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: color }}
+                    ></span>
+                    <span key={_id}>{title}</span>
+                  </MenuItem>
+                );
+              })}
+            </MenuList>
+          </Portal>
+        </Menu>
       </div>
-      <div className="flex">
+      <div
+        ref={scrollContainerRef}
+        className="flex overflow-x-auto hide-scrollbar"
+        onWheel={handleScroll}
+      >
         {sheets.map(({ _id, color, title }) => {
           const isActive = _id === activeSheetId;
           return (
             <div
               key={_id}
               className={classNames(
-                "relative flex gap-2 justify-center items-center font-medium px-3 cursor-pointer",
+                "relative min-w-fit flex gap-2 justify-center items-center font-medium px-3 transition-colors cursor-pointer",
                 {
                   "bg-sky-blue text-dark-blue font-semibold": isActive,
+                  "hover:bg-mild-gray": !isActive,
                 }
               )}
-              onClick={() => handleClick(_id)}
+              onClick={() => setActiveSheetId(_id)}
             >
               {isActive && (
                 <span
-                  className="absolute left-0 bottom-0 h-[2px] w-full"
+                  className="absolute left-0 bottom-0 h-[3px] w-full"
                   style={{ backgroundColor: color }}
                 ></span>
               )}
@@ -58,7 +98,7 @@ const GridPages = () => {
                 {({ isOpen }) => {
                   return (
                     <Fragment>
-                      <MenuButton>
+                      <MenuButton onClick={(e) => e.stopPropagation()}>
                         <i
                           className={isOpen ? "bx-caret-up" : "bx-caret-down"}
                         ></i>
@@ -84,6 +124,3 @@ const GridPages = () => {
 };
 
 export default GridPages;
-// bx-check
-//
-//

@@ -19,6 +19,7 @@ export default {
         "dark-gray": "#747775",
       },
       backgroundColor: {
+        "mild-gray": "#E1E1E1",
         "dark-silver": "#C0C0C0",
         "dark-blue": "#0b57d0",
         "light-blue": "#D3E3FD",

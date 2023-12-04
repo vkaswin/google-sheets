@@ -335,13 +335,6 @@ const ToolBar = () => {
           )}
         </div>
       </div>
-      {colorPicker && (
-        <ColorPicker
-          rect={colorPicker.rect}
-          onClick={handleSelectColor}
-          onClose={handleCloseColorPicker}
-        />
-      )}
     </Fragment>
   );
 };

@@ -7,8 +7,8 @@ type IGridProps = {
 
 const Grid = ({ children }: IGridProps) => {
   const {
-    gridRef,
     grid: { rows, columns },
+    gridRef,
     setGridRef,
     setContextMenuRect,
     setSelectedCellId,

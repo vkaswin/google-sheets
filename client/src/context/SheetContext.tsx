@@ -10,7 +10,7 @@ import {
 } from "react";
 import { useParams } from "react-router-dom";
 import Quill from "quill";
-import { debounce, sleep } from "@/utils";
+import { debounce } from "@/utils";
 import { data } from "./data";
 
 const config: IConfig = {
@@ -69,11 +69,11 @@ type ISheetContext = {
   activeSheetId: string | null;
   gridRef: HTMLDivElement | null;
   editCell: ICell | null;
+  syncState: number;
   selectedCell: ICell | undefined;
   selectedRow: IRow | undefined;
   selectedColumn: IColumn | undefined;
   contextMenuRect: Pick<IRect, "x" | "y"> | null;
-  isSyncNeeded: number;
   config: IConfig;
   isLoading: boolean;
   highLightCellIds: string[];
@@ -96,6 +96,7 @@ type ISheetContext = {
   handleSearchNext: () => void;
   handleSearchPrevious: () => void;
   handleFormatCell: (type: string, value: string) => void;
+  handleCreateSheet: () => void;
   handleSearchSheet: (q: string) => void;
   setGrid: Dispatch<SetStateAction<IGrid>>;
   setContextMenuRect: Dispatch<SetStateAction<Pick<IRect, "x" | "y"> | null>>;
@@ -116,7 +117,7 @@ export const SheetContext = createContext({} as ISheetContext);
 const SheetProvider = ({ children }: ISheetProviderProps) => {
   const [quill, setQuill] = useState<Quill | null>(null);
 
-  const [isSyncNeeded, setIsSyncNeeded] = useState(0);
+  const [syncState, setSyncState] = useState(0);
 
   const [selectedCellId, setSelectedCellId] = useState<string | null>(null);
 
@@ -137,27 +138,23 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
   const [isLoading, setIsLoading] = useState(true);
 
+  const [metaData, setMetaData] = useState<ISheetMetaData | null>(null);
+
+  const [activeSheetId, setActiveSheetId] = useState<string | null>(null);
+
   const [grid, setGrid] = useState<IGrid>({
     cells: [],
     columns: [],
     rows: [],
   });
 
-  const [title, setTitle] = useState("");
+  const rowDetails = useRef<Map<number, IRowDetail>>(new Map());
 
-  const [metaData, setMetaData] = useState<ISheetMetaData | null>(null);
+  const columnDetails = useRef<Map<number, IColumnDetail>>(new Map());
 
-  const [activeSheetId, setActiveSheetId] = useState<string | null>(null);
+  const cellDetails = useRef<Map<string, ICellDetail>>(new Map());
 
-  const { current: rowDetails } = useRef<Map<number, IRowDetail>>(new Map());
-
-  const { current: columnDetails } = useRef<Map<number, IColumnDetail>>(
-    new Map()
-  );
-
-  const { current: cellDetails } = useRef<Map<string, ICellDetail>>(new Map());
-
-  const { current: cellIds } = useRef<Map<string, string>>(new Map());
+  const cellIds = useRef<Map<string, string>>(new Map());
 
   const { id } = useParams();
 
@@ -233,39 +230,62 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
           title: "Sheet 2",
           color: "orange",
         },
+        {
+          _id: crypto.randomUUID(),
+          title: "Sheet 3",
+          color: "transperant",
+        },
       ],
     };
-    setActiveSheetId(data.sheets[0]._id);
+
     setMetaData(data);
+    setActiveSheetId(data.sheets[0]._id);
   };
 
   const getSheetById = async () => {
     try {
-      setIsLoading(true);
+      handleReset();
 
-      let { rows, cells, columns } = data;
+      let index =
+        metaData?.sheets.findIndex(({ _id }) => _id === activeSheetId) || 0;
+
+      let { rows, cells, columns } = data[index];
 
       for (let row of rows) {
-        rowDetails.set(row.rowId, row);
+        rowDetails.current.set(row.rowId, row);
       }
 
       for (let column of columns) {
-        columnDetails.set(column.columnId, column);
+        columnDetails.current.set(column.columnId, column);
       }
 
       for (let cell of cells) {
         let cellId = `${cell.columnId},${cell.rowId}`;
-        cellIds.set(cellId, cell._id);
-        cellDetails.set(cell._id, cell);
+        cellIds.current.set(cellId, cell._id);
+        cellDetails.current.set(cell._id, cell);
       }
 
-      setTitle("Untitled Spreadsheet");
+      forceUpdate();
     } catch (error) {
       console.log(error);
     } finally {
       setIsLoading(false);
-      forceUpdate();
     }
+  };
+
+  const handleReset = () => {
+    rowDetails.current = new Map();
+    columnDetails.current = new Map();
+    cellDetails.current = new Map();
+    cellIds.current = new Map();
+    setIsLoading(true);
+    setEditCell(null);
+    setContextMenuRect(null);
+    setSelectedCellId(null);
+    setSelectedColumnId(null);
+    setSelectedRowId(null);
+    setActiveSearchIndex(0);
+    setHighLightCellIds([]);
   };
 
   const handleEditorChange = () => {
@@ -323,51 +343,51 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
   const getCellById: ISheetContext["getCellById"] = (cellId) => {
     if (typeof cellId !== "string") return;
-    let id = cellIds.get(cellId);
+    let id = cellIds.current.get(cellId);
     if (!id) return;
-    return cellDetails.get(id);
+    return cellDetails.current.get(id);
   };
 
   const setCellById = (id: string, cellId: string, data: ICellDetail) => {
-    cellIds.set(cellId, id);
-    cellDetails.set(id, data);
+    cellIds.current.set(cellId, id);
+    cellDetails.current.set(id, data);
   };
 
   const removeCellById = (cellId: string) => {
-    let id = cellIds.get(cellId);
+    let id = cellIds.current.get(cellId);
     if (!id) return;
-    cellIds.delete(cellId);
-    cellDetails.delete(id);
+    cellIds.current.delete(cellId);
+    cellDetails.current.delete(id);
   };
 
   const getRowById: ISheetContext["getRowById"] = (rowId) => {
     if (typeof rowId !== "number") return;
-    return rowDetails.get(rowId);
+    return rowDetails.current.get(rowId);
   };
 
   const setRowById = (rowId: number, data: IRowDetail) => {
-    rowDetails.set(rowId, data);
+    rowDetails.current.set(rowId, data);
   };
 
   const removeRowById = (rowId: number) => {
-    rowDetails.delete(rowId);
+    rowDetails.current.delete(rowId);
   };
 
   const getColumnById: ISheetContext["getColumnById"] = (columnId) => {
     if (typeof columnId !== "number") return;
-    return columnDetails.get(columnId);
+    return columnDetails.current.get(columnId);
   };
 
   const setColumnById = (columnId: number, data: IColumnDetail) => {
-    columnDetails.set(columnId, data);
+    columnDetails.current.set(columnId, data);
   };
 
   const removeColumnById = (rowId: number) => {
-    columnDetails.delete(rowId);
+    columnDetails.current.delete(rowId);
   };
 
   const forceUpdate = () => {
-    setIsSyncNeeded(Math.random() + 1);
+    setSyncState(Math.random() + 1);
   };
 
   const handleResizeColumn = (columnId: number, width: number) => {
@@ -390,7 +410,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
   const handleDeleteCell = () => {
     if (!selectedCell) return;
-    let id = cellIds.get(selectedCell.cellId);
+    let id = cellIds.current.get(selectedCell.cellId);
     if (!id) return;
     removeCellById(id);
     forceUpdate();
@@ -402,10 +422,10 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
     if (!rowId) return;
 
-    for (let [_id, cellData] of cellDetails) {
+    for (let [_id, cellData] of cellDetails.current) {
       if (cellData.rowId !== rowId) continue;
       let cellId = `${cellData.columnId},${cellData.rowId}`;
-      cellIds.delete(cellId);
+      cellIds.current.delete(cellId);
       removeCellById(_id);
     }
 
@@ -418,10 +438,10 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
     if (!columnId) return;
 
-    for (let [_id, cellData] of cellDetails) {
+    for (let [_id, cellData] of cellDetails.current) {
       if (cellData.columnId !== columnId) continue;
       let cellId = `${cellData.columnId},${cellData.rowId}`;
-      cellIds.delete(cellId);
+      cellIds.current.delete(cellId);
       removeCellById(_id);
     }
 
@@ -434,7 +454,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
     if (!columnId) return;
 
-    for (let [_id, cellData] of cellDetails) {
+    for (let [_id, cellData] of cellDetails.current) {
       if (
         direction === "right"
           ? cellData.columnId <= columnId
@@ -446,8 +466,8 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
       let newColumnId = cellData.columnId + 1;
       let newCellId = `${newColumnId},${cellData.rowId}`;
 
-      cellIds.delete(oldCellId);
-      cellIds.set(newCellId, _id);
+      cellIds.current.delete(oldCellId);
+      cellIds.current.set(newCellId, _id);
 
       let columnData = getColumnById(cellData.columnId);
 
@@ -468,7 +488,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
     if (!rowId) return;
 
-    for (let [_id, cellData] of cellDetails) {
+    for (let [_id, cellData] of cellDetails.current) {
       if (
         direction === "bottom"
           ? cellData.rowId <= rowId
@@ -480,8 +500,8 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
       let newRowId = cellData.rowId + 1;
       let newCellId = `${cellData.columnId},${newRowId}`;
 
-      cellIds.delete(oldCellId);
-      cellIds.set(newCellId, _id);
+      cellIds.current.delete(oldCellId);
+      cellIds.current.set(newCellId, _id);
 
       let rowData = getRowById(cellData.rowId);
 
@@ -531,24 +551,35 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     console.log(title);
   };
 
+  const handleCreateSheet = () => {
+    let sheetId = crypto.randomUUID();
+    metaData?.sheets.push({
+      _id: sheetId,
+      color: "red",
+      title: `Sheet ${metaData.sheets.length + 1}`,
+    });
+    data.push({ cells: [], columns: [], rows: [] });
+    setActiveSheetId(sheetId);
+  };
+
   const context: ISheetContext = {
     quill,
     grid,
     metaData,
     gridRef,
     config,
+    syncState,
     editCell,
     activeSheetId,
     selectedCell,
     selectedColumn,
     selectedRow,
     contextMenuRect,
-    isSyncNeeded,
     isLoading,
     activeSearchIndex,
     highLightCellIds,
-    setGrid,
     setGridRef,
+    setGrid,
     setActiveSheetId,
     getCellById,
     getRowById,
@@ -564,6 +595,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     handleCopyCell,
     handleCutCell,
     handlePasteCell,
+    handleCreateSheet,
     handleSearchNext,
     handleSearchPrevious,
     handleTitleChange,

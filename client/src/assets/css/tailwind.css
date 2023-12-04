@@ -56,3 +56,12 @@ button:disabled {
 .loader {
   @apply flex w-9 h-9 border-[5px] border-light-green border-b-transparent rounded-full animate-spin;
 }
+
+.hide-scrollbar::-webkit-scrollbar {
+  @apply hidden;
+}
+
+.hide-scrollbar {
+  --ms-overflow-style: none;
+  scrollbar-width: none;
+}
