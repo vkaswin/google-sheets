@@ -1,7 +1,12 @@
 import { Fragment, PointerEvent, useRef, useState, MouseEvent } from "react";
-import useSheet from "@/hooks/useSheet";
 
-const CoumnResizer = () => {
+type IColumnResizerProps = {
+  columns: IColumn[];
+  onClick: (columnId: number) => void;
+  onResize: (columnId: number, width: number) => void;
+};
+
+const CoumnResizer = ({ columns, onResize, onClick }: IColumnResizerProps) => {
   const [selectedColumn, setSelectedColumn] = useState<IColumn | null>(null);
 
   const [showLine, setShowLine] = useState(false);
@@ -11,16 +16,6 @@ const CoumnResizer = () => {
   const resizeRef = useRef<HTMLDivElement>(null);
 
   const pointerRef = useRef<number | null>(null);
-
-  const {
-    grid: { columns },
-    handleResizeColumn,
-    setSelectedColumnId,
-    setSelectedRowId,
-    setSelectedCellId,
-    setEditCell,
-    setContextMenuRect,
-  } = useSheet();
 
   const handlePointerDown = (event: PointerEvent) => {
     if (!resizeRef.current || !selectedColumn) return;
@@ -49,7 +44,7 @@ const CoumnResizer = () => {
     resizeRef.current.removeEventListener("pointermove", handlePointerMove);
 
     let width = selectedColumn.width + -(pointerRef.current - pageX);
-    handleResizeColumn(selectedColumn.columnId, Math.max(50, width));
+    onResize(selectedColumn.columnId, Math.max(50, width));
     pointerRef.current = null;
     setSelectedColumn(null);
     setShowLine(false);
@@ -92,12 +87,7 @@ const CoumnResizer = () => {
 
   const handleClick = () => {
     if (!selectedColumn) return;
-
-    setSelectedColumnId(selectedColumn.columnId);
-    setSelectedRowId(null);
-    setSelectedCellId("");
-    setEditCell(null);
-    setContextMenuRect(null);
+    onClick(selectedColumn.columnId);
   };
 
   return (

@@ -1,14 +1,20 @@
-import { useEffect, useRef, MouseEvent, WheelEvent, ReactNode } from "react";
+import { useEffect, useRef, MouseEvent, WheelEvent, Fragment } from "react";
 import useSheet from "@/hooks/useSheet";
+import HighlightCell from "./HighLightCell";
+import ColumnResizer from "./ColumnResizer";
+import RowResizer from "./RowResizer";
+import HighLightSearch from "./HighLightSearch";
+import HighLightColumn from "./HighLightColumn";
+import HighLightRow from "./HighLightRow";
+import ColumnOverLay from "./ColumnOverLay";
+import RowOverLay from "./RowOverLay";
 import ScrollBar from "./ScrollBar";
+import EditCell from "./EditCell";
+import ContextMenu from "./ContextMenu";
 import Loader from "./Loader";
 import { convertToTitle } from "@/utils";
 
-type IGridProps = {
-  children: ReactNode;
-};
-
-const Grid = ({ children }: IGridProps) => {
+const Grid = () => {
   const gridRef = useRef<HTMLDivElement | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -22,9 +28,12 @@ const Grid = ({ children }: IGridProps) => {
     config,
     isLoading,
     syncState,
+    editCell,
     selectedCell,
     selectedColumn,
     selectedRow,
+    highLightCellIds,
+    contextMenuRect,
     setGrid,
     getCellById,
     getColumnById,
@@ -34,6 +43,16 @@ const Grid = ({ children }: IGridProps) => {
     setEditCell,
     setSelectedColumnId,
     setSelectedRowId,
+    handleDeleteCell,
+    handleDeleteColumn,
+    handleDeleteRow,
+    handleInsertColumn,
+    handleInsertRow,
+    handleCopyCell,
+    handleCutCell,
+    handlePasteCell,
+    handleResizeRow,
+    handleResizeColumn,
   } = useSheet();
 
   let { rows, columns } = grid;
@@ -533,21 +552,92 @@ const Grid = ({ children }: IGridProps) => {
     setContextMenuRect({ x: event.pageX, y: event.pageY });
   };
 
+  const handleDoubleClickCell = () => {
+    if (!gridRef.current || !selectedCell) return;
+
+    let { columnId, cellId, width, height, rowId, x, y } = selectedCell;
+
+    let { top } = gridRef.current.getBoundingClientRect();
+
+    setEditCell({
+      cellId,
+      columnId,
+      width,
+      height,
+      rowId,
+      x: Math.max(config.colWidth, x),
+      y: Math.max(config.rowHeight + top, y + top),
+    });
+  };
+
+  const handleClickColumn = (columnId: number) => {
+    setSelectedColumnId(columnId);
+    setSelectedRowId(null);
+    setSelectedCellId(null);
+    setEditCell(null);
+    setContextMenuRect(null);
+  };
+
+  const handleClickRow = (rowId: number) => {
+    setSelectedRowId(rowId);
+    setSelectedColumnId(null);
+    setSelectedCellId(null);
+    setEditCell(null);
+    setContextMenuRect(null);
+  };
+
   return (
-    <div
-      id="grid"
-      ref={gridRef}
-      className="relative w-[var(--grid-width)] h-[var(--grid-height)] select-none overflow-hidden"
-      onWheel={handleScroll}
-      onClick={handleClickGrid}
-      onContextMenu={handleContextMenu}
-    >
-      {isLoading && <Loader />}
-      <canvas ref={canvasRef}></canvas>
-      <ScrollBar ref={verticalScroll} axis="y" />
-      <ScrollBar ref={horizontalScroll} axis="x" />
-      {children}
-    </div>
+    <Fragment>
+      <div
+        ref={gridRef}
+        className="relative w-[var(--grid-width)] h-[var(--grid-height)] select-none overflow-hidden"
+        onWheel={handleScroll}
+        onClick={handleClickGrid}
+        onContextMenu={handleContextMenu}
+      >
+        {isLoading && <Loader />}
+        <canvas ref={canvasRef}></canvas>
+        <ScrollBar ref={verticalScroll} axis="y" />
+        <ScrollBar ref={horizontalScroll} axis="x" />
+        {selectedColumn && <HighLightColumn column={selectedColumn} />}
+        {selectedRow && <HighLightRow row={selectedRow} />}
+        <div className="absolute left-[var(--col-width)] top-[var(--row-height)] w-[calc(100%-var(--col-width))] h-[calc(100%-var(--row-height))] overflow-hidden">
+          {selectedCell && !editCell && (
+            <HighlightCell
+              cell={selectedCell}
+              onDoubleClick={handleDoubleClickCell}
+            />
+          )}
+          {selectedColumn && <ColumnOverLay column={selectedColumn} />}
+          {selectedRow && <RowOverLay row={selectedRow} />}
+          {!!highLightCellIds.length && <HighLightSearch />}
+        </div>
+        <ColumnResizer
+          columns={columns}
+          onClick={handleClickColumn}
+          onResize={handleResizeColumn}
+        />
+        <RowResizer
+          rows={rows}
+          onClick={handleClickRow}
+          onResize={handleResizeRow}
+        />
+      </div>
+      <EditCell cell={editCell} data={getCellById(editCell?.cellId)} />
+      {contextMenuRect && (
+        <ContextMenu
+          rect={contextMenuRect}
+          onCopy={handleCopyCell}
+          onCut={handleCutCell}
+          onPaste={handlePasteCell}
+          onDeleteCell={handleDeleteCell}
+          onDeleteColumn={handleDeleteColumn}
+          onDeleteRow={handleDeleteRow}
+          onInsertColumn={handleInsertColumn}
+          onInsertRow={handleInsertRow}
+        />
+      )}
+    </Fragment>
   );
 };
 

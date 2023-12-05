@@ -1,14 +1,16 @@
 import { useMemo } from "react";
 import classNames from "classnames";
-import useSheet from "@/hooks/useSheet";
 import { convertToTitle } from "@/utils";
 
-const EditCell = () => {
-  let { editCell, getCellById } = useSheet();
+type IEditCellProps = {
+  cell: ICell | null;
+  data?: ICellProps;
+};
 
-  let { columnId, height, rowId, width, x, y } = editCell || {};
+const EditCell = ({ cell, data }: IEditCellProps) => {
+  let { columnId, height, rowId, width, x, y } = cell || {};
 
-  let { background = "#FFFFFF" } = getCellById(editCell?.cellId) || {};
+  let { background = "#FFFFFF" } = data || {};
 
   const cellId = useMemo(() => {
     if (!columnId) return "";
@@ -20,7 +22,7 @@ const EditCell = () => {
       className={classNames(
         "absolute flex border-1 outline outline-3 outline-light-blue leading-5 p-[2px] z-10",
         {
-          "hidden pointer-events-none": !editCell,
+          "hidden pointer-events-none": !cell,
         }
       )}
       style={{

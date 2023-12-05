@@ -10,7 +10,7 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 
-const GridPages = () => {
+const SheetList = () => {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const { metaData, activeSheetId, setActiveSheetId, handleCreateSheet } =
@@ -123,4 +123,4 @@ const GridPages = () => {
   );
 };
 
-export default GridPages;
+export default SheetList;

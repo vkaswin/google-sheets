@@ -1,12 +1,10 @@
-import useSheet from "@/hooks/useSheet";
+type IHighLightRowProps = {
+  row: IRow;
+};
 
-const HighLightRow = () => {
-  const { selectedRow } = useSheet();
-
-  if (!selectedRow) return;
-
-  const { height, rowId, width, x, y } = selectedRow;
-
+const HighLightRow = ({
+  row: { height, rowId, width, x, y },
+}: IHighLightRowProps) => {
   let top = `calc(${y}px - var(--row-height))`;
 
   return (

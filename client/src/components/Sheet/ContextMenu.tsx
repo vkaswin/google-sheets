@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { usePopper } from "react-popper";
 import { VirtualElement } from "@popperjs/core";
-import useSheet from "@/hooks/useSheet";
 
 const actions = [
   [
@@ -47,37 +46,24 @@ const actions = [
   ],
 ] as const;
 
-const ContextMenu = () => {
+type IContextMenuProps = {
+  rect: Pick<DOMRect, "x" | "y">;
+  onCut: () => void;
+  onCopy: () => void;
+  onPaste: () => void;
+  onDeleteRow: () => void;
+  onDeleteColumn: () => void;
+  onDeleteCell: () => void;
+  onInsertColumn: (direction: IDirection) => void;
+  onInsertRow: (direction: IDirection) => void;
+};
+
+const ContextMenu = ({ rect, ...events }: IContextMenuProps) => {
   const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
     null
   );
 
-  const {
-    contextMenuRect,
-    handleDeleteCell,
-    handleDeleteColumn,
-    handleDeleteRow,
-    handleInsertColumn,
-    handleInsertRow,
-    handleCopyCell,
-    handleCutCell,
-    handlePasteCell,
-  } = useSheet();
-
-  const events: Record<string, Function> = {
-    handleCopyCell,
-    handleDeleteCell,
-    handleCutCell,
-    handlePasteCell,
-    handleDeleteColumn,
-    handleInsertColumn,
-    handleInsertRow,
-    handleDeleteRow,
-  };
-
   const virtualReference = useMemo(() => {
-    if (!contextMenuRect) return;
-
     return {
       getBoundingClientRect: () => {
         return {
@@ -85,18 +71,16 @@ const ContextMenu = () => {
           height: 0,
           right: 0,
           bottom: 0,
-          left: contextMenuRect.x,
-          top: contextMenuRect.y,
+          left: rect.x,
+          top: rect.y,
         };
       },
     } as VirtualElement;
-  }, [contextMenuRect]);
+  }, [rect]);
 
   const { attributes, styles } = usePopper(virtualReference, popperElement, {
     placement: "right",
   });
-
-  if (!contextMenuRect) return;
 
   return (
     <div

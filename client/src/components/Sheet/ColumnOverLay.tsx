@@ -1,11 +1,8 @@
-import useSheet from "@/hooks/useSheet";
+type IColumnOverLayProps = {
+  column: IColumn;
+};
 
-const ColumnOverLay = () => {
-  const { selectedColumn } = useSheet();
-
-  if (!selectedColumn) return;
-
-  let { width, x } = selectedColumn;
+const ColumnOverLay = ({ column: { width, x } }: IColumnOverLayProps) => {
   let left = `calc(${x}px - var(--col-width))`;
 
   return (

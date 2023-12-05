@@ -156,15 +156,15 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
   const selectedCell = useMemo(() => {
     return grid.cells.find(({ cellId }) => cellId === selectedCellId);
-  }, [grid.cells, selectedCellId]);
+  }, [grid, selectedCellId]);
 
   const selectedRow = useMemo(() => {
     return grid.rows.find(({ rowId }) => rowId === selectedRowId);
-  }, [grid.rows, selectedRowId]);
+  }, [grid, selectedRowId]);
 
   const selectedColumn = useMemo(() => {
     return grid.columns.find(({ columnId }) => columnId === selectedColumnId);
-  }, [grid.columns, selectedColumnId]);
+  }, [grid, selectedColumnId]);
 
   useEffect(() => {
     initQuill();

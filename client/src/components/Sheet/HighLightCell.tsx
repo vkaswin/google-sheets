@@ -1,37 +1,12 @@
-import { useRef, useEffect } from "react";
-import useSheet from "@/hooks/useSheet";
+type IHighlightCellProps = {
+  cell: ICell;
+  onDoubleClick: () => void;
+};
 
-const HighlightCell = () => {
-  const { editCell, selectedCell, config, setEditCell } = useSheet();
-
-  const gridRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    gridRef.current = document.getElementById("grid") as HTMLDivElement;
-  }, []);
-
-  const handleDoubleClickCell = () => {
-    if (!gridRef.current || !selectedCell) return;
-
-    let { columnId, cellId, width, height, rowId, x, y } = selectedCell;
-
-    let { top } = gridRef.current.getBoundingClientRect();
-
-    setEditCell({
-      cellId,
-      columnId,
-      width,
-      height,
-      rowId,
-      x: Math.max(config.colWidth, x),
-      y: Math.max(config.rowHeight + top, y + top),
-    });
-  };
-
-  if (!selectedCell || editCell) return;
-
-  let { columnId, height, cellId, rowId, width, x, y } = selectedCell;
-
+const HighlightCell = ({
+  cell: { height, width, x, y },
+  onDoubleClick,
+}: IHighlightCellProps) => {
   let left = `calc(${x}px - var(--col-width))`;
   let top = `calc(${y}px - var(--row-height))`;
 
@@ -44,7 +19,7 @@ const HighlightCell = () => {
         width: width,
         height: height,
       }}
-      onDoubleClick={handleDoubleClickCell}
+      onDoubleClick={onDoubleClick}
     ></div>
   );
 };

@@ -1,14 +1,18 @@
-import useSheet from "@/hooks/useSheet";
+import { useMemo } from "react";
 import { convertToTitle } from "@/utils";
 
-const HighLightColumn = () => {
-  const { selectedColumn } = useSheet();
+type IHighLightColumnProps = {
+  column: IColumn;
+};
 
-  if (!selectedColumn) return;
-
-  const { columnId, height, width, x, y } = selectedColumn;
-
+const HighLightColumn = ({
+  column: { columnId, height, width, x, y },
+}: IHighLightColumnProps) => {
   let left = `calc(${x}px - var(--col-width))`;
+
+  const title = useMemo(() => {
+    return convertToTitle(columnId);
+  }, [columnId]);
 
   return (
     <div className="absolute left-[var(--col-width)] top-0 w-[calc(100%-var(--col-width))] h-[var(--row-height)] overflow-hidden z-10">
@@ -16,9 +20,7 @@ const HighLightColumn = () => {
         className="absolute flex justify-center items-center bg-dark-blue"
         style={{ left, top: y, width, height }}
       >
-        <span className="text-white text-xs font-medium">
-          {convertToTitle(columnId)}
-        </span>
+        <span className="text-white text-xs font-medium">{title}</span>
       </div>
     </div>
   );

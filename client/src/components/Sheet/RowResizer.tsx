@@ -1,7 +1,12 @@
 import { Fragment, PointerEvent, useRef, useState, MouseEvent } from "react";
-import useSheet from "@/hooks/useSheet";
 
-const RowResizer = () => {
+type IRowResizerProps = {
+  rows: IRow[];
+  onClick: (rowId: number) => void;
+  onResize: (rowId: number, height: number) => void;
+};
+
+const RowResizer = ({ rows, onClick, onResize }: IRowResizerProps) => {
   const [selectedRow, setSelectedRow] = useState<IRow | null>(null);
 
   const [showLine, setShowLine] = useState(false);
@@ -11,16 +16,6 @@ const RowResizer = () => {
   const pointerRef = useRef<number | null>(null);
 
   const columnRef = useRef<HTMLDivElement>(null);
-
-  const {
-    grid: { rows },
-    handleResizeRow,
-    setSelectedColumnId,
-    setSelectedRowId,
-    setSelectedCellId,
-    setEditCell,
-    setContextMenuRect,
-  } = useSheet();
 
   const handlePointerDown = (event: PointerEvent) => {
     if (!resizeRef.current || !selectedRow) return;
@@ -47,9 +42,8 @@ const RowResizer = () => {
 
     let { pageY } = event as PointerEvent;
     resizeRef.current.removeEventListener("pointermove", handlePointerMove);
-
     let height = selectedRow.height + -(pointerRef.current - pageY);
-    handleResizeRow(selectedRow.rowId, Math.max(25, height));
+    onResize(selectedRow.rowId, Math.max(25, height));
     pointerRef.current = null;
     setSelectedRow(null);
     setShowLine(false);
@@ -89,12 +83,7 @@ const RowResizer = () => {
 
   const handleClick = () => {
     if (!selectedRow) return;
-
-    setSelectedRowId(selectedRow.rowId);
-    setSelectedColumnId(null);
-    setSelectedCellId("");
-    setEditCell(null);
-    setContextMenuRect(null);
+    onClick(selectedRow.rowId);
   };
 
   return (
