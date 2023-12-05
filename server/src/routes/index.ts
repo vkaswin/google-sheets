@@ -15,4 +15,8 @@ router.use("/api/row", RowRoutes);
 router.use("/api/column", ColumnRoutes);
 router.use("/api/cell", CellRoutes);
 
+router.get("/api/health-check", (req, res) => {
+  res.status(200).send({ message: "Success" });
+});
+
 export default router;
