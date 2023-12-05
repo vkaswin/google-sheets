@@ -1,4 +1,5 @@
 import { Fragment, WheelEvent, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import useSheet from "@/hooks/useSheet";
 import classNames from "classnames";
 import {
@@ -13,8 +14,15 @@ import {
 const SheetList = () => {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const { metaData, activeSheetId, setActiveSheetId, handleCreateSheet } =
-    useSheet();
+  const { sheetDetail, handleCreateSheet } = useSheet();
+
+  const navigate = useNavigate();
+
+  const location = useLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+
+  const gridId = searchParams.get("gridId");
 
   const handleScroll = (event: WheelEvent<HTMLDivElement>) => {
     if (!scrollContainerRef.current) return;
@@ -25,7 +33,7 @@ const SheetList = () => {
     });
   };
 
-  let { sheets = [] } = metaData || {};
+  let { _id, grids = [] } = sheetDetail || {};
 
   return (
     <div className="fixed flex gap-4 left-0 bottom-0 w-full h-[var(--bottom-bar-height)] pl-[var(--col-width)] after:absolute after:top-[-1px] after:right-0 after:w-[var(--scrollbar-size)] after:h-[1px] after:bg-light-gray">
@@ -46,8 +54,8 @@ const SheetList = () => {
           </Tooltip>
           <Portal>
             <MenuList zIndex={999}>
-              {sheets.map(({ _id, title, color = "transperant" }) => {
-                let isActive = _id === activeSheetId;
+              {grids.map(({ _id, title, color = "transperant" }) => {
+                let isActive = _id === gridId;
                 return (
                   <MenuItem key={_id} className="flex items-center gap-2">
                     <i
@@ -73,8 +81,8 @@ const SheetList = () => {
         className="flex overflow-x-auto hide-scrollbar"
         onWheel={handleScroll}
       >
-        {sheets.map(({ _id, color, title }) => {
-          const isActive = _id === activeSheetId;
+        {grids.map(({ _id, color, title }) => {
+          const isActive = _id === gridId;
           return (
             <div
               key={_id}
@@ -85,7 +93,7 @@ const SheetList = () => {
                   "hover:bg-mild-gray": !isActive,
                 }
               )}
-              onClick={() => setActiveSheetId(_id)}
+              onClick={() => navigate({ search: `gridId=${_id}` })}
             >
               {isActive && (
                 <span

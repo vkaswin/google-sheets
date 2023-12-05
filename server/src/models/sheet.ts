@@ -1,5 +1,19 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Types } from "mongoose";
 
-const SheetSchema = new Schema({}, { timestamps: true });
+const SheetSchema = new Schema(
+  {
+    title: {
+      default: "Untitled Spreadsheet",
+      type: String,
+    },
+    grids: {
+      ref: "Grid",
+      type: [Types.ObjectId],
+    },
+  },
+  { timestamps: true }
+);
 
-export default model("Sheet", SheetSchema);
+const Sheet = model("Sheet", SheetSchema);
+
+export default Sheet;

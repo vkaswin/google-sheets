@@ -2,7 +2,7 @@ import SheetProvider from "@/context/SheetContext";
 import Header from "./Header";
 import Grid from "./Grid";
 import ToolBar from "./ToolBar";
-import SheetList from "./SheetList";
+import GridList from "./GirdList";
 
 const Sheet = () => {
   return (
@@ -10,7 +10,7 @@ const Sheet = () => {
       <Header />
       <ToolBar />
       <Grid />
-      <SheetList />
+      <GridList />
     </SheetProvider>
   );
 };

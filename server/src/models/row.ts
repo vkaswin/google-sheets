@@ -2,6 +2,11 @@ import { Schema, model } from "mongoose";
 
 const RowSchema = new Schema(
   {
+    gridId: {
+      required: true,
+      index: true,
+      type: Schema.Types.ObjectId,
+    },
     rowId: {
       required: true,
       type: Number,
@@ -14,4 +19,6 @@ const RowSchema = new Schema(
   { timestamps: true }
 );
 
-export default model("Row", RowSchema);
+const Row = model("Row", RowSchema);
+
+export default Row;

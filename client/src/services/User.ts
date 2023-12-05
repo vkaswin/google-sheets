@@ -1,9 +1,14 @@
 import axios from "./axios";
-import { User } from "./config";
+import { USER_URL } from "./config";
+
+type IAuthResponse = {
+  message: string;
+  token: string;
+};
 
 export const signInUser = (data: ISignIn) => {
   return axios<IAuthResponse>({
-    url: User.signIn,
+    url: `${USER_URL}/sign-in`,
     method: "post",
     data,
   });
@@ -11,7 +16,7 @@ export const signInUser = (data: ISignIn) => {
 
 export const signUpUser = (data: ISignUp) => {
   return axios<IAuthResponse>({
-    url: User.signUp,
+    url: `${USER_URL}/sign-up`,
     method: "post",
     data,
   });

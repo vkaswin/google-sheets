@@ -12,17 +12,17 @@ type ICell = {
   columnId: number;
 } & IRect;
 
-type IColumnDetail = { columnId: number; width: number };
+type IColumnDetail = { _id: string; columnId: number; width: number };
 
-type IRowDetail = { rowId: number; height: number };
+type IRowDetail = { _id: string; rowId: number; height: number };
 
 type ICellDetail = ICellProps & Pick<ICell, "rowId" | "columnId">;
 
 type ICellProps = {
+  _id: string;
   text?: string;
   content?: any[];
   background?: string;
-  color?: string;
   textAlign?: string;
 };
 
@@ -34,12 +34,6 @@ type IRowProps = {
 type IColumnProps = {
   width?: number;
   backgroundColor?: string;
-};
-
-type ISheetDetail = {
-  rows: { rowId: number; height: number }[];
-  columns: { columnId: number; width: number }[];
-  cells: ({ _id: string; rowId: number; columnId: number } & ICellProps)[];
 };
 
 type IRenderGrid = (data: {
@@ -103,11 +97,6 @@ type IActiveStyle = {
   link: boolean;
 };
 
-type ICellFormat = (
-  key: "backgroundColor" | "textAlign" | "color",
-  value: string
-) => void;
-
 type IDirection = "top" | "bottom" | "left" | "right";
 
 type IGrid = { rows: IRow[]; columns: IColumn[]; cells: ICell[] };
@@ -123,14 +112,15 @@ type IConfig = {
   fonts: Record<string, string>;
 };
 
-type ISubSheetMetaData = {
+type ISheetGrid = {
   _id: string;
   title: string;
   color: string;
+  sheetId: string;
 };
 
-type ISheetMetaData = {
+type ISheetDetail = {
   _id: string;
   title: string;
-  sheets: ISubSheetMetaData[];
+  grids: ISheetGrid[];
 };

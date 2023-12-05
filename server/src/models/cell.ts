@@ -2,6 +2,11 @@ import { Schema, model } from "mongoose";
 
 const CellSchema = new Schema(
   {
+    gridId: {
+      required: true,
+      index: true,
+      type: Schema.Types.ObjectId,
+    },
     rowId: {
       required: true,
       type: Number,
@@ -10,20 +15,26 @@ const CellSchema = new Schema(
       required: true,
       type: Number,
     },
-    backgroundColor: {
-      default: "#FFFFFF",
+    background: {
+      default: "#ffffff",
       type: String,
     },
-    color: {
-      default: "#000000",
+    textAlign: {
+      default: "left",
+      type: String,
+    },
+    text: {
+      default: "",
       type: String,
     },
     content: {
-      required: true,
-      type: String,
+      default: [],
+      type: Array,
     },
   },
   { timestamps: true }
 );
 
-export default model("Cell", CellSchema);
+const Cell = model("Cell", CellSchema);
+
+export default Cell;

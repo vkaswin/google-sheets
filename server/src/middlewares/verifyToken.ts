@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { verify } from "jsonwebtoken";
-import { asyncHandler } from "../utils/asyncHandler";
+import { asyncHandler } from "../utils";
 
 type User = {
   _id: string;

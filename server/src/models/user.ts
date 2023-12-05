@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose";
+import { generateRandomColor } from "../utils";
 
 const UserSchema = new Schema(
   {
@@ -14,10 +15,16 @@ const UserSchema = new Schema(
       required: true,
       type: String,
     },
+    colorCode: {
+      type: String,
+      default: generateRandomColor,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-export default model("User", UserSchema);
+const User = model("User", UserSchema);
+
+export default User;

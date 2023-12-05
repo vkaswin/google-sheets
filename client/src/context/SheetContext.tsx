@@ -8,10 +8,14 @@ import {
   Dispatch,
   SetStateAction,
 } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import Quill from "quill";
 import { debounce } from "@/utils";
-import { data } from "./data";
+import { getSheetById } from "@/services/Sheet";
+import { getGridById } from "@/services/Grid";
+import { createColumn, updateColumnById } from "@/services/Column";
+import { createRow, updateRowById } from "@/services/Row";
+import { createCell, updateCellById } from "@/services/Cell";
 
 const config: IConfig = {
   lineWidth: 2,
@@ -65,13 +69,12 @@ const config: IConfig = {
 type ISheetContext = {
   quill: Quill | null;
   grid: IGrid;
-  metaData: ISheetMetaData | null;
-  activeSheetId: string | null;
+  sheetDetail: ISheetDetail | null;
   editCell: ICell | null;
   syncState: number;
-  selectedCell: ICell | undefined;
-  selectedRow: IRow | undefined;
-  selectedColumn: IColumn | undefined;
+  selectedCell: ICell | null;
+  selectedRow: IRow | null;
+  selectedColumn: IColumn | null;
   contextMenuRect: Pick<IRect, "x" | "y"> | null;
   config: IConfig;
   isLoading: boolean;
@@ -101,7 +104,6 @@ type ISheetContext = {
   setContextMenuRect: Dispatch<SetStateAction<Pick<IRect, "x" | "y"> | null>>;
   setEditCell: Dispatch<SetStateAction<ICell | null>>;
   setSelectedCellId: Dispatch<SetStateAction<string | null>>;
-  setActiveSheetId: Dispatch<SetStateAction<string | null>>;
   setSelectedRowId: Dispatch<SetStateAction<number | null>>;
   setSelectedColumnId: Dispatch<SetStateAction<number | null>>;
 };
@@ -134,9 +136,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
   const [isLoading, setIsLoading] = useState(true);
 
-  const [metaData, setMetaData] = useState<ISheetMetaData | null>(null);
-
-  const [activeSheetId, setActiveSheetId] = useState<string | null>(null);
+  const [sheetDetail, setSheetDetail] = useState<ISheetDetail | null>(null);
 
   const [grid, setGrid] = useState<IGrid>({
     cells: [],
@@ -144,26 +144,41 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     rows: [],
   });
 
-  const rowDetails = useRef<Map<number, IRowDetail>>(new Map());
+  const rowDetails = useRef<Map<string, IRowDetail>>(new Map());
 
-  const columnDetails = useRef<Map<number, IColumnDetail>>(new Map());
+  const columnDetails = useRef<Map<string, IColumnDetail>>(new Map());
 
   const cellDetails = useRef<Map<string, ICellDetail>>(new Map());
 
   const cellIds = useRef<Map<string, string>>(new Map());
 
-  const { id } = useParams();
+  const rowIds = useRef<Map<number, string>>(new Map());
+
+  const columnIds = useRef<Map<number, string>>(new Map());
+
+  const { sheetId } = useParams();
+
+  const location = useLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+
+  const gridId = searchParams.get("gridId");
 
   const selectedCell = useMemo(() => {
-    return grid.cells.find(({ cellId }) => cellId === selectedCellId);
+    let cell = grid.cells.find(({ cellId }) => cellId === selectedCellId);
+    return cell || null;
   }, [grid, selectedCellId]);
 
   const selectedRow = useMemo(() => {
-    return grid.rows.find(({ rowId }) => rowId === selectedRowId);
+    let row = grid.rows.find(({ rowId }) => rowId === selectedRowId);
+    return row || null;
   }, [grid, selectedRowId]);
 
   const selectedColumn = useMemo(() => {
-    return grid.columns.find(({ columnId }) => columnId === selectedColumnId);
+    let column = grid.columns.find(
+      ({ columnId }) => columnId === selectedColumnId
+    );
+    return column || null;
   }, [grid, selectedColumnId]);
 
   useEffect(() => {
@@ -171,13 +186,13 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   }, []);
 
   useEffect(() => {
-    getSheetMetaData();
-  }, [id]);
+    getSheetDetails();
+  }, [sheetId]);
 
   useEffect(() => {
-    if (!activeSheetId) return;
-    getSheetById();
-  }, [activeSheetId]);
+    if (!sheetDetail) return;
+    getGridDetails();
+  }, [gridId]);
 
   useEffect(() => {
     if (!quill || !editCell) return;
@@ -210,56 +225,17 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     setQuill(quill);
   };
 
-  const getSheetMetaData = () => {
-    const data: ISheetMetaData = {
-      _id: id as string,
-      title: "Untitled Spreadsheet",
-      sheets: [
-        {
-          _id: crypto.randomUUID(),
-          title: "Sheet 1",
-          color: "blue",
-        },
-        {
-          _id: crypto.randomUUID(),
-          title: "Sheet 2",
-          color: "orange",
-        },
-        {
-          _id: crypto.randomUUID(),
-          title: "Sheet 3",
-          color: "transperant",
-        },
-      ],
-    };
+  const getSheetDetails = async () => {
+    if (!sheetId) return;
 
-    setMetaData(data);
-    setActiveSheetId(data.sheets[0]._id);
-  };
+    resetGrid();
 
-  const getSheetById = async () => {
     try {
-      handleReset();
-
-      let index =
-        metaData?.sheets.findIndex(({ _id }) => _id === activeSheetId) || 0;
-
-      let { rows, cells, columns } = data[index];
-
-      for (let row of rows) {
-        rowDetails.current.set(row.rowId, row);
-      }
-
-      for (let column of columns) {
-        columnDetails.current.set(column.columnId, column);
-      }
-
-      for (let cell of cells) {
-        let cellId = `${cell.columnId},${cell.rowId}`;
-        cellIds.current.set(cellId, cell._id);
-        cellDetails.current.set(cell._id, cell);
-      }
-
+      let {
+        data: { cells, columns, rows, ...rest },
+      } = await getSheetById(sheetId, gridId);
+      setGridDetails(rows, columns, cells);
+      setSheetDetail(rest);
       forceUpdate();
     } catch (error) {
       console.log(error);
@@ -268,11 +244,54 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     }
   };
 
-  const handleReset = () => {
+  const getGridDetails = async () => {
+    if (!gridId) return;
+
+    resetGrid();
+
+    try {
+      let {
+        data: { cells, columns, rows },
+      } = await getGridById(gridId);
+      setGridDetails(rows, columns, cells);
+      forceUpdate();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const setGridDetails = (
+    rows: IRowDetail[],
+    columns: IColumnDetail[],
+    cells: ICellDetail[]
+  ) => {
     rowDetails.current = new Map();
     columnDetails.current = new Map();
     cellDetails.current = new Map();
     cellIds.current = new Map();
+    rowIds.current = new Map();
+    columnIds.current = new Map();
+
+    for (let row of rows) {
+      rowDetails.current.set(row._id, row);
+      rowIds.current.set(row.rowId, row._id);
+    }
+
+    for (let column of columns) {
+      columnDetails.current.set(column._id, column);
+      columnIds.current.set(column.columnId, column._id);
+    }
+
+    for (let cell of cells) {
+      let cellId = `${cell.columnId},${cell.rowId}`;
+      cellIds.current.set(cellId, cell._id);
+      cellDetails.current.set(cell._id, cell);
+    }
+  };
+
+  const resetGrid = () => {
     setIsLoading(true);
     setEditCell(null);
     setContextMenuRect(null);
@@ -283,57 +302,74 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     setHighLightCellIds([]);
   };
 
-  const handleEditorChange = () => {
-    if (!quill || !editCell) return;
+  const handleEditorChange = async () => {
+    if (!quill || !editCell || !gridId) return;
 
     let text = quill.getText();
     const content: any[] = [];
-    let cell = getCellById(editCell.cellId);
+    let cellData = getCellById(editCell.cellId);
 
     quill.getContents().eachLine(({ ops }) => {
       content.push(...ops, { insert: "\n" });
     });
 
-    if (!cell) {
-      //*TODO send the data to the server and get the cellId
-      let id = crypto.randomUUID();
-      cell = {
+    if (cellData) {
+      await updateCellById(cellData._id, { text, content });
+      cellData.text = text;
+      cellData.content = content;
+      forceUpdate();
+    } else {
+      let body: any = {
         rowId: editCell.rowId,
         columnId: editCell.columnId,
+        text,
+        content,
       };
 
-      setCellById(id, editCell.cellId, cell);
+      let {
+        data: { cellId },
+      } = await createCell(gridId, body);
+
+      body._id = cellId;
+      setCellById(editCell.cellId, body);
+      forceUpdate();
     }
-
-    cell.text = text;
-    cell.content = content as any;
-
-    forceUpdate();
   };
 
-  const handleFormatCell: ISheetContext["handleFormatCell"] = (
+  const handleFormatCell: ISheetContext["handleFormatCell"] = async (
     type: string,
     value: string
   ) => {
-    if (!selectedCell) return;
+    if (!selectedCell || !gridId) return;
 
-    let cell = getCellById(selectedCell.cellId);
+    let isBackground = type === "background";
+    let isTextAlign = type === "textAlign";
 
-    if (!cell) {
-      //*TODO send the data to the server and get the cellId
-      let _id = crypto.randomUUID();
-      cell = {
-        columnId: selectedCell.columnId,
-        rowId: selectedCell.rowId,
-      };
+    let cellData = getCellById(selectedCell.cellId);
 
-      setCellById(_id, selectedCell.cellId, cell);
+    let body: Partial<ICellDetail> = {};
+    if (isBackground) body.background = value;
+    else if (isTextAlign) body.textAlign = value;
+
+    if (cellData) {
+      await updateCellById(cellData._id, body);
+
+      if (isBackground) cellData.background = value;
+      else if (isTextAlign) cellData.textAlign = value;
+
+      forceUpdate();
+    } else {
+      body.columnId = selectedCell.columnId;
+      body.rowId = selectedCell.rowId;
+
+      let {
+        data: { cellId },
+      } = await createCell(gridId, body);
+
+      body._id = cellId;
+      setCellById(selectedCell.cellId, body as ICellDetail);
+      forceUpdate();
     }
-
-    if (type === "background") cell.background = value;
-    else if (type === "textAlign") cell.textAlign = value;
-
-    forceUpdate();
   };
 
   const getCellById: ISheetContext["getCellById"] = (cellId) => {
@@ -343,9 +379,9 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     return cellDetails.current.get(id);
   };
 
-  const setCellById = (id: string, cellId: string, data: ICellDetail) => {
-    cellIds.current.set(cellId, id);
-    cellDetails.current.set(id, data);
+  const setCellById = (cellId: string, data: ICellDetail) => {
+    cellIds.current.set(cellId, data._id);
+    cellDetails.current.set(data._id, data);
   };
 
   const removeCellById = (cellId: string) => {
@@ -357,50 +393,80 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
   const getRowById: ISheetContext["getRowById"] = (rowId) => {
     if (typeof rowId !== "number") return;
-    return rowDetails.current.get(rowId);
+    let id = rowIds.current.get(rowId);
+    if (!id) return;
+    return rowDetails.current.get(id);
   };
 
-  const setRowById = (rowId: number, data: IRowDetail) => {
-    rowDetails.current.set(rowId, data);
+  const setRowById = (row: IRowDetail) => {
+    rowIds.current.set(row.rowId, row._id);
+    rowDetails.current.set(row._id, row);
   };
 
   const removeRowById = (rowId: number) => {
-    rowDetails.current.delete(rowId);
+    let id = rowIds.current.get(rowId);
+    if (!id) return;
+    rowIds.current.delete(rowId);
+    rowDetails.current.delete(id);
   };
 
   const getColumnById: ISheetContext["getColumnById"] = (columnId) => {
     if (typeof columnId !== "number") return;
-    return columnDetails.current.get(columnId);
+    let id = columnIds.current.get(columnId);
+    if (!id) return;
+    return columnDetails.current.get(id);
   };
 
-  const setColumnById = (columnId: number, data: IColumnDetail) => {
-    columnDetails.current.set(columnId, data);
+  const setColumnById = (column: IColumnDetail) => {
+    columnIds.current.set(column.columnId, column._id);
+    columnDetails.current.set(column._id, column);
   };
 
-  const removeColumnById = (rowId: number) => {
-    columnDetails.current.delete(rowId);
+  const removeColumnById = (columnId: number) => {
+    let id = columnIds.current.get(columnId);
+    if (!id) return;
+    columnIds.current.delete(columnId);
+    columnDetails.current.delete(id);
   };
 
   const forceUpdate = () => {
     setSyncState(Math.random() + 1);
   };
 
-  const handleResizeColumn = (columnId: number, width: number) => {
+  const handleResizeColumn = async (columnId: number, width: number) => {
+    if (!gridId) return;
+
     let columnData = getColumnById(columnId);
 
-    if (!columnData) setColumnById(columnId, { columnId, width });
-    else columnData.width = width;
-
-    forceUpdate();
+    if (columnData) {
+      await updateColumnById(columnData._id, { width });
+      columnData.width = width;
+      forceUpdate();
+    } else {
+      let {
+        data: { columnId: _id },
+      } = await createColumn(gridId, { columnId, width });
+      setColumnById({ columnId, width, _id });
+      forceUpdate();
+    }
   };
 
-  const handleResizeRow = (rowId: number, height: number) => {
+  const handleResizeRow = async (rowId: number, height: number) => {
+    if (!gridId) return;
+
     let rowData = getRowById(rowId);
 
-    if (!rowData) setRowById(rowId, { rowId, height });
-    else rowData.height = height;
-
-    forceUpdate();
+    if (rowData) {
+      await updateRowById(rowData._id, { height });
+      rowData.height = height;
+      forceUpdate();
+    } else {
+      let {
+        data: { rowId: _id },
+      } = await createRow(gridId, { rowId, height });
+      setRowById({ _id, rowId, height });
+      forceUpdate();
+    }
   };
 
   const handleDeleteCell = () => {
@@ -468,7 +534,8 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
       if (columnData) {
         removeColumnById(cellData.columnId);
-        setColumnById(newColumnId, columnData);
+        columnData.columnId = newColumnId;
+        setColumnById(columnData);
       }
 
       cellData.columnId = newColumnId;
@@ -502,7 +569,8 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
       if (rowData) {
         removeRowById(cellData.rowId);
-        setRowById(newRowId, rowData);
+        rowData.rowId = newRowId;
+        setRowById(rowData);
       }
 
       cellData.rowId = newRowId;
@@ -547,24 +615,16 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   };
 
   const handleCreateSheet = () => {
-    let sheetId = crypto.randomUUID();
-    metaData?.sheets.push({
-      _id: sheetId,
-      color: "red",
-      title: `Sheet ${metaData.sheets.length + 1}`,
-    });
-    data.push({ cells: [], columns: [], rows: [] });
-    setActiveSheetId(sheetId);
+    console.log("create new sheet");
   };
 
   const context: ISheetContext = {
     quill,
     grid,
-    metaData,
+    sheetDetail,
     config,
     syncState,
     editCell,
-    activeSheetId,
     selectedCell,
     selectedColumn,
     selectedRow,
@@ -573,7 +633,6 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     activeSearchIndex,
     highLightCellIds,
     setGrid,
-    setActiveSheetId,
     getCellById,
     getRowById,
     getColumnById,

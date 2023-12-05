@@ -7,6 +7,10 @@ import {
   MenuItem,
   Portal,
   Tooltip,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Box,
 } from "@chakra-ui/react";
 import useSheet from "@/hooks/useSheet";
 import ColorPicker from "./ColorPicker";
@@ -30,24 +34,24 @@ const DEFAULT_ACTIVE_STYLE: IActiveStyle = {
 };
 
 const ToolBar = () => {
-  const [colorPicker, setColorPicker] = useState<{
-    rect: DOMRect;
-    type: IPickerOptions;
-  } | null>(null);
-
-  const [activeStyle, setActiveStyle] = useState(DEFAULT_ACTIVE_STYLE);
+  const [activeStyle, setActiveStyle] =
+    useState<Partial<IActiveStyle>>(DEFAULT_ACTIVE_STYLE);
 
   const {
     quill,
-    selectedCell,
     config,
+    editCell,
+    selectedCell,
     activeSearchIndex,
     highLightCellIds,
+    getCellById,
     handleSearchSheet,
     handleFormatCell,
     handleSearchNext,
     handleSearchPrevious,
   } = useSheet();
+
+  let { background, textAlign } = getCellById(selectedCell?.cellId) || {};
 
   useEffect(() => {
     if (!quill) return;
@@ -60,38 +64,29 @@ const ToolBar = () => {
 
   useEffect(() => {
     if (!selectedCell) return;
-    setActiveStyle(DEFAULT_ACTIVE_STYLE);
+    setActiveStyle({
+      ...DEFAULT_ACTIVE_STYLE,
+      background: background || DEFAULT_ACTIVE_STYLE.background,
+      alignLeft: textAlign === "left",
+      alignMiddle: textAlign === "middle",
+      alignRight: textAlign === "right",
+    });
   }, [selectedCell]);
 
   const handleSelectionChange = () => {
     if (!quill) return;
 
-    let { bold, strike, font, underline, background, color, italic } =
-      quill.getFormat();
+    let { bold, strike, font, underline, color, italic } = quill.getFormat();
 
     setActiveStyle({
       bold: !!bold,
       strike: !!strike,
       underline: !!underline,
       italic: !!italic,
-      alignLeft: false,
-      alignMiddle: false,
-      alignRight: false,
       link: false,
       font: font || DEFAULT_ACTIVE_STYLE.font,
-      background: background || DEFAULT_ACTIVE_STYLE.background,
       color: color || DEFAULT_ACTIVE_STYLE.color,
     });
-  };
-
-  const handleSelectColor = (colorCode: string) => {
-    if (!colorPicker) return;
-    formatText(colorPicker.type, colorCode);
-    handleCloseColorPicker();
-  };
-
-  const handleCloseColorPicker = () => {
-    setColorPicker(null);
   };
 
   const formatText: IFormatText = (type, value) => {
@@ -102,15 +97,15 @@ const ToolBar = () => {
       setActiveStyle({ ...activeStyle, [type]: value });
     } else {
       quill.format(type, value);
+      if (
+        type === "bold" ||
+        type === "italic" ||
+        type === "strike" ||
+        type === "underline"
+      ) {
+        setActiveStyle({ ...activeStyle, [type]: value });
+      }
     }
-  };
-
-  const handleShowColorPicker = (
-    event: MouseEvent<HTMLButtonElement>,
-    type: IPickerOptions
-  ) => {
-    let element = event.target as HTMLElement;
-    setColorPicker({ type, rect: element.getBoundingClientRect() });
   };
 
   const handleRemoveFormat = () => {
@@ -147,7 +142,7 @@ const ToolBar = () => {
                 <Tooltip label="Font" placement="bottom" className="tooltip">
                   <MenuButton className="w-40">
                     <div className="flex justify-between items-center gap-4 pl-4 pr-2">
-                      <span>{config.fonts[activeStyle.font]}</span>
+                      <span>{config.fonts[activeStyle.font as string]}</span>
                       <i
                         className={classNames(
                           "bx-chevron-down transition-transform",
@@ -186,6 +181,8 @@ const ToolBar = () => {
               className={classNames(btnClassName, {
                 [activeClassName]: activeStyle.bold,
               })}
+              disabled={!editCell}
+              onClick={() => formatText("bold", !activeStyle.bold)}
             >
               <i className="bx-bold"></i>
             </button>
@@ -195,7 +192,8 @@ const ToolBar = () => {
               className={classNames(btnClassName, {
                 [activeClassName]: activeStyle.italic,
               })}
-              onClick={() => formatText("italic", true)}
+              disabled={!editCell}
+              onClick={() => formatText("italic", !activeStyle.italic)}
             >
               <i className="bx-italic"></i>
             </button>
@@ -205,7 +203,8 @@ const ToolBar = () => {
               className={classNames(btnClassName, {
                 [activeClassName]: activeStyle.underline,
               })}
-              onClick={() => formatText("underline", true)}
+              disabled={!editCell}
+              onClick={() => formatText("underline", !activeStyle.underline)}
             >
               <i className="bx-underline"></i>
             </button>
@@ -215,7 +214,8 @@ const ToolBar = () => {
               className={classNames(btnClassName, {
                 [activeClassName]: activeStyle.strike,
               })}
-              onClick={() => formatText("strike", true)}
+              disabled={!editCell}
+              onClick={() => formatText("strike", !activeStyle.strike)}
             >
               <i className="bx-strikethrough"></i>
             </button>
@@ -223,35 +223,87 @@ const ToolBar = () => {
         </div>
         <Divider />
         <div className="flex items-center gap-3 px-4 text-xl">
-          <Tooltip className="tooltip" label="Text color">
-            <button
-              className={classNames(btnClassName, "flex-col")}
-              onClick={(e) => handleShowColorPicker(e, "color")}
-            >
-              <i className="bx-font"></i>
-              <span
-                className="w-full h-2 shadow-sm"
-                style={{ backgroundColor: activeStyle.color }}
-              ></span>
-            </button>
-          </Tooltip>
-          <Tooltip className="tooltip" label="Fill color">
-            <button
-              className={classNames(btnClassName, "flex-col")}
-              onClick={(e) => handleShowColorPicker(e, "background")}
-            >
-              <i className="bxs-color-fill"></i>
-              <span
-                className="w-full h-2 shadow-sm"
-                style={{ backgroundColor: activeStyle.background }}
-              ></span>
-            </button>
-          </Tooltip>
+          <Popover>
+            {({ onClose }) => {
+              return (
+                <Fragment>
+                  <Tooltip className="tooltip" label="Text color">
+                    <Box>
+                      <PopoverTrigger>
+                        <button
+                          className={classNames(btnClassName, "flex-col")}
+                          disabled={!editCell}
+                        >
+                          <i className="bx-font"></i>
+                          <span
+                            className="w-full h-2 shadow-sm"
+                            style={{ backgroundColor: activeStyle.color }}
+                          ></span>
+                        </button>
+                      </PopoverTrigger>
+                    </Box>
+                  </Tooltip>
+                  <Portal>
+                    <Box zIndex={999} className="relative w-full h-full">
+                      <PopoverContent boxSize="fit-content">
+                        <ColorPicker
+                          onClick={(color) => {
+                            formatText("color", color);
+                            onClose();
+                          }}
+                        />
+                      </PopoverContent>
+                    </Box>
+                  </Portal>
+                </Fragment>
+              );
+            }}
+          </Popover>
+          <Popover>
+            {({ onClose }) => {
+              return (
+                <Fragment>
+                  <Tooltip className="tooltip" label="Fill color">
+                    <Box>
+                      <PopoverTrigger>
+                        <button
+                          className={classNames(btnClassName, "flex-col")}
+                          disabled={!selectedCell}
+                        >
+                          <i className="bxs-color-fill"></i>
+                          <span
+                            className="w-full h-2 shadow-sm"
+                            style={{ backgroundColor: activeStyle.background }}
+                          ></span>
+                        </button>
+                      </PopoverTrigger>
+                    </Box>
+                  </Tooltip>
+                  <Portal>
+                    <Box zIndex={999} className="relative w-full h-full">
+                      <PopoverContent boxSize="fit-content">
+                        <ColorPicker
+                          onClick={(color) => {
+                            formatText("background", color);
+                            onClose();
+                          }}
+                        />
+                      </PopoverContent>
+                    </Box>
+                  </Portal>
+                </Fragment>
+              );
+            }}
+          </Popover>
         </div>
         <Divider />
         <div className="flex items-center gap-3 px-4 text-xl">
           <Tooltip className="tooltip" label="Remove format">
-            <button className={btnClassName} onClick={handleRemoveFormat}>
+            <button
+              className={btnClassName}
+              onClick={handleRemoveFormat}
+              disabled={!editCell}
+            >
               <i className="bxs-eraser"></i>
             </button>
           </Tooltip>
@@ -263,6 +315,7 @@ const ToolBar = () => {
               className={classNames(btnClassName, {
                 [activeClassName]: activeStyle.alignLeft,
               })}
+              disabled={!selectedCell}
             >
               <i className="bx-align-left"></i>
             </button>
@@ -272,6 +325,7 @@ const ToolBar = () => {
               className={classNames(btnClassName, {
                 [activeClassName]: activeStyle.alignMiddle,
               })}
+              disabled={!selectedCell}
             >
               <i className="bx-align-middle"></i>
             </button>
@@ -279,8 +333,9 @@ const ToolBar = () => {
           <Tooltip className="tooltip" label="Right">
             <button
               className={classNames(btnClassName, {
-                [activeClassName]: activeStyle.alignLeft,
+                [activeClassName]: activeStyle.alignRight,
               })}
+              disabled={!selectedCell}
             >
               <i className="bx-align-right"></i>
             </button>
@@ -293,12 +348,16 @@ const ToolBar = () => {
               className={classNames(btnClassName, {
                 [activeClassName]: activeStyle.link,
               })}
+              disabled={!editCell}
             >
               <i className="bx-link-alt"></i>
             </button>
           </Tooltip>
           <Tooltip className="tooltip" label="Insert comment (Ctrl+Alt+M)">
-            <button className={btnClassName}>
+            <button
+              className={btnClassName}
+              disabled={!(editCell || selectedCell)}
+            >
               <i className="bx-comment-add"></i>
             </button>
           </Tooltip>

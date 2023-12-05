@@ -1,7 +1,6 @@
 import bcrypt from "bcryptjs";
 import User from "../models/user";
-import { asyncHandler, CustomError } from "../utils/asyncHandler";
-import { generateJwtToken } from "../utils";
+import { asyncHandler, CustomError, generateJwtToken } from "../utils";
 
 export const signUp = asyncHandler(async (req, res) => {
   let { email, name, password } = req.body;
@@ -27,6 +26,7 @@ export const signUp = asyncHandler(async (req, res) => {
   });
 
   res.status(200).send({
+    message: "Success",
     token,
   });
 });
@@ -50,6 +50,7 @@ export const signIn = asyncHandler(async (req, res) => {
   });
 
   res.status(200).send({
+    message: "Success",
     token,
   });
 });

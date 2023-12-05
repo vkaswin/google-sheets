@@ -241,11 +241,7 @@ const Grid = () => {
     ctx,
     { cellId, rowId, columnId, height, width, x, y }
   ) => {
-    let {
-      background = "#FFFFFF",
-      content = [],
-      color = "",
-    } = getCellById(cellId) ?? {};
+    let { background = "#FFFFFF", content = [] } = getCellById(cellId) ?? {};
 
     let rect = { x, y, width, height };
 
@@ -559,6 +555,7 @@ const Grid = () => {
 
     let { top } = gridRef.current.getBoundingClientRect();
 
+    setSelectedCellId(null);
     setEditCell({
       cellId,
       columnId,

@@ -8,17 +8,17 @@ import {
   Portal,
 } from "@chakra-ui/react";
 import useAuth from "@/hooks/useAuth";
-import { getStaticUrl } from "@/utils";
 import useSheet from "@/hooks/useSheet";
+import { debounce, getStaticUrl } from "@/utils";
 
 const Header = () => {
   const { user, logout } = useAuth();
 
-  const { metaData, handleTitleChange } = useSheet();
+  const { sheetDetail, handleTitleChange } = useSheet();
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    console.log(event.target.value);
-  };
+  const handleChange = debounce((event: ChangeEvent<HTMLInputElement>) => {
+    handleTitleChange(event.target.value);
+  }, 500);
 
   return (
     <div className="flex justify-between items-center h-[var(--header-height)] px-4">
@@ -26,7 +26,7 @@ const Header = () => {
         <img className="w-[40px] h-[40px]" src={getStaticUrl("/logo.svg")} />
         <input
           className="text-dark-gray font-medium text-lg outline outline-1 outline-transparent hover:outline-dark-gray rounded-sm focus:outline-2 focus:outline-dark-blue px-2"
-          defaultValue={metaData?.title}
+          defaultValue={sheetDetail?.title}
           onChange={handleChange}
         />
       </div>

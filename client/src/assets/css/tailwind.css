@@ -38,7 +38,7 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 button:disabled {
-  @apply opacity-50 cursor-not-allowed;
+  @apply opacity-50;
 }
 
 #root {

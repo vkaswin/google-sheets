@@ -13,8 +13,3 @@ type ISignIn = {
 type ISignUp = {
   name: string;
 } & ISignIn;
-
-type IAuthResponse = {
-  message: string;
-  token: string;
-};
