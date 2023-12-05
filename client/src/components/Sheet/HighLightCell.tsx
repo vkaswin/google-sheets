@@ -1,14 +1,21 @@
+import { useRef, useEffect } from "react";
 import useSheet from "@/hooks/useSheet";
 
 const HighlightCell = () => {
-  const { editCell, selectedCell, gridRef, config, setEditCell } = useSheet();
+  const { editCell, selectedCell, config, setEditCell } = useSheet();
+
+  const gridRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    gridRef.current = document.getElementById("grid") as HTMLDivElement;
+  }, []);
 
   const handleDoubleClickCell = () => {
-    if (!gridRef || !selectedCell) return;
+    if (!gridRef.current || !selectedCell) return;
 
     let { columnId, cellId, width, height, rowId, x, y } = selectedCell;
 
-    let { top } = gridRef.getBoundingClientRect();
+    let { top } = gridRef.current.getBoundingClientRect();
 
     setEditCell({
       cellId,

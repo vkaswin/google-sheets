@@ -535,6 +535,7 @@ const Grid = ({ children }: IGridProps) => {
 
   return (
     <div
+      id="grid"
       ref={gridRef}
       className="relative w-[var(--grid-width)] h-[var(--grid-height)] select-none overflow-hidden"
       onWheel={handleScroll}
