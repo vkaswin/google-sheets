@@ -67,7 +67,6 @@ type ISheetContext = {
   grid: IGrid;
   metaData: ISheetMetaData | null;
   activeSheetId: string | null;
-  gridRef: HTMLDivElement | null;
   editCell: ICell | null;
   syncState: number;
   selectedCell: ICell | undefined;
@@ -100,7 +99,6 @@ type ISheetContext = {
   handleSearchSheet: (q: string) => void;
   setGrid: Dispatch<SetStateAction<IGrid>>;
   setContextMenuRect: Dispatch<SetStateAction<Pick<IRect, "x" | "y"> | null>>;
-  setGridRef: Dispatch<SetStateAction<HTMLDivElement | null>>;
   setEditCell: Dispatch<SetStateAction<ICell | null>>;
   setSelectedCellId: Dispatch<SetStateAction<string | null>>;
   setActiveSheetId: Dispatch<SetStateAction<string | null>>;
@@ -129,8 +127,6 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
   const [contextMenuRect, setContextMenuRect] =
     useState<ISheetContext["contextMenuRect"]>(null);
-
-  const [gridRef, setGridRef] = useState<HTMLDivElement | null>(null);
 
   const [activeSearchIndex, setActiveSearchIndex] = useState(0);
 
@@ -191,7 +187,6 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     let handler = debounce(handleEditorChange, 500);
     quill.on("text-change", handler);
     return () => {
-      handleEditorChange();
       quill.off("text-change", handler);
     };
   }, [editCell]);
@@ -566,7 +561,6 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     quill,
     grid,
     metaData,
-    gridRef,
     config,
     syncState,
     editCell,
@@ -578,7 +572,6 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     isLoading,
     activeSearchIndex,
     highLightCellIds,
-    setGridRef,
     setGrid,
     setActiveSheetId,
     getCellById,

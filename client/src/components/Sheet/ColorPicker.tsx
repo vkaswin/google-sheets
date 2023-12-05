@@ -1,8 +1,4 @@
-import { useMemo, useState } from "react";
 import classNames from "classnames";
-import { usePopper } from "react-popper";
-import { VirtualElement } from "@popperjs/core";
-import useClickOutside from "@/hooks/useClickOutside";
 
 const colorsData = [
   [
