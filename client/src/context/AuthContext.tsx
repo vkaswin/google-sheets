@@ -8,9 +8,9 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import jwtDecode from "jwt-decode";
+import { toast } from "react-toastify";
 import { signInUser, signUpUser } from "@/services/User";
 import { cookie } from "@/utils";
-import { toast } from "react-toastify";
 
 type AuthProviderProps = {
   children: ReactNode;
@@ -54,9 +54,9 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         },
       } = await signInUser(data);
       handleAuthResponse(token);
-    } catch (err: any) {
-      toast.error(err?.message);
-      if (err?.message === "User not exist") navigate("/auth/sign-up");
+    } catch (error: any) {
+      toast.error(error?.message);
+      if (error?.message === "User not exist") navigate("/auth/sign-up");
     }
   };
 
@@ -68,8 +68,8 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         },
       } = await signUpUser(data);
       handleAuthResponse(token);
-    } catch (err: any) {
-      toast.error(err?.message);
+    } catch (error: any) {
+      toast.error(error?.message);
     }
   };
 

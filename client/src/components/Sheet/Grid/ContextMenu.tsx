@@ -85,7 +85,7 @@ const ContextMenu = ({ rect, ...events }: IContextMenuProps) => {
   return (
     <div
       ref={setPopperElement}
-      className="w-72 shadow-[0_2px_6px_2px_rgba(60,64,67,.15)] border border-transparent rounded bg-white z-20"
+      className="w-72 shadow-[0_2px_6px_2px_rgba(60,64,67,.15)] border border-transparent rounded bg-white z-50"
       style={styles.popper}
       {...attributes.popper}
     >

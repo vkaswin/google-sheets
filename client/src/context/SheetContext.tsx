@@ -11,6 +11,7 @@ import {
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import Quill from "quill";
 import { debounce } from "@/utils";
+import { toast } from "react-toastify";
 import { getSheetById } from "@/services/Sheet";
 import { getGridById } from "@/services/Grid";
 import { createColumn, updateColumnById } from "@/services/Column";
@@ -246,8 +247,8 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
         title,
       });
       if (!gridId) navigate({ search: `?gridId=${grids[0]._id}` });
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      toast.error(error?.message);
     } finally {
       setIsLoading(false);
     }
@@ -266,8 +267,8 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
       } = await getGridById(gridId);
       setGridDetails(rows, columns, cells);
       forceUpdate();
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      toast.error(error?.message);
     } finally {
       setIsLoading(false);
     }
@@ -316,36 +317,40 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   const handleEditorChange = async () => {
     if (!quill || !editCell || !gridId) return;
 
-    let text = quill.getText();
-    const content: any[] = [];
-    let cellData = getCellById(editCell.cellId);
+    try {
+      let text = quill.getText();
+      const content: any[] = [];
+      let cellData = getCellById(editCell.cellId);
 
-    quill.getContents().eachLine(({ ops }) => {
-      content.push(...ops, { insert: "\n" });
-    });
+      quill.getContents().eachLine(({ ops }) => {
+        content.push(...ops, { insert: "\n" });
+      });
 
-    if (cellData) {
-      await updateCellById(cellData._id, { text, content });
-      cellData.text = text;
-      cellData.content = content;
-      forceUpdate();
-    } else {
-      let body: any = {
-        rowId: editCell.rowId,
-        columnId: editCell.columnId,
-        text,
-        content,
-      };
+      if (cellData) {
+        await updateCellById(cellData._id, { text, content });
+        cellData.text = text;
+        cellData.content = content;
+        forceUpdate();
+      } else {
+        let body: any = {
+          rowId: editCell.rowId,
+          columnId: editCell.columnId,
+          text,
+          content,
+        };
 
-      let {
-        data: {
-          data: { cellId },
-        },
-      } = await createCell(gridId, body);
+        let {
+          data: {
+            data: { cellId },
+          },
+        } = await createCell(gridId, body);
 
-      body._id = cellId;
-      setCellById(editCell.cellId, body);
-      forceUpdate();
+        body._id = cellId;
+        setCellById(editCell.cellId, body);
+        forceUpdate();
+      }
+    } catch (error: any) {
+      toast.error(error?.message);
     }
   };
 
@@ -355,35 +360,39 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   ) => {
     if (!selectedCell || !gridId) return;
 
-    let isBackground = type === "background";
-    let isTextAlign = type === "textAlign";
+    try {
+      let isBackground = type === "background";
+      let isTextAlign = type === "textAlign";
 
-    let cellData = getCellById(selectedCell.cellId);
+      let cellData = getCellById(selectedCell.cellId);
 
-    let body: Partial<ICellDetail> = {};
-    if (isBackground) body.background = value;
-    else if (isTextAlign) body.textAlign = value;
+      let body: Partial<ICellDetail> = {};
+      if (isBackground) body.background = value;
+      else if (isTextAlign) body.textAlign = value;
 
-    if (cellData) {
-      await updateCellById(cellData._id, body);
+      if (cellData) {
+        await updateCellById(cellData._id, body);
 
-      if (isBackground) cellData.background = value;
-      else if (isTextAlign) cellData.textAlign = value;
+        if (isBackground) cellData.background = value;
+        else if (isTextAlign) cellData.textAlign = value;
 
-      forceUpdate();
-    } else {
-      body.columnId = selectedCell.columnId;
-      body.rowId = selectedCell.rowId;
+        forceUpdate();
+      } else {
+        body.columnId = selectedCell.columnId;
+        body.rowId = selectedCell.rowId;
 
-      let {
-        data: {
-          data: { cellId },
-        },
-      } = await createCell(gridId, body);
+        let {
+          data: {
+            data: { cellId },
+          },
+        } = await createCell(gridId, body);
 
-      body._id = cellId;
-      setCellById(selectedCell.cellId, body as ICellDetail);
-      forceUpdate();
+        body._id = cellId;
+        setCellById(selectedCell.cellId, body as ICellDetail);
+        forceUpdate();
+      }
+    } catch (error: any) {
+      toast.error(error?.message);
     }
   };
 
@@ -451,40 +460,48 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   const handleResizeColumn = async (columnId: number, width: number) => {
     if (!gridId) return;
 
-    let columnData = getColumnById(columnId);
+    try {
+      let columnData = getColumnById(columnId);
 
-    if (columnData) {
-      await updateColumnById(columnData._id, { width });
-      columnData.width = width;
-      forceUpdate();
-    } else {
-      let {
-        data: {
-          data: { columnId: _id },
-        },
-      } = await createColumn(gridId, { columnId, width });
-      setColumnById({ columnId, width, _id });
-      forceUpdate();
+      if (columnData) {
+        await updateColumnById(columnData._id, { width });
+        columnData.width = width;
+        forceUpdate();
+      } else {
+        let {
+          data: {
+            data: { columnId: _id },
+          },
+        } = await createColumn(gridId, { columnId, width });
+        setColumnById({ columnId, width, _id });
+        forceUpdate();
+      }
+    } catch (error: any) {
+      toast.error(error?.message);
     }
   };
 
   const handleResizeRow = async (rowId: number, height: number) => {
     if (!gridId) return;
 
-    let rowData = getRowById(rowId);
+    try {
+      let rowData = getRowById(rowId);
 
-    if (rowData) {
-      await updateRowById(rowData._id, { height });
-      rowData.height = height;
-      forceUpdate();
-    } else {
-      let {
-        data: {
-          data: { rowId: _id },
-        },
-      } = await createRow(gridId, { rowId, height });
-      setRowById({ _id, rowId, height });
-      forceUpdate();
+      if (rowData) {
+        await updateRowById(rowData._id, { height });
+        rowData.height = height;
+        forceUpdate();
+      } else {
+        let {
+          data: {
+            data: { rowId: _id },
+          },
+        } = await createRow(gridId, { rowId, height });
+        setRowById({ _id, rowId, height });
+        forceUpdate();
+      }
+    } catch (error: any) {
+      toast.error(error?.message);
     }
   };
 

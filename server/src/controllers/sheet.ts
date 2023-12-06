@@ -7,9 +7,10 @@ const createSheet = asyncHandler(async (req, res) => {
 
   let sheet = await Sheet.create({ grids: [grid._id] });
 
-  res
-    .status(200)
-    .send({ message: "Success", sheedId: sheet._id, gridId: grid._id });
+  res.status(200).send({
+    data: { sheedId: sheet._id },
+    message: "Success",
+  });
 });
 
 const getSheetById = asyncHandler(async (req, res) => {

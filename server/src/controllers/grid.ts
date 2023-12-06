@@ -40,6 +40,7 @@ const getGridById = asyncHandler(async (req, res) => {
 
   res.status(200).send({
     data: { grid: grid.toJSON(), rows, columns, cells },
+    message: "Success",
   });
 });
 
