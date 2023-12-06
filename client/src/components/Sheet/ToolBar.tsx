@@ -13,7 +13,7 @@ import {
   Box,
 } from "@chakra-ui/react";
 import useSheet from "@/hooks/useSheet";
-import ColorPicker from "./ColorPicker";
+import ColorPicker from "./Grid/ColorPicker";
 import { debounce } from "@/utils";
 
 const activeClassName = "bg-light-blue rounded";

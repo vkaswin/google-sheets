@@ -1,4 +1,11 @@
-import { useEffect, useRef, MouseEvent, WheelEvent, Fragment } from "react";
+import {
+  useEffect,
+  useRef,
+  MouseEvent,
+  WheelEvent,
+  Fragment,
+  PointerEvent,
+} from "react";
 import useSheet from "@/hooks/useSheet";
 import HighlightCell from "./HighLightCell";
 import ColumnResizer from "./ColumnResizer";
@@ -583,13 +590,19 @@ const Grid = () => {
     setContextMenuRect(null);
   };
 
+  const handlePointerMoveOnSelectedCell = ({ pageX, pageY }: PointerEvent) => {
+    let cellId = getCellIdByCoordiantes(pageX, pageY);
+    if (!cellId) return;
+    console.log(cellId);
+  };
+
   return (
     <Fragment>
       <div
         ref={gridRef}
         className="relative w-[var(--grid-width)] h-[var(--grid-height)] select-none overflow-hidden"
         onWheel={handleScroll}
-        onClick={handleClickGrid}
+        onMouseDown={handleClickGrid}
         onContextMenu={handleContextMenu}
       >
         {isLoading && <Loader />}
@@ -603,6 +616,7 @@ const Grid = () => {
             <HighlightCell
               cell={selectedCell}
               onDoubleClick={handleDoubleClickCell}
+              onPointerMove={handlePointerMoveOnSelectedCell}
             />
           )}
           {selectedColumn && <ColumnOverLay column={selectedColumn} />}

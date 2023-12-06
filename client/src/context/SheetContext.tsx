@@ -144,6 +144,10 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     rows: [],
   });
 
+  const [autoFillCellIds, setAutoFillCellIds] = useState<Set<string>>(
+    new Set()
+  );
+
   const rowDetails = useRef<Map<string, IRowDetail>>(new Map());
 
   const columnDetails = useRef<Map<string, IColumnDetail>>(new Map());
