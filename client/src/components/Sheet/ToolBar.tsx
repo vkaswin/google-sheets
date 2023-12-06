@@ -1,6 +1,7 @@
 import { ChangeEvent, Fragment, MouseEvent, useEffect, useState } from "react";
 import classNames from "classnames";
 import {
+  Box,
   Menu,
   MenuButton,
   MenuList,
@@ -10,7 +11,6 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-  Box,
 } from "@chakra-ui/react";
 import useSheet from "@/hooks/useSheet";
 import ColorPicker from "./Grid/ColorPicker";

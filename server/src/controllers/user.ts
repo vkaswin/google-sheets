@@ -26,8 +26,8 @@ export const signUp = asyncHandler(async (req, res) => {
   });
 
   res.status(200).send({
+    data: { token },
     message: "Success",
-    token,
   });
 });
 
@@ -50,7 +50,7 @@ export const signIn = asyncHandler(async (req, res) => {
   });
 
   res.status(200).send({
+    data: { token },
     message: "Success",
-    token,
   });
 });

@@ -16,8 +16,10 @@ const createColumn = asyncHandler(async (req, res) => {
   let row = await Column.create(req.body);
 
   res.status(200).send({
+    data: {
+      columnId: row._id,
+    },
     message: "Column has been created successfully",
-    columnId: row._id,
   });
 });
 

@@ -2,7 +2,7 @@ import axios from "./axios";
 import { ROW_URL } from "./config";
 
 export const createRow = (gridId: string, data: Partial<IRowDetail>) => {
-  return axios<{ message: string; rowId: string }>({
+  return axios<{ message: string; data: { rowId: string } }>({
     url: `${ROW_URL}/${gridId}/create`,
     method: "post",
     data,

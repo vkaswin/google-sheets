@@ -2,7 +2,7 @@ import axios from "./axios";
 import { COLUMN_URL } from "./config";
 
 export const createColumn = (gridId: string, data: Partial<IColumnDetail>) => {
-  return axios<{ message: string; columnId: string }>({
+  return axios<{ message: string; data: { columnId: string } }>({
     url: `${COLUMN_URL}/${gridId}/create`,
     method: "post",
     data,

@@ -8,7 +8,7 @@ import {
   Dispatch,
   SetStateAction,
 } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import Quill from "quill";
 import { debounce } from "@/utils";
 import { getSheetById } from "@/services/Sheet";
@@ -164,6 +164,8 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
   const location = useLocation();
 
+  const navigate = useNavigate();
+
   const searchParams = new URLSearchParams(location.search);
 
   const gridId = searchParams.get("gridId");
@@ -194,7 +196,6 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   }, [sheetId]);
 
   useEffect(() => {
-    if (!sheetDetail) return;
     getGridDetails();
   }, [gridId]);
 
@@ -232,15 +233,19 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   const getSheetDetails = async () => {
     if (!sheetId) return;
 
-    resetGrid();
-
     try {
       let {
-        data: { cells, columns, rows, ...rest },
-      } = await getSheetById(sheetId, gridId);
-      setGridDetails(rows, columns, cells);
-      setSheetDetail(rest);
-      forceUpdate();
+        data: {
+          data: { _id, grids, title },
+        },
+      } = await getSheetById(sheetId);
+
+      setSheetDetail({
+        _id,
+        grids,
+        title,
+      });
+      if (!gridId) navigate({ search: `?gridId=${grids[0]._id}` });
     } catch (error) {
       console.log(error);
     } finally {
@@ -255,7 +260,9 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
     try {
       let {
-        data: { cells, columns, rows },
+        data: {
+          data: { cells, columns, rows, grid },
+        },
       } = await getGridById(gridId);
       setGridDetails(rows, columns, cells);
       forceUpdate();
@@ -331,7 +338,9 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
       };
 
       let {
-        data: { cellId },
+        data: {
+          data: { cellId },
+        },
       } = await createCell(gridId, body);
 
       body._id = cellId;
@@ -367,7 +376,9 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
       body.rowId = selectedCell.rowId;
 
       let {
-        data: { cellId },
+        data: {
+          data: { cellId },
+        },
       } = await createCell(gridId, body);
 
       body._id = cellId;
@@ -448,7 +459,9 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
       forceUpdate();
     } else {
       let {
-        data: { columnId: _id },
+        data: {
+          data: { columnId: _id },
+        },
       } = await createColumn(gridId, { columnId, width });
       setColumnById({ columnId, width, _id });
       forceUpdate();
@@ -466,7 +479,9 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
       forceUpdate();
     } else {
       let {
-        data: { rowId: _id },
+        data: {
+          data: { rowId: _id },
+        },
       } = await createRow(gridId, { rowId, height });
       setRowById({ _id, rowId, height });
       forceUpdate();

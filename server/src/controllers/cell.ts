@@ -15,7 +15,7 @@ const createCell = asyncHandler(async (req, res) => {
 
   let cell = await Cell.create(req.body);
 
-  res.status(200).send({ message: "Success", cellId: cell._id });
+  res.status(200).send({ data: { cellId: cell._id }, message: "Success" });
 });
 
 const updateCell = asyncHandler(async (req, res) => {

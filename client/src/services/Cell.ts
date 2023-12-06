@@ -2,7 +2,7 @@ import axios from "./axios";
 import { CELL_URL } from "./config";
 
 export const createCell = (gridId: string, data: Partial<ICellDetail>) => {
-  return axios<{ message: string; cellId: string }>({
+  return axios<{ message: string; data: { cellId: string } }>({
     url: `${CELL_URL}/${gridId}/create`,
     method: "post",
     data,

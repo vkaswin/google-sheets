@@ -17,7 +17,7 @@ const createGrid = asyncHandler(async (req, res) => {
 
   await Sheet.findByIdAndUpdate(sheetId, { $push: { grids: grid._id } });
 
-  res.status(200).send({ message: "Success", gridId: grid._id });
+  res.status(200).send({ data: { gridId: grid._id }, message: "Success" });
 });
 
 const getGridById = asyncHandler(async (req, res) => {
@@ -39,10 +39,7 @@ const getGridById = asyncHandler(async (req, res) => {
   );
 
   res.status(200).send({
-    ...grid.toJSON(),
-    rows,
-    columns,
-    cells,
+    data: { grid: grid.toJSON(), rows, columns, cells },
   });
 });
 

@@ -3,7 +3,7 @@ import { USER_URL } from "./config";
 
 type IAuthResponse = {
   message: string;
-  token: string;
+  data: { token: string };
 };
 
 export const signInUser = (data: ISignIn) => {

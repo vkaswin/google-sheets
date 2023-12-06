@@ -16,8 +16,8 @@ const createRow = asyncHandler(async (req, res) => {
   let row = await Row.create(req.body);
 
   res.status(200).send({
+    data: { rowId: row._id },
     message: "Row has been created successfully",
-    rowId: row._id,
   });
 });
 

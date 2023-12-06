@@ -49,7 +49,9 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   let signIn = async (data: ISignIn) => {
     try {
       let {
-        data: { token },
+        data: {
+          data: { token },
+        },
       } = await signInUser(data);
       handleAuthResponse(token);
     } catch (err: any) {
@@ -61,7 +63,9 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   let signUp = async (data: ISignUp) => {
     try {
       let {
-        data: { token },
+        data: {
+          data: { token },
+        },
       } = await signUpUser(data);
       handleAuthResponse(token);
     } catch (err: any) {
