@@ -50,7 +50,9 @@ type IRect = {
   height: number;
 };
 
-type IPaintCell = (ctx: CanvasRenderingContext2D, rect: ICell) => void;
+type IPaintCell = (ctx: CanvasRenderingContext2D, cell: ICell) => void;
+
+type IPaintCells = (ctx: CanvasRenderingContext2D, cells: ICell[]) => void;
 
 type IPaintRect = (
   ctx: CanvasRenderingContext2D,

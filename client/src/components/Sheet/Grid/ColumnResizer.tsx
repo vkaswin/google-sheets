@@ -107,6 +107,7 @@ const CoumnResizer = ({ columns, onResize, onClick }: IColumnResizerProps) => {
               top: selectedColumn.y,
             }}
             onClick={handleClick}
+            onContextMenu={handleClick}
           >
             <div
               className="absolute top-0 -right-3 w-6 h-full bg-transparent"

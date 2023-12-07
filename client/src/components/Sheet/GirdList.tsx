@@ -33,10 +33,10 @@ const SheetList = () => {
     });
   };
 
-  let { _id, grids = [] } = sheetDetail || {};
+  let { grids = [] } = sheetDetail || {};
 
   return (
-    <div className="fixed flex gap-4 left-0 bottom-0 w-full h-[var(--bottom-bar-height)] pl-[var(--col-width)] after:absolute after:top-[-1px] after:right-0 after:w-[var(--scrollbar-size)] after:h-[1px] after:bg-light-gray">
+    <div className="fixed flex gap-4 left-0 bottom-0 w-full h-[var(--bottom-bar-height)] pl-[var(--col-width)] bg-white after:absolute after:top-[-1px] after:right-0 after:w-[var(--scrollbar-size)] after:h-[1px] after:bg-light-gray z-50">
       <div className="flex items-center gap-3">
         <button
           onClick={handleCreateGrid}

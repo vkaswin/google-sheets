@@ -1,25 +1,9 @@
 import { Fragment } from "react";
 
-type IAutoFillCellProps = {
-  cells: ICell[];
-};
+type IAutoFillCellProps = {};
 
-const AutoFillCell = ({ cells }: IAutoFillCellProps) => {
-  return (
-    <Fragment>
-      {/* {cells.map(({ cellId, columnId, height, rowId, width, x, y }) => {
-        let left = `calc(${x}px - var(--col-width))`;
-        let top = `calc(${y}px - var(--row-height))`;
-        return (
-          <div
-            key={cellId}
-            className="absolute bg-transparent border border-dashed border-black"
-            style={{ width, height, top, left }}
-          ></div>
-        );
-      })} */}
-    </Fragment>
-  );
+const AutoFillCell = ({}: IAutoFillCellProps) => {
+  return <Fragment>{/* <div>Auto Fill</div> */}</Fragment>;
 };
 
 export default AutoFillCell;

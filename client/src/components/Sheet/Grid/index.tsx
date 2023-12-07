@@ -1,4 +1,11 @@
-import { useEffect, useRef, MouseEvent, WheelEvent, Fragment } from "react";
+import {
+  useEffect,
+  useRef,
+  MouseEvent,
+  WheelEvent,
+  Fragment,
+  useLayoutEffect,
+} from "react";
 import useSheet from "@/hooks/useSheet";
 import HighlightCell from "./HighLightCell";
 import ColumnResizer from "./ColumnResizer";
@@ -33,7 +40,6 @@ const Grid = () => {
     selectedCell,
     selectedColumn,
     selectedRow,
-    autoFillCells,
     highLightCells,
     contextMenuRect,
     activeHighLightIndex,
@@ -44,7 +50,6 @@ const Grid = () => {
     setContextMenuRect,
     setSelectedCellId,
     setEditCell,
-    setAutoFillCells,
     setSelectedColumnId,
     setSelectedRowId,
     handleDeleteCell,
@@ -86,6 +91,10 @@ const Grid = () => {
     handleNavigateSearch();
   }, [activeHighLightIndex]);
 
+  useLayoutEffect(() => {
+    paintGrid();
+  }, [grid]);
+
   const checkFontsLoaded = async () => {
     await document.fonts.ready;
     handleResizeGrid();
@@ -109,6 +118,32 @@ const Grid = () => {
       rowStart: rowId,
       colStart: columnId,
     });
+  };
+
+  const paintGrid = () => {
+    if (
+      !canvasRef.current ||
+      (!grid.cells.length && !grid.columns.length && !grid.rows.length)
+    )
+      return;
+
+    let { clientWidth, clientHeight } = canvasRef.current;
+
+    let ctx = canvasRef.current.getContext("2d")!;
+
+    ctx.clearRect(0, 0, clientWidth, clientHeight);
+
+    paintCells(ctx, grid.cells);
+    paintHeaders(grid.rows, grid.columns);
+  };
+
+  const paintCells: IPaintCells = (
+    ctx: CanvasRenderingContext2D,
+    cells: ICell[]
+  ) => {
+    for (let cell of cells) {
+      paintCell(ctx, cell);
+    }
   };
 
   const paintRow = (
@@ -340,12 +375,9 @@ const Grid = () => {
     rowStart = 1,
     colStart = 1,
   }) => {
-    if (!gridRef.current || !canvasRef.current) return;
+    if (!gridRef.current) return;
 
-    let ctx = canvasRef.current.getContext("2d")!;
     let { clientWidth, clientHeight } = gridRef.current;
-
-    ctx.clearRect(0, 0, clientWidth, clientHeight);
 
     let rowData: IRow[] = [];
     let columnData: IColumn[] = [];
@@ -396,12 +428,8 @@ const Grid = () => {
           height,
           cellId,
         });
-
-        paintCell(ctx, cellData.at(-1)!);
       }
     }
-
-    paintHeaders(rowData, columnData);
 
     setGrid({
       cells: cellData,
@@ -641,7 +669,6 @@ const Grid = () => {
           {selectedCell && !editCell && (
             <HighlightCell
               cell={selectedCell}
-              onDoubleClick={handleDoubleClickCell}
               onPointerMove={handlePointerMoveOnSelectedCell}
             />
           )}
@@ -655,7 +682,7 @@ const Grid = () => {
               getCellById={getCellById}
             />
           )}
-          <AutoFillCell cells={autoFillCells} />
+          <AutoFillCell />
         </div>
         <ColumnResizer
           columns={columns}

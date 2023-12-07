@@ -104,6 +104,7 @@ const RowResizer = ({ rows, onClick, onResize }: IRowResizerProps) => {
               top: selectedRow.y,
             }}
             onClick={handleClick}
+            onContextMenu={handleClick}
           >
             <div
               ref={resizeRef}

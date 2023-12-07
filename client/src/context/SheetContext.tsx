@@ -81,7 +81,6 @@ type ISheetContext = {
   isLoading: boolean;
   highLightCells: string[];
   activeHighLightIndex: number | null;
-  autoFillCells: ICell[];
   getCellById: (cellId?: string) => ICellDetail | undefined;
   getRowById: (rowId?: number) => IRowDetail | undefined;
   getColumnById: (columnId?: number) => IColumnDetail | undefined;
@@ -104,7 +103,6 @@ type ISheetContext = {
   handleSearchSheet: (q: string) => void;
   setGrid: Dispatch<SetStateAction<IGrid>>;
   setContextMenuRect: Dispatch<SetStateAction<Pick<IRect, "x" | "y"> | null>>;
-  setAutoFillCells: Dispatch<SetStateAction<ICell[]>>;
   setEditCell: Dispatch<SetStateAction<ICell | null>>;
   setSelectedCellId: Dispatch<SetStateAction<string | null>>;
   setSelectedRowId: Dispatch<SetStateAction<number | null>>;
@@ -148,8 +146,6 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     columns: [],
     rows: [],
   });
-
-  const [autoFillCells, setAutoFillCells] = useState<ICell[]>([]);
 
   const rowDetails = useRef<Map<string, IRowDetail>>(new Map());
 
@@ -697,7 +693,6 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     selectedRow,
     contextMenuRect,
     isLoading,
-    autoFillCells,
     activeHighLightIndex,
     highLightCells,
     setGrid,
@@ -724,7 +719,6 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     setEditCell,
     setSelectedCellId,
     setSelectedColumnId,
-    setAutoFillCells,
     setSelectedRowId,
     setContextMenuRect,
   };

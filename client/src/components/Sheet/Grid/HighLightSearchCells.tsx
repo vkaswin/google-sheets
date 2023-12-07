@@ -34,7 +34,7 @@ const HighLightSearchCells = ({
             className={classNames(
               "absolute pointer-events-none",
               cellData._id === highLightCells[activeHighLightIndex]
-                ? "bg-[rgba(55,190,95,.702)] shadow-[0_0_0_2px_#146c2e]"
+                ? "bg-[rgba(55,190,95,.702)] shadow-[0_0_0_2px_#146c2e] border border-white"
                 : "bg-[rgba(109,213,140,.4)]"
             )}
             style={{
