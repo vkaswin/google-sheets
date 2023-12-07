@@ -37,4 +37,6 @@ const updateColumn = asyncHandler(async (req, res) => {
   res.status(200).send({ message: "Column has been updated successfully" });
 });
 
-export default { createColumn, updateColumn };
+const ColumnController = { createColumn, updateColumn };
+
+export default ColumnController;

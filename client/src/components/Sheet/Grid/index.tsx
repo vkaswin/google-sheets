@@ -1,16 +1,9 @@
-import {
-  useEffect,
-  useRef,
-  MouseEvent,
-  WheelEvent,
-  Fragment,
-  PointerEvent,
-} from "react";
+import { useEffect, useRef, MouseEvent, WheelEvent, Fragment } from "react";
 import useSheet from "@/hooks/useSheet";
 import HighlightCell from "./HighLightCell";
 import ColumnResizer from "./ColumnResizer";
 import RowResizer from "./RowResizer";
-import HighLightSearch from "./HighLightSearch";
+import HighLightSearchCells from "./HighLightSearchCells";
 import HighLightColumn from "./HighLightColumn";
 import HighLightRow from "./HighLightRow";
 import ColumnOverLay from "./ColumnOverLay";
@@ -18,6 +11,7 @@ import RowOverLay from "./RowOverLay";
 import ScrollBar from "./ScrollBar";
 import EditCell from "./EditCell";
 import ContextMenu from "./ContextMenu";
+import AutoFillCell from "./AutoFillCell";
 import Loader from "./Loader";
 import { convertToTitle } from "@/utils";
 
@@ -39,8 +33,10 @@ const Grid = () => {
     selectedCell,
     selectedColumn,
     selectedRow,
-    highLightCellIds,
+    autoFillCells,
+    highLightCells,
     contextMenuRect,
+    activeHighLightIndex,
     setGrid,
     getCellById,
     getColumnById,
@@ -48,6 +44,7 @@ const Grid = () => {
     setContextMenuRect,
     setSelectedCellId,
     setEditCell,
+    setAutoFillCells,
     setSelectedColumnId,
     setSelectedRowId,
     handleDeleteCell,
@@ -62,7 +59,7 @@ const Grid = () => {
     handleResizeColumn,
   } = useSheet();
 
-  let { rows, columns } = grid;
+  let { rows, columns, cells } = grid;
 
   useEffect(() => {
     checkFontsLoaded();
@@ -85,6 +82,10 @@ const Grid = () => {
     paintHeaders(rows, columns);
   }, [selectedCell, selectedColumn, selectedRow]);
 
+  useEffect(() => {
+    handleNavigateSearch();
+  }, [activeHighLightIndex]);
+
   const checkFontsLoaded = async () => {
     await document.fonts.ready;
     handleResizeGrid();
@@ -99,8 +100,8 @@ const Grid = () => {
     canvas.width = clientWidth;
     canvas.height = clientHeight;
 
-    let { rowId = 1, y = config.rowHeight } = rows[0] ?? {};
-    let { columnId = 1, x = config.colWidth } = columns[0] ?? {};
+    let { rowId, y } = rows[0] ?? {};
+    let { columnId, x } = columns[0] ?? {};
 
     renderGrid({
       offsetX: x,
@@ -334,10 +335,10 @@ const Grid = () => {
   };
 
   const renderGrid: IRenderGrid = ({
-    offsetX,
-    offsetY,
-    rowStart,
-    colStart,
+    offsetX = config.colWidth,
+    offsetY = config.rowHeight,
+    rowStart = 1,
+    colStart = 1,
   }) => {
     if (!gridRef.current || !canvasRef.current) return;
 
@@ -590,10 +591,35 @@ const Grid = () => {
     setContextMenuRect(null);
   };
 
+  const handleNavigateSearch = () => {
+    if (!highLightCells.length || activeHighLightIndex === null) return;
+
+    let cellData = getCellById(highLightCells[activeHighLightIndex]);
+
+    if (!cellData) return;
+
+    let isVisible = cells.some(
+      (cell) =>
+        cell.rowId === cellData!.rowId && cell.columnId === cellData!.columnId
+    );
+
+    if (isVisible) return;
+
+    renderGrid({
+      rowStart: cellData.rowId,
+      colStart: cellData.columnId,
+    });
+  };
+
   const handlePointerMoveOnSelectedCell = ({ pageX, pageY }: PointerEvent) => {
-    let cellId = getCellIdByCoordiantes(pageX, pageY);
-    if (!cellId) return;
-    console.log(cellId);
+    if (!selectedCell || !gridRef.current) return;
+
+    let { left, top } = gridRef.current.getBoundingClientRect();
+
+    pageX = pageX - left;
+    pageY = pageY - top;
+
+    console.log(pageX, pageY);
   };
 
   return (
@@ -621,7 +647,15 @@ const Grid = () => {
           )}
           {selectedColumn && <ColumnOverLay column={selectedColumn} />}
           {selectedRow && <RowOverLay row={selectedRow} />}
-          {!!highLightCellIds.length && <HighLightSearch />}
+          {!!highLightCells.length && activeHighLightIndex !== null && (
+            <HighLightSearchCells
+              cells={cells}
+              highLightCells={highLightCells}
+              activeHighLightIndex={activeHighLightIndex}
+              getCellById={getCellById}
+            />
+          )}
+          <AutoFillCell cells={autoFillCells} />
         </div>
         <ColumnResizer
           columns={columns}

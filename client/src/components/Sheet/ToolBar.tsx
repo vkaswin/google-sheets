@@ -42,8 +42,8 @@ const ToolBar = () => {
     config,
     editCell,
     selectedCell,
-    activeSearchIndex,
-    highLightCellIds,
+    activeHighLightIndex,
+    highLightCells,
     getCellById,
     handleSearchSheet,
     handleFormatCell,
@@ -140,7 +140,7 @@ const ToolBar = () => {
             {({ isOpen }) => (
               <Fragment>
                 <Tooltip label="Font" placement="bottom" className="tooltip">
-                  <MenuButton className="w-40">
+                  <MenuButton className="w-40" disabled={!editCell}>
                     <div className="flex justify-between items-center gap-4 pl-4 pr-2">
                       <span>{config.fonts[activeStyle.font as string]}</span>
                       <i
@@ -372,15 +372,15 @@ const ToolBar = () => {
             />
             <i className="absolute right-2 top-1/2 -translate-y-1/2 bx-search text-gray-500 text-lg"></i>
           </div>
-          {!!highLightCellIds.length && (
+          {!!highLightCells.length && (
             <Fragment>
-              <button disabled={!highLightCellIds.length}>
+              <button disabled={!highLightCells.length}>
                 <i
                   className="bx-chevron-up text-xl text-gray-500"
                   onClick={handleSearchPrevious}
                 ></i>
               </button>
-              <button disabled={!highLightCellIds.length}>
+              <button disabled={!highLightCells.length}>
                 <i
                   className="bx-chevron-down text-xl text-gray-500"
                   onClick={handleSearchNext}
@@ -388,7 +388,7 @@ const ToolBar = () => {
               </button>
 
               <span className="text-xs text-light-gray">
-                {activeSearchIndex + 1} of {highLightCellIds.length}
+                {activeHighLightIndex + 1} of {highLightCells.length}
               </span>
             </Fragment>
           )}

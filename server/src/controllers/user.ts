@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import User from "../models/user";
 import { asyncHandler, CustomError, generateJwtToken } from "../utils";
 
-export const signUp = asyncHandler(async (req, res) => {
+const signUp = asyncHandler(async (req, res) => {
   let { email, name, password } = req.body;
 
   let isExist = await User.findOne({ email });
@@ -31,7 +31,7 @@ export const signUp = asyncHandler(async (req, res) => {
   });
 });
 
-export const signIn = asyncHandler(async (req, res) => {
+const signIn = asyncHandler(async (req, res) => {
   let { email, password } = req.body;
 
   let user = await User.findOne({ email });
@@ -54,3 +54,7 @@ export const signIn = asyncHandler(async (req, res) => {
     message: "Success",
   });
 });
+
+const UserController = { signIn, signUp };
+
+export default UserController;

@@ -13,7 +13,7 @@ import Quill from "quill";
 import { debounce } from "@/utils";
 import { toast } from "react-toastify";
 import { getSheetById } from "@/services/Sheet";
-import { getGridById } from "@/services/Grid";
+import { createGrid, getGridById, searchGrid } from "@/services/Grid";
 import { createColumn, updateColumnById } from "@/services/Column";
 import { createRow, updateRowById } from "@/services/Row";
 import { createCell, updateCellById } from "@/services/Cell";
@@ -79,8 +79,9 @@ type ISheetContext = {
   contextMenuRect: Pick<IRect, "x" | "y"> | null;
   config: IConfig;
   isLoading: boolean;
-  highLightCellIds: string[];
-  activeSearchIndex: number;
+  highLightCells: string[];
+  activeHighLightIndex: number | null;
+  autoFillCells: ICell[];
   getCellById: (cellId?: string) => ICellDetail | undefined;
   getRowById: (rowId?: number) => IRowDetail | undefined;
   getColumnById: (columnId?: number) => IColumnDetail | undefined;
@@ -99,10 +100,11 @@ type ISheetContext = {
   handleSearchNext: () => void;
   handleSearchPrevious: () => void;
   handleFormatCell: (type: string, value: string) => void;
-  handleCreateSheet: () => void;
+  handleCreateGrid: () => void;
   handleSearchSheet: (q: string) => void;
   setGrid: Dispatch<SetStateAction<IGrid>>;
   setContextMenuRect: Dispatch<SetStateAction<Pick<IRect, "x" | "y"> | null>>;
+  setAutoFillCells: Dispatch<SetStateAction<ICell[]>>;
   setEditCell: Dispatch<SetStateAction<ICell | null>>;
   setSelectedCellId: Dispatch<SetStateAction<string | null>>;
   setSelectedRowId: Dispatch<SetStateAction<number | null>>;
@@ -131,9 +133,11 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   const [contextMenuRect, setContextMenuRect] =
     useState<ISheetContext["contextMenuRect"]>(null);
 
-  const [activeSearchIndex, setActiveSearchIndex] = useState(0);
+  const [activeHighLightIndex, setActiveHighLightIndex] = useState<
+    number | null
+  >(null);
 
-  const [highLightCellIds, setHighLightCellIds] = useState<string[]>([]);
+  const [highLightCells, setHighLightCells] = useState<string[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -145,9 +149,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     rows: [],
   });
 
-  const [autoFillCellIds, setAutoFillCellIds] = useState<Set<string>>(
-    new Set()
-  );
+  const [autoFillCells, setAutoFillCells] = useState<ICell[]>([]);
 
   const rowDetails = useRef<Map<string, IRowDetail>>(new Map());
 
@@ -174,19 +176,19 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   const selectedCell = useMemo(() => {
     let cell = grid.cells.find(({ cellId }) => cellId === selectedCellId);
     return cell || null;
-  }, [grid, selectedCellId]);
+  }, [grid.cells, selectedCellId]);
 
   const selectedRow = useMemo(() => {
     let row = grid.rows.find(({ rowId }) => rowId === selectedRowId);
     return row || null;
-  }, [grid, selectedRowId]);
+  }, [grid.rows, selectedRowId]);
 
   const selectedColumn = useMemo(() => {
     let column = grid.columns.find(
       ({ columnId }) => columnId === selectedColumnId
     );
     return column || null;
-  }, [grid, selectedColumnId]);
+  }, [grid.columns, selectedColumnId]);
 
   useEffect(() => {
     initQuill();
@@ -246,7 +248,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
         grids,
         title,
       });
-      if (!gridId) navigate({ search: `?gridId=${grids[0]._id}` });
+      if (!gridId) navigate({ search: `gridId=${grids[0]._id}` });
     } catch (error: any) {
       toast.error(error?.message);
     } finally {
@@ -310,8 +312,9 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     setSelectedCellId(null);
     setSelectedColumnId(null);
     setSelectedRowId(null);
-    setActiveSearchIndex(0);
-    setHighLightCellIds([]);
+    setActiveHighLightIndex(null);
+    setHighLightCells([]);
+    setGrid({ cells: [], columns: [], rows: [] });
   };
 
   const handleEditorChange = async () => {
@@ -397,7 +400,9 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   };
 
   const getCellById: ISheetContext["getCellById"] = (cellId) => {
+    // cellId - `columnId,rowId` (or) _id generated in db
     if (typeof cellId !== "string") return;
+    if (cellDetails.current.has(cellId)) return cellDetails.current.get(cellId);
     let id = cellIds.current.get(cellId);
     if (!id) return;
     return cellDetails.current.get(id);
@@ -629,29 +634,55 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   };
 
   const handleSearchNext = () => {
-    setActiveSearchIndex((activeIndex) => {
-      activeIndex++;
-      return activeIndex === highLightCellIds.length ? 0 : activeIndex;
+    setActiveHighLightIndex((activeIndex) => {
+      activeIndex!++;
+      return activeIndex === highLightCells.length ? 0 : activeIndex;
     });
   };
 
   const handleSearchPrevious = () => {
-    setActiveSearchIndex((activeIndex) => {
-      activeIndex--;
-      return activeIndex < 0 ? highLightCellIds.length - 1 : activeIndex;
+    setActiveHighLightIndex((activeIndex) => {
+      activeIndex!--;
+      return activeIndex! < 0 ? highLightCells.length - 1 : activeIndex;
     });
   };
 
-  const handleSearchSheet: ISheetContext["handleSearchSheet"] = (q) => {
-    setHighLightCellIds(["1,1", "2,5", "4,5", "5,1", "2,2"]);
+  const handleSearchSheet: ISheetContext["handleSearchSheet"] = async (q) => {
+    if (!gridId) return;
+
+    q = q.trim();
+
+    try {
+      let {
+        data: {
+          data: { cells },
+        },
+      } = await searchGrid(gridId, q);
+      setHighLightCells(cells);
+      setActiveHighLightIndex(cells.length ? 0 : null);
+    } catch (error: any) {
+      toast.error(error?.message);
+    }
   };
 
   const handleTitleChange: ISheetContext["handleTitleChange"] = (title) => {
     console.log(title);
   };
 
-  const handleCreateSheet = () => {
-    console.log("create new sheet");
+  const handleCreateGrid = async () => {
+    if (!sheetDetail) return;
+
+    try {
+      let {
+        data: { data },
+      } = await createGrid(sheetDetail._id);
+      let sheetData = { ...sheetDetail };
+      sheetData.grids.push(data);
+      setSheetDetail(sheetData);
+      navigate({ search: `gridId=${data._id}` });
+    } catch (error: any) {
+      toast.error(error?.message);
+    }
   };
 
   const context: ISheetContext = {
@@ -666,8 +697,9 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     selectedRow,
     contextMenuRect,
     isLoading,
-    activeSearchIndex,
-    highLightCellIds,
+    autoFillCells,
+    activeHighLightIndex,
+    highLightCells,
     setGrid,
     getCellById,
     getRowById,
@@ -683,7 +715,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     handleCopyCell,
     handleCutCell,
     handlePasteCell,
-    handleCreateSheet,
+    handleCreateGrid,
     handleSearchNext,
     handleSearchPrevious,
     handleTitleChange,
@@ -692,6 +724,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     setEditCell,
     setSelectedCellId,
     setSelectedColumnId,
+    setAutoFillCells,
     setSelectedRowId,
     setContextMenuRect,
   };

@@ -71,14 +71,14 @@ const CoumnResizer = ({ columns, onResize, onClick }: IColumnResizerProps) => {
 
     if (columnId === null) return null;
 
-    return columns[columnId];
+    return columnId;
   };
 
   const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
     if (showLine) return;
-    let column = findColumnByXAxis(event.pageX);
-    if (!column || selectedColumn?.columnId === column.columnId) return;
-    setSelectedColumn({ ...column });
+    let columnId = findColumnByXAxis(event.pageX);
+    if (columnId === null || selectedColumn?.columnId === columnId) return;
+    setSelectedColumn({ ...columns[columnId] });
   };
 
   const handleMouseLeave = () => {
@@ -107,7 +107,6 @@ const CoumnResizer = ({ columns, onResize, onClick }: IColumnResizerProps) => {
               top: selectedColumn.y,
             }}
             onClick={handleClick}
-            onContextMenu={handleClick}
           >
             <div
               className="absolute top-0 -right-3 w-6 h-full bg-transparent"

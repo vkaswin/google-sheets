@@ -35,4 +35,6 @@ const updateRow = asyncHandler(async (req, res) => {
   res.status(200).send({ message: "Row has been updated successfully" });
 });
 
-export default { createRow, updateRow };
+const RowController = { createRow, updateRow };
+
+export default RowController;

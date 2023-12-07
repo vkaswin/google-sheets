@@ -14,7 +14,7 @@ import {
 const SheetList = () => {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const { sheetDetail, handleCreateSheet } = useSheet();
+  const { sheetDetail, handleCreateGrid } = useSheet();
 
   const navigate = useNavigate();
 
@@ -39,7 +39,7 @@ const SheetList = () => {
     <div className="fixed flex gap-4 left-0 bottom-0 w-full h-[var(--bottom-bar-height)] pl-[var(--col-width)] after:absolute after:top-[-1px] after:right-0 after:w-[var(--scrollbar-size)] after:h-[1px] after:bg-light-gray">
       <div className="flex items-center gap-3">
         <button
-          onClick={handleCreateSheet}
+          onClick={handleCreateGrid}
           className="w-8 h-8 rounded-full bg-transparent hover:bg-dark-silver transition-colors"
         >
           <Tooltip label="Add Sheet">

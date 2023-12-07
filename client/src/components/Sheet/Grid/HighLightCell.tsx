@@ -1,4 +1,9 @@
-import { PointerEvent, useRef, useState } from "react";
+import {
+  PointerEvent as PointerEventReact,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 type IHighlightCellProps = {
   cell: ICell;
@@ -18,11 +23,24 @@ const HighlightCell = ({
   let left = `calc(${x}px - var(--col-width))`;
   let top = `calc(${y}px - var(--row-height))`;
 
+  useEffect(() => {
+    if (!pointerId) return;
+
+    const handlePointerMove = (event: PointerEvent) => {
+      onPointerMove(event);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+    };
+  }, [pointerId]);
+
   const handlePointerDown = ({
     nativeEvent: { pointerId },
-  }: PointerEvent<HTMLSpanElement>) => {
+  }: PointerEventReact<HTMLSpanElement>) => {
     if (!autoFillRef.current) return;
-    console.log("down");
     autoFillRef.current.setPointerCapture(pointerId);
     setPointerId(pointerId);
   };
@@ -31,11 +49,6 @@ const HighlightCell = ({
     if (!autoFillRef.current || !pointerId) return;
     autoFillRef.current.releasePointerCapture(pointerId);
     setPointerId(null);
-  };
-
-  const handlePointerMove = (event: PointerEvent<HTMLSpanElement>) => {
-    if (!pointerId) return;
-    onPointerMove(event);
   };
 
   return (
@@ -53,7 +66,6 @@ const HighlightCell = ({
         ref={autoFillRef}
         className="absolute -bottom-[6px] -right-[6px] border border-white bg-dark-blue w-3 h-3 rounded-full cursor-crosshair"
         onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
       ></span>
     </div>

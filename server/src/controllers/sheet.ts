@@ -16,7 +16,7 @@ const createSheet = asyncHandler(async (req, res) => {
 const getSheetById = asyncHandler(async (req, res) => {
   let { sheetId } = req.params;
 
-  let sheet = await Sheet.findById(sheetId).populate({
+  let sheet = await Sheet.findById(sheetId, { grids: 1, title: 1 }).populate({
     path: "grids",
     select: { title: 1, color: 1, sheetId: 1 },
   });
@@ -26,9 +26,15 @@ const getSheetById = asyncHandler(async (req, res) => {
   }
 
   res.status(200).send({
-    data: sheet.toJSON(),
+    data: {
+      _id: sheet._id,
+      title: sheet.title,
+      grids: sheet.grids,
+    },
     message: "Success",
   });
 });
 
-export default { createSheet, getSheetById };
+const SheetController = { createSheet, getSheetById };
+
+export default SheetController;

@@ -66,15 +66,15 @@ const RowResizer = ({ rows, onClick, onResize }: IRowResizerProps) => {
 
     if (rowId === null) return null;
 
-    return rows[rowId];
+    return rowId;
   };
 
   const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
     if (!columnRef.current || showLine) return;
     let { top } = columnRef.current.getBoundingClientRect();
-    let row = findRowByYAxis(event.pageY - top);
-    if (!row || selectedRow?.rowId === row.rowId) return;
-    setSelectedRow({ ...row });
+    let rowId = findRowByYAxis(event.pageY - top);
+    if (rowId === null || selectedRow?.rowId === rowId) return;
+    setSelectedRow({ ...rows[rowId] });
   };
 
   const handleMouseLeave = () => {
@@ -104,7 +104,6 @@ const RowResizer = ({ rows, onClick, onResize }: IRowResizerProps) => {
               top: selectedRow.y,
             }}
             onClick={handleClick}
-            onContextMenu={handleClick}
           >
             <div
               ref={resizeRef}

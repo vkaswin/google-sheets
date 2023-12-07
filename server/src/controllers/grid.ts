@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import Cell from "../models/cell";
 import Column from "../models/column";
 import Grid from "../models/grid";
@@ -7,17 +8,29 @@ import { CustomError, asyncHandler } from "../utils";
 
 const createGrid = asyncHandler(async (req, res) => {
   let { sheetId } = req.params;
+
   let sheet = await Sheet.findById(sheetId);
 
   if (!sheet) {
     throw new CustomError({ message: "Sheet not found", status: 400 });
   }
 
-  let grid = await Grid.create({ title: `Sheet ${sheet.grids.length + 1}` });
+  let grid = await Grid.create({
+    sheetId,
+    title: `Sheet ${sheet.grids.length + 1}`,
+  });
 
   await Sheet.findByIdAndUpdate(sheetId, { $push: { grids: grid._id } });
 
-  res.status(200).send({ data: { gridId: grid._id }, message: "Success" });
+  res.status(200).send({
+    data: {
+      _id: grid._id,
+      title: grid.title,
+      sheetId: grid.sheetId,
+      color: grid.color,
+    },
+    message: "Grid has been created successfully",
+  });
 });
 
 const getGridById = asyncHandler(async (req, res) => {
@@ -39,9 +52,66 @@ const getGridById = asyncHandler(async (req, res) => {
   );
 
   res.status(200).send({
-    data: { grid: grid.toJSON(), rows, columns, cells },
+    data: {
+      grid: {
+        _id: grid._id,
+        color: grid.color,
+        title: grid.title,
+        sheetId: grid.sheetId,
+      },
+      rows,
+      columns,
+      cells,
+    },
     message: "Success",
   });
 });
 
-export default { createGrid, getGridById };
+const searchGrid = asyncHandler(async (req, res) => {
+  let { gridId } = req.params;
+  let { q } = req.query;
+
+  q = q?.toString().trim();
+
+  if (!q || !q.length) {
+    res.status(200).send({ data: { cells: [] }, message: "Success" });
+    return;
+  }
+
+  let grid = await Grid.findById(gridId);
+
+  if (!grid) {
+    throw new CustomError({ message: "Grid not found", status: 400 });
+  }
+
+  let cells = await Cell.aggregate([
+    {
+      $match: {
+        gridId: new Types.ObjectId(gridId),
+        text: { $regex: q, $options: "i" },
+      },
+    },
+    {
+      $sort: {
+        rowId: 1,
+        columnId: 1,
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+      },
+    },
+  ]);
+
+  let cellIds = cells.map((cell) => cell._id);
+
+  res.status(200).send({
+    data: { cells: cellIds },
+    message: "Success",
+  });
+});
+
+const GridController = { createGrid, getGridById, searchGrid };
+
+export default GridController;

@@ -36,4 +36,6 @@ const removeCell = asyncHandler(async (req, res) => {
   res.end();
 });
 
-export default { createCell, updateCell, removeCell };
+const CellController = { createCell, updateCell, removeCell };
+
+export default CellController;

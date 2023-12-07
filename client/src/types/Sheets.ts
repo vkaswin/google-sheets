@@ -37,10 +37,10 @@ type IColumnProps = {
 };
 
 type IRenderGrid = (data: {
-  offsetX: number;
-  offsetY: number;
   rowStart: number;
   colStart: number;
+  offsetX?: number;
+  offsetY?: number;
 }) => void;
 
 type IRect = {
