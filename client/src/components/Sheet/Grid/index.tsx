@@ -584,7 +584,7 @@ const Grid = () => {
     setContextMenuRect({ x: event.pageX, y: event.pageY });
   };
 
-  const handleDoubleClickCell = () => {
+  const handleDoubleClickGrid = () => {
     if (!gridRef.current || !selectedCell) return;
 
     let { columnId, cellId, width, height, rowId, x, y } = selectedCell;
@@ -639,17 +639,6 @@ const Grid = () => {
     });
   };
 
-  const handlePointerMoveOnSelectedCell = ({ pageX, pageY }: PointerEvent) => {
-    if (!selectedCell || !gridRef.current) return;
-
-    let { left, top } = gridRef.current.getBoundingClientRect();
-
-    pageX = pageX - left;
-    pageY = pageY - top;
-
-    console.log(pageX, pageY);
-  };
-
   return (
     <Fragment>
       <div
@@ -658,6 +647,7 @@ const Grid = () => {
         onWheel={handleScroll}
         onMouseDown={handleClickGrid}
         onContextMenu={handleContextMenu}
+        onDoubleClick={handleDoubleClickGrid}
       >
         {isLoading && <Loader />}
         <canvas ref={canvasRef}></canvas>
@@ -667,10 +657,7 @@ const Grid = () => {
         {selectedRow && <HighLightRow row={selectedRow} />}
         <div className="absolute left-[var(--col-width)] top-[var(--row-height)] w-[calc(100%-var(--col-width))] h-[calc(100%-var(--row-height))] overflow-hidden">
           {selectedCell && !editCell && (
-            <HighlightCell
-              cell={selectedCell}
-              onPointerMove={handlePointerMoveOnSelectedCell}
-            />
+            <HighlightCell gridRef={gridRef} cell={selectedCell} />
           )}
           {selectedColumn && <ColumnOverLay column={selectedColumn} />}
           {selectedRow && <RowOverLay row={selectedRow} />}

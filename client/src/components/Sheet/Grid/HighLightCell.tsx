@@ -1,43 +1,21 @@
-import {
-  PointerEvent as PointerEventReact,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { MutableRefObject, PointerEvent, useRef, useState } from "react";
 
 type IHighlightCellProps = {
   cell: ICell;
-  onPointerMove: (event: PointerEvent) => void;
+  gridRef: MutableRefObject<HTMLDivElement | null>;
 };
 
 const HighlightCell = ({
   cell: { height, width, x, y },
-  onPointerMove,
+  gridRef,
 }: IHighlightCellProps) => {
   const [pointerId, setPointerId] = useState<number | null>(null);
 
   const autoFillRef = useRef<HTMLSpanElement | null>(null);
 
-  let left = `calc(${x}px - var(--col-width))`;
-  let top = `calc(${y}px - var(--row-height))`;
-
-  useEffect(() => {
-    if (!pointerId) return;
-
-    const handlePointerMove = (event: PointerEvent) => {
-      onPointerMove(event);
-    };
-
-    window.addEventListener("pointermove", handlePointerMove);
-
-    return () => {
-      window.removeEventListener("pointermove", handlePointerMove);
-    };
-  }, [pointerId]);
-
   const handlePointerDown = ({
     nativeEvent: { pointerId },
-  }: PointerEventReact<HTMLSpanElement>) => {
+  }: PointerEvent<HTMLSpanElement>) => {
     if (!autoFillRef.current) return;
     autoFillRef.current.setPointerCapture(pointerId);
     setPointerId(pointerId);
@@ -48,6 +26,22 @@ const HighlightCell = ({
     autoFillRef.current.releasePointerCapture(pointerId);
     setPointerId(null);
   };
+
+  const handlePointerMove = (event: PointerEvent<HTMLSpanElement>) => {
+    if (!pointerId || !gridRef.current) return;
+
+    let { pageX, pageY } = event;
+
+    let { left, top } = gridRef.current.getBoundingClientRect();
+
+    pageX = pageX - left;
+    pageY = pageY - top;
+
+    console.log(pageX, pageY);
+  };
+
+  let left = `calc(${x}px - var(--col-width))`;
+  let top = `calc(${y}px - var(--row-height))`;
 
   return (
     <div className="absolute z-10">
@@ -90,13 +84,15 @@ const HighlightCell = ({
           left: `calc(${x + width}px - var(--col-width))`,
           top: `calc(${y + height}px - var(--row-height))`,
         }}
-        onClick={(e) => {
-          console.log(e);
-          e.stopPropagation();
-        }}
+        onMouseDown={(e) => e.stopPropagation()}
         onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
       ></span>
+      <div
+        className="absolute border-dashed border-black"
+        style={{ width, height, top, left }}
+      ></div>
     </div>
   );
 };
