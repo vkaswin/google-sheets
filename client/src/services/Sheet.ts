@@ -13,3 +13,29 @@ export const getSheetById = (sheetId: string) => {
     method: "get",
   });
 };
+
+export const updateSheetById = (
+  sheetId: string,
+  data: Partial<ISheetDetail>
+) => {
+  return axios({
+    url: `${SHEET_URL}/${sheetId}/update`,
+    method: "put",
+    data,
+  });
+};
+
+export const getSheetList = (params: {
+  limit: number;
+  search: string;
+  page: number;
+}) => {
+  return axios<{
+    message: string;
+    data: { sheets: ISheetList; pageMeta: IPageMeta };
+  }>({
+    url: `${SHEET_URL}/list`,
+    method: "get",
+    params,
+  });
+};

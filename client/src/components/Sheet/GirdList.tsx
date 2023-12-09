@@ -7,14 +7,18 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   Portal,
   Tooltip,
 } from "@chakra-ui/react";
+import ColorPicker from "./Grid/ColorPicker";
 
 const SheetList = () => {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const { sheetDetail, handleCreateGrid } = useSheet();
+  const { sheetDetail, handleCreateGrid, handleDeleteGrid } = useSheet();
 
   const navigate = useNavigate();
 
@@ -31,6 +35,10 @@ const SheetList = () => {
       behavior: "smooth",
       left: event.deltaY,
     });
+  };
+
+  const handleChangeColor = (colorCode: string) => {
+    console.log(colorCode);
   };
 
   let { grids = [] } = sheetDetail || {};
@@ -113,10 +121,21 @@ const SheetList = () => {
                       </MenuButton>
                       <Portal>
                         <MenuList zIndex={999}>
-                          <MenuItem>Delete</MenuItem>
+                          <MenuItem onClick={() => handleDeleteGrid(_id)}>
+                            Delete
+                          </MenuItem>
                           <MenuItem>Duplicate</MenuItem>
                           <MenuItem>Rename</MenuItem>
-                          <MenuItem>Change color</MenuItem>
+                          <Popover trigger="hover" placement="right-start">
+                            <PopoverTrigger>
+                              <MenuItem>Change color</MenuItem>
+                            </PopoverTrigger>
+                            <Portal>
+                              <PopoverContent>
+                                <ColorPicker onClick={handleChangeColor} />
+                              </PopoverContent>
+                            </Portal>
+                          </Popover>
                         </MenuList>
                       </Portal>
                     </Fragment>

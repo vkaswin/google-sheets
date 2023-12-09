@@ -12,11 +12,16 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import Quill from "quill";
 import { debounce } from "@/utils";
 import { toast } from "react-toastify";
-import { getSheetById } from "@/services/Sheet";
-import { createGrid, getGridById, searchGrid } from "@/services/Grid";
+import { getSheetById, updateSheetById } from "@/services/Sheet";
+import {
+  createGrid,
+  getGridById,
+  searchGrid,
+  removeGridById,
+} from "@/services/Grid";
 import { createColumn, updateColumnById } from "@/services/Column";
 import { createRow, updateRowById } from "@/services/Row";
-import { createCell, updateCellById } from "@/services/Cell";
+import { createCell, duplicateCells, updateCellById } from "@/services/Cell";
 
 const config: IConfig = {
   lineWidth: 2,
@@ -70,6 +75,7 @@ const config: IConfig = {
 type ISheetContext = {
   quill: Quill | null;
   grid: IGrid;
+  scale: number;
   sheetDetail: ISheetDetail | null;
   editCell: ICell | null;
   syncState: number;
@@ -96,11 +102,13 @@ type ISheetContext = {
   handleCutCell: () => void;
   handlePasteCell: () => void;
   handleEditorChange: () => void;
+  handleDeleteGrid: (gridId: string) => void;
   handleSearchNext: () => void;
   handleSearchPrevious: () => void;
   handleFormatCell: (type: string, value: string) => void;
   handleCreateGrid: () => void;
   handleSearchSheet: (q: string) => void;
+  handleAutoFillCell: (start: number[], end: number[], cellId: string) => void;
   setGrid: Dispatch<SetStateAction<IGrid>>;
   setContextMenuRect: Dispatch<SetStateAction<Pick<IRect, "x" | "y"> | null>>;
   setEditCell: Dispatch<SetStateAction<ICell | null>>;
@@ -140,6 +148,8 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const [sheetDetail, setSheetDetail] = useState<ISheetDetail | null>(null);
+
+  const [scale, setScale] = useState(1);
 
   const [grid, setGrid] = useState<IGrid>({
     cells: [],
@@ -272,6 +282,25 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     }
   };
 
+  const setCellDetails = (cells: ICellDetail[]) => {
+    for (let cell of cells) {
+      let cellId = `${cell.columnId},${cell.rowId}`;
+      setCellById(cellId, cell);
+    }
+  };
+
+  const setRowDetails = (rows: IRowDetail[]) => {
+    for (let row of rows) {
+      setRowById(row);
+    }
+  };
+
+  const setColumnDetails = (columns: IColumnDetail[]) => {
+    for (let column of columns) {
+      setColumnById(column);
+    }
+  };
+
   const setGridDetails = (
     rows: IRowDetail[],
     columns: IColumnDetail[],
@@ -284,21 +313,9 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     rowIds.current = new Map();
     columnIds.current = new Map();
 
-    for (let row of rows) {
-      rowDetails.current.set(row._id, row);
-      rowIds.current.set(row.rowId, row._id);
-    }
-
-    for (let column of columns) {
-      columnDetails.current.set(column._id, column);
-      columnIds.current.set(column.columnId, column._id);
-    }
-
-    for (let cell of cells) {
-      let cellId = `${cell.columnId},${cell.rowId}`;
-      cellIds.current.set(cellId, cell._id);
-      cellDetails.current.set(cell._id, cell);
-    }
+    setRowDetails(rows);
+    setColumnDetails(columns);
+    setCellDetails(cells);
   };
 
   const resetGrid = () => {
@@ -361,19 +378,16 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
     try {
       let isBackground = type === "background";
-      let isTextAlign = type === "textAlign";
 
       let cellData = getCellById(selectedCell.cellId);
 
       let body: Partial<ICellDetail> = {};
       if (isBackground) body.background = value;
-      else if (isTextAlign) body.textAlign = value;
 
       if (cellData) {
         await updateCellById(cellData._id, body);
 
         if (isBackground) cellData.background = value;
-        else if (isTextAlign) cellData.textAlign = value;
 
         forceUpdate();
       } else {
@@ -661,8 +675,17 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     }
   };
 
-  const handleTitleChange: ISheetContext["handleTitleChange"] = (title) => {
-    console.log(title);
+  const handleTitleChange: ISheetContext["handleTitleChange"] = async (
+    title
+  ) => {
+    if (!sheetId || !sheetDetail) return;
+
+    try {
+      await updateSheetById(sheetId, { title });
+      setSheetDetail({ ...sheetDetail, title });
+    } catch (error: any) {
+      toast.error(error?.message);
+    }
   };
 
   const handleCreateGrid = async () => {
@@ -681,9 +704,70 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     }
   };
 
+  const handleAutoFillCell: ISheetContext["handleAutoFillCell"] = async (
+    start,
+    end,
+    cellId
+  ) => {
+    if (!gridId) return;
+
+    let cellDetail = getCellById(cellId);
+
+    if (!cellDetail) return;
+
+    let updateCellList: string[] = [];
+    let createCellList: Partial<ICellDetail>[] = [];
+
+    for (let columnId = start[0]; columnId <= end[0]; columnId++) {
+      for (let rowId = start[1]; rowId <= end[1]; rowId++) {
+        if (columnId === cellDetail.columnId && rowId === cellDetail.rowId)
+          continue;
+
+        let cellId = `${columnId},${rowId}`;
+        let cellData = getCellById(cellId);
+        if (cellData) updateCellList.push(cellData._id);
+        else createCellList.push({ rowId, columnId });
+      }
+    }
+
+    if (!updateCellList.length && !createCellList.length) return;
+
+    try {
+      let {
+        data: {
+          data: { cells },
+        },
+      } = await duplicateCells(gridId, {
+        createCellList,
+        updateCellList,
+        cellId: cellDetail._id,
+      });
+      setCellDetails(cells);
+      forceUpdate();
+    } catch (error: any) {
+      toast.error(error?.message);
+    }
+  };
+
+  const handleDeleteGrid = async (gridId: string) => {
+    if (!sheetDetail) return;
+
+    try {
+      await removeGridById(gridId);
+      let details = { ...sheetDetail };
+      let index = details.grids.findIndex(({ _id }) => _id === gridId);
+      details.grids.splice(index, 1);
+      setSheetDetail(details);
+      navigate({ search: `gridId=${details.grids[0]._id}` });
+    } catch (error: any) {
+      toast.error(error?.message);
+    }
+  };
+
   const context: ISheetContext = {
     quill,
     grid,
+    scale,
     sheetDetail,
     config,
     syncState,
@@ -711,6 +795,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     handleCutCell,
     handlePasteCell,
     handleCreateGrid,
+    handleDeleteGrid,
     handleSearchNext,
     handleSearchPrevious,
     handleTitleChange,
@@ -721,6 +806,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     setSelectedColumnId,
     setSelectedRowId,
     setContextMenuRect,
+    handleAutoFillCell,
   };
 
   return (

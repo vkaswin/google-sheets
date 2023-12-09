@@ -14,7 +14,7 @@ let PageNotFound = lazy(() => import(`@/pages/NotFound`));
 let routes: RouteObject[] = [
   {
     path: "",
-    element: <Navigate to="/sheet/656ed87865c3b3f05f33d783" replace />,
+    element: <Navigate to="/auth/sign-in" replace />,
   },
   {
     path: "auth",
@@ -43,7 +43,7 @@ let routes: RouteObject[] = [
     ],
   },
   {
-    path: "sheets/list",
+    path: "sheet/list",
     element: <ProtectedRoute children={<SheetsList />} />,
   },
   {

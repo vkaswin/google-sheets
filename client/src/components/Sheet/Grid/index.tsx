@@ -18,7 +18,6 @@ import RowOverLay from "./RowOverLay";
 import ScrollBar from "./ScrollBar";
 import EditCell from "./EditCell";
 import ContextMenu from "./ContextMenu";
-import AutoFillCell from "./AutoFillCell";
 import Loader from "./Loader";
 import { convertToTitle } from "@/utils";
 
@@ -34,6 +33,7 @@ const Grid = () => {
   const {
     grid,
     config,
+    scale,
     isLoading,
     syncState,
     editCell,
@@ -62,6 +62,7 @@ const Grid = () => {
     handlePasteCell,
     handleResizeRow,
     handleResizeColumn,
+    handleAutoFillCell,
   } = useSheet();
 
   let { rows, columns, cells } = grid;
@@ -132,6 +133,7 @@ const Grid = () => {
     let ctx = canvasRef.current.getContext("2d")!;
 
     ctx.clearRect(0, 0, clientWidth, clientHeight);
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
 
     paintCells(ctx, grid.cells);
     paintHeaders(grid.rows, grid.columns);
@@ -526,8 +528,10 @@ const Grid = () => {
   const handleClickGrid = (event: MouseEvent<HTMLDivElement>) => {
     if (!gridRef.current) return;
 
-    let x = event.pageX;
-    let y = event.pageY - gridRef.current.getBoundingClientRect().top;
+    let { left, top } = gridRef.current.getBoundingClientRect();
+
+    let x = event.pageX - left;
+    let y = event.pageY - top;
 
     let cellId = getCellIdByCoordiantes(x, y);
 
@@ -657,7 +661,13 @@ const Grid = () => {
         {selectedRow && <HighLightRow row={selectedRow} />}
         <div className="absolute left-[var(--col-width)] top-[var(--row-height)] w-[calc(100%-var(--col-width))] h-[calc(100%-var(--row-height))] overflow-hidden">
           {selectedCell && !editCell && (
-            <HighlightCell gridRef={gridRef} cell={selectedCell} />
+            <HighlightCell
+              cells={cells}
+              gridRef={gridRef}
+              selectedCell={selectedCell}
+              onAutoFillCell={handleAutoFillCell}
+              getCellIdByCoordiantes={getCellIdByCoordiantes}
+            />
           )}
           {selectedColumn && <ColumnOverLay column={selectedColumn} />}
           {selectedRow && <RowOverLay row={selectedRow} />}
@@ -669,7 +679,6 @@ const Grid = () => {
               getCellById={getCellById}
             />
           )}
-          <AutoFillCell />
         </div>
         <ColumnResizer
           columns={columns}
@@ -686,6 +695,9 @@ const Grid = () => {
       {contextMenuRect && (
         <ContextMenu
           rect={contextMenuRect}
+          isCellSelected={!!selectedCell}
+          isColumnSelected={!!selectedColumn}
+          isRowSelected={!!selectedRow}
           onCopy={handleCopyCell}
           onCut={handleCutCell}
           onPaste={handlePasteCell}

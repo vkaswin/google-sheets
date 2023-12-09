@@ -16,3 +16,18 @@ export const updateCellById = (cellId: string, data: Partial<ICellDetail>) => {
     data,
   });
 };
+
+export const duplicateCells = (
+  gridId: string,
+  data: {
+    createCellList: Partial<ICellDetail>[];
+    updateCellList: string[];
+    cellId: string;
+  }
+) => {
+  return axios<{ message: string; data: { cells: ICellDetail[] } }>({
+    url: `${CELL_URL}/${gridId}/duplicate`,
+    method: "post",
+    data,
+  });
+};

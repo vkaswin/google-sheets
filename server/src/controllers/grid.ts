@@ -112,6 +112,34 @@ const searchGrid = asyncHandler(async (req, res) => {
   });
 });
 
-const GridController = { createGrid, getGridById, searchGrid };
+const removeGridById = asyncHandler(async (req, res) => {
+  let { gridId } = req.params;
+
+  let grid = await Grid.findById(gridId);
+
+  if (!grid) {
+    throw new CustomError({ message: "Grid not exist", status: 400 });
+  }
+
+  let sheet = await Sheet.findById(grid.sheetId);
+
+  if (!sheet) {
+    throw new CustomError({ message: "Sheet not exist", status: 400 });
+  }
+
+  await Sheet.findByIdAndUpdate(grid.sheetId, { $pull: { grids: gridId } });
+
+  await Grid.findByIdAndDelete(gridId);
+
+  await Cell.deleteMany({ gridId });
+
+  await Row.deleteMany({ gridId });
+
+  await Column.deleteMany({ gridId });
+
+  res.status(200).send({ message: "Grid has been deleted successfully" });
+});
+
+const GridController = { createGrid, getGridById, searchGrid, removeGridById };
 
 export default GridController;

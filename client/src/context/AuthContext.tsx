@@ -43,7 +43,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   let handleAuthResponse = (token: string) => {
     cookie.set({ name: "auth_token", value: token, days: 14 });
     setUser(jwtDecode<IUser>(token));
-    navigate("/sheets/123");
+    navigate("/sheet/list");
   };
 
   let signIn = async (data: ISignIn) => {

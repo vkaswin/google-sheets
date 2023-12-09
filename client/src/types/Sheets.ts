@@ -23,7 +23,6 @@ type ICellProps = {
   text?: string;
   content?: any[];
   background?: string;
-  textAlign?: string;
 };
 
 type IRowProps = {
@@ -93,10 +92,6 @@ type IActiveStyle = {
   underline: boolean;
   background: string;
   color: string;
-  alignLeft: boolean;
-  alignRight: boolean;
-  alignMiddle: boolean;
-  link: boolean;
 };
 
 type IDirection = "top" | "bottom" | "left" | "right";
@@ -125,4 +120,27 @@ type ISheetDetail = {
   _id: string;
   title: string;
   grids: ISheetGrid[];
+};
+
+type ISheetList = {
+  _id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+}[];
+
+type IAutoFillDetail = {
+  srcCellId: string;
+  destCellId?: string;
+  rect: {
+    width: number;
+    height: number;
+    transform: string;
+  };
+};
+
+type IPageMeta = {
+  page: number;
+  total: number;
+  totalPages: number;
 };

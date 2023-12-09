@@ -35,6 +35,57 @@ const getSheetById = asyncHandler(async (req, res) => {
   });
 });
 
-const SheetController = { createSheet, getSheetById };
+const updateSheetById = asyncHandler(async (req, res) => {
+  let { sheetId } = req.params;
+
+  let sheet = await Sheet.findById(sheetId);
+
+  if (!sheet) {
+    throw new CustomError({ status: 400, message: "Sheet not exist" });
+  }
+
+  await Sheet.findByIdAndUpdate(sheetId, { $set: req.body });
+
+  res.status(200).send({ message: "Sheet has been updated successfully" });
+});
+
+const getSheetList = asyncHandler(async (req, res) => {
+  let { page = 1, search = "", limit = 20 } = req.query;
+  let { _id: userId } = req.user;
+
+  const matchQuery = {
+    createdBy: userId,
+    title: { $regex: search, $options: "i" },
+  };
+
+  let sheets = await Sheet.find(
+    matchQuery,
+    { createdBy: 0 },
+    {
+      sort: {
+        createdAt: 1,
+      },
+      limit: +limit,
+      skip: (+page - 1) * +limit,
+    }
+  );
+
+  let count = (await Sheet.find(matchQuery)).length;
+
+  let pageMeta = {
+    totalPages: Math.ceil(count / +limit),
+    total: count,
+    page: +page,
+  };
+
+  res.status(200).send({ data: { sheets, pageMeta }, message: "Success" });
+});
+
+const SheetController = {
+  createSheet,
+  getSheetById,
+  getSheetList,
+  updateSheetById,
+};
 
 export default SheetController;

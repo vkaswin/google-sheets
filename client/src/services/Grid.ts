@@ -29,3 +29,10 @@ export const searchGrid = (gridId: string, q: string) => {
     params: { q },
   });
 };
+
+export const removeGridById = (gridId: string) => {
+  return axios<{ message: string }>({
+    url: `${GRID_URL}/${gridId}/remove`,
+    method: "delete",
+  });
+};

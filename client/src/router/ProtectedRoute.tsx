@@ -16,7 +16,7 @@ const ProtectedRoute = ({
   let authToken = cookie.get("auth_token");
 
   if (authToken && redirectIfLogin)
-    return <Navigate replace to="/sheets/list" />;
+    return <Navigate replace to="/sheet/list" />;
 
   if (isAuthenticated && !authToken)
     return <Navigate replace to="/auth/sign-in" />;

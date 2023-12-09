@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, Types, model } from "mongoose";
 
 const GridSchema = new Schema(
   {
@@ -14,6 +14,11 @@ const GridSchema = new Schema(
     color: {
       default: "transparent",
       type: String,
+    },
+    createdBy: {
+      type: Types.ObjectId,
+      ref: "User",
+      required: true,
     },
   },
   { timestamps: true }

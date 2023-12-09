@@ -10,6 +10,11 @@ const SheetSchema = new Schema(
       ref: "Grid",
       type: [Types.ObjectId],
     },
+    createdBy: {
+      type: Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   { timestamps: true }
 );

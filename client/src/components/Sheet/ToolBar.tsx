@@ -1,4 +1,4 @@
-import { ChangeEvent, Fragment, MouseEvent, useEffect, useState } from "react";
+import { ChangeEvent, Fragment, useEffect, useState } from "react";
 import classNames from "classnames";
 import {
   Box,
@@ -27,10 +27,6 @@ const DEFAULT_ACTIVE_STYLE: IActiveStyle = {
   underline: false,
   background: "#ffffff",
   color: "#000000",
-  alignLeft: false,
-  alignMiddle: false,
-  alignRight: false,
-  link: false,
 };
 
 const ToolBar = () => {
@@ -51,7 +47,7 @@ const ToolBar = () => {
     handleSearchPrevious,
   } = useSheet();
 
-  let { background, textAlign } = getCellById(selectedCell?.cellId) || {};
+  let { background } = getCellById(selectedCell?.cellId) || {};
 
   useEffect(() => {
     if (!quill) return;
@@ -67,9 +63,6 @@ const ToolBar = () => {
     setActiveStyle({
       ...DEFAULT_ACTIVE_STYLE,
       background: background || DEFAULT_ACTIVE_STYLE.background,
-      alignLeft: textAlign === "left",
-      alignMiddle: textAlign === "middle",
-      alignRight: textAlign === "right",
     });
   }, [selectedCell]);
 
@@ -83,7 +76,6 @@ const ToolBar = () => {
       strike: !!strike,
       underline: !!underline,
       italic: !!italic,
-      link: false,
       font: font || DEFAULT_ACTIVE_STYLE.font,
       color: color || DEFAULT_ACTIVE_STYLE.color,
     });
@@ -126,7 +118,7 @@ const ToolBar = () => {
   return (
     <Fragment>
       <div className="flex items-center h-[calc(var(--toolbar-height)-10px)] bg-mild-blue rounded-full mx-4 mb-[10px]">
-        <div className="flex items-center gap-3 px-4 text-xl">
+        {/* <div className="flex items-center gap-3 px-4 text-xl">
           <button className="flex items-center" disabled>
             <i className="bx-redo"></i>
           </button>
@@ -134,9 +126,9 @@ const ToolBar = () => {
             <i className="bx-undo"></i>
           </button>
         </div>
-        <Divider />
+        <Divider /> */}
         <div>
-          <Menu placement="bottom">
+          <Menu placement="bottom-start">
             {({ isOpen }) => (
               <Fragment>
                 <Tooltip label="Font" placement="bottom" className="tooltip">
@@ -309,60 +301,37 @@ const ToolBar = () => {
           </Tooltip>
         </div>
         <Divider />
-        <div className="flex items-center gap-3 px-4 text-xl">
+        {/* <div className="flex items-center gap-3 px-4 text-xl">
           <Tooltip className="tooltip" label="Left">
-            <button
-              className={classNames(btnClassName, {
-                [activeClassName]: activeStyle.alignLeft,
-              })}
-              disabled={!selectedCell}
-            >
+            <button className={btnClassName}>
               <i className="bx-align-left"></i>
             </button>
           </Tooltip>
           <Tooltip className="tooltip" label="Center">
-            <button
-              className={classNames(btnClassName, {
-                [activeClassName]: activeStyle.alignMiddle,
-              })}
-              disabled={!selectedCell}
-            >
+            <button className={btnClassName}>
               <i className="bx-align-middle"></i>
             </button>
           </Tooltip>
           <Tooltip className="tooltip" label="Right">
-            <button
-              className={classNames(btnClassName, {
-                [activeClassName]: activeStyle.alignRight,
-              })}
-              disabled={!selectedCell}
-            >
+            <button className={btnClassName}>
               <i className="bx-align-right"></i>
             </button>
           </Tooltip>
         </div>
-        <Divider />
-        <div className="flex items-center gap-3 px-4 text-xl">
+        <Divider /> */}
+        {/* <div className="flex items-center gap-3 px-4 text-xl">
           <Tooltip className="tooltip" label="Insert link (Ctrl+k)">
-            <button
-              className={classNames(btnClassName, {
-                [activeClassName]: activeStyle.link,
-              })}
-              disabled={!editCell}
-            >
+            <button className={btnClassName}>
               <i className="bx-link-alt"></i>
             </button>
           </Tooltip>
           <Tooltip className="tooltip" label="Insert comment (Ctrl+Alt+M)">
-            <button
-              className={btnClassName}
-              disabled={!(editCell || selectedCell)}
-            >
+            <button className={btnClassName}>
               <i className="bx-comment-add"></i>
             </button>
           </Tooltip>
         </div>
-        <Divider />
+        <Divider /> */}
         <div className="flex items-center gap-3 px-4">
           <div className="relative w-56 h-7">
             <input
@@ -372,7 +341,7 @@ const ToolBar = () => {
             />
             <i className="absolute right-2 top-1/2 -translate-y-1/2 bx-search text-gray-500 text-lg"></i>
           </div>
-          {!!highLightCells.length && (
+          {!!highLightCells.length && activeHighLightIndex !== null && (
             <Fragment>
               <button disabled={!highLightCells.length}>
                 <i

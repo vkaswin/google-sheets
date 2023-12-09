@@ -32,10 +32,60 @@ const updateCell = asyncHandler(async (req, res) => {
   res.status(200).send({ message: "Cell has been updated successfully" });
 });
 
+const duplicateCells = asyncHandler(async (req, res) => {
+  let { gridId } = req.params;
+  let { createCellList, updateCellList, cellId } = req.body;
+
+  if (
+    !cellId ||
+    !Array.isArray(createCellList) ||
+    !Array.isArray(updateCellList) ||
+    (!createCellList.length && !updateCellList.length)
+  )
+    return res.status(200).send({ data: { cells: [], message: "Success" } });
+
+  let grid = await Grid.findById(gridId);
+
+  if (!grid) {
+    throw new CustomError({ message: "Grid not exist", status: 400 });
+  }
+
+  let cell = await Cell.findById(cellId, {
+    _id: 0,
+    __v: 0,
+    rowId: 0,
+    columnId: 0,
+    updatedAt: 0,
+    createdAt: 0,
+  });
+
+  if (!cell) {
+    throw new CustomError({ message: "Cell not exist", status: 400 });
+  }
+
+  let cellDetail = cell.toObject();
+
+  let body = createCellList.map(({ rowId, columnId }) => {
+    return { ...cellDetail, rowId, columnId };
+  });
+
+  let cells = await Cell.create(body);
+
+  await Cell.updateMany({ _id: { $in: updateCellList } }, { $set: cell });
+
+  cells = cells.concat(
+    updateCellList.map((cellId) => {
+      return { ...cellDetail, _id: cellId };
+    }) as any
+  );
+
+  res.status(200).send({ data: { cells }, message: "Success" });
+});
+
 const removeCell = asyncHandler(async (req, res) => {
   res.end();
 });
 
-const CellController = { createCell, updateCell, removeCell };
+const CellController = { createCell, updateCell, removeCell, duplicateCells };
 
 export default CellController;
