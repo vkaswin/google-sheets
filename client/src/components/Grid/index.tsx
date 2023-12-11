@@ -5,22 +5,25 @@ import {
   WheelEvent,
   Fragment,
   useLayoutEffect,
+  lazy,
 } from "react";
 import useSheet from "@/hooks/useSheet";
-import HighlightCell from "./HighLightCell";
-import ColumnResizer from "./ColumnResizer";
-import RowResizer from "./RowResizer";
-import HighLightSearchCells from "./HighLightSearchCells";
-import HighLightColumn from "./HighLightColumn";
-import HighLightRow from "./HighLightRow";
-import ColumnOverLay from "./ColumnOverLay";
-import RowOverLay from "./RowOverLay";
-import ScrollBar from "./ScrollBar";
-import EditCell from "./EditCell";
-import ContextMenu from "./ContextMenu";
-import Loader from "./Loader";
+
+const ColumnResizer = lazy(() => import("./ColumnResizer"));
+const RowResizer = lazy(() => import("./RowResizer"));
+const HighLightSearchCells = lazy(() => import("./HighLightSearchCells"));
+const HighLightCell = lazy(() => import("./HighLightCell"));
+const HighLightColumn = lazy(() => import("./HighLightColumn"));
+const HighLightRow = lazy(() => import("./HighLightRow"));
+const ColumnOverLay = lazy(() => import("./ColumnOverLay"));
+const RowOverLay = lazy(() => import("./RowOverLay"));
+const ScrollBar = lazy(() => import("./ScrollBar"));
+const EditCell = lazy(() => import("./EditCell"));
+const ContextMenu = lazy(() => import("./ContextMenu"));
+const AutoFill = lazy(() => import("./AutoFill"));
+const Loader = lazy(() => import("./Loader"));
+
 import { convertToTitle } from "@/utils";
-import AutoFill from "./AutoFill";
 
 const Grid = () => {
   const gridRef = useRef<HTMLDivElement | null>(null);
@@ -682,10 +685,10 @@ const Grid = () => {
         {selectedColumn && <HighLightColumn column={selectedColumn} />}
         {selectedRow && <HighLightRow row={selectedRow} />}
         <div className="absolute left-[var(--col-width)] top-[var(--row-height)] w-[calc(100%-var(--col-width))] h-[calc(100%-var(--row-height))] overflow-hidden">
-          {copiedCell && <HighlightCell cell={copiedCell} dashed />}
+          {copiedCell && <HighLightCell cell={copiedCell} dashed />}
           {selectedCell && !editCell && selectedCell !== copiedCell && (
             <Fragment>
-              <HighlightCell cell={selectedCell} />
+              <HighLightCell cell={selectedCell} />
               <AutoFill
                 cells={cells}
                 gridRef={gridRef}

@@ -1,8 +1,9 @@
+import { lazy } from "react";
 import SheetProvider from "@/context/SheetContext";
-import Header from "./Header";
-import Grid from "@/components/Grid";
-import ToolBar from "@/components/ToolBar";
-import BottomBar from "@/components/BottomBar";
+const Header = lazy(() => import("./Header"));
+const Grid = lazy(() => import("@/components/Grid"));
+const ToolBar = lazy(() => import("@/components/ToolBar"));
+const BottomBar = lazy(() => import("@/components/BottomBar"));
 
 const Sheet = () => {
   return (

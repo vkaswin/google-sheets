@@ -1,11 +1,18 @@
-import { Fragment, useEffect, useRef, useState, ChangeEvent } from "react";
+import {
+  Fragment,
+  useEffect,
+  useRef,
+  useState,
+  ChangeEvent,
+  lazy,
+} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Menu, MenuList, MenuButton, Portal, MenuItem } from "@chakra-ui/react";
 import moment from "moment-timezone";
 import { toast } from "react-toastify";
-import Pagination from "@/components/Pagination";
-import Avatar from "@/components/Avatar";
 import useAuth from "@/hooks/useAuth";
+const Pagination = lazy(() => import("@/components/Pagination"));
+const Avatar = lazy(() => import("@/components/Avatar"));
 import { createSheet, getSheetList, removeSheetById } from "@/services/Sheet";
 import { getStaticUrl, debounce } from "@/utils";
 
