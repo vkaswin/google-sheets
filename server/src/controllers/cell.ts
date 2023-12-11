@@ -87,9 +87,59 @@ const removeCell = asyncHandler(async (req, res) => {
 });
 
 const copyPasteCell = asyncHandler(async (req, res) => {
-  res.end();
+  let { cellId } = req.params;
+
+  let columnId = +req.body.columnId;
+  let rowId = +req.body.rowId;
+
+  let copyCell = await Cell.findById(cellId, {
+    background: 1,
+    content: 1,
+    gridId: 1,
+    text: 1,
+  });
+
+  if (!copyCell) {
+    throw new CustomError({ message: "Cell not exist", status: 400 });
+  }
+
+  let cellData = copyCell.toObject() as any;
+  delete cellData._id;
+
+  let pasteCell = await Cell.findOne({
+    gridId: cellData.gridId,
+    rowId,
+    columnId,
+  });
+
+  if (pasteCell) {
+    let cellId = pasteCell._id.toString();
+
+    await Cell.findByIdAndUpdate(cellId, { $set: cellData });
+
+    res.status(200).send({
+      message: "Success",
+      data: {
+        cell: { ...cellData, _id: cellId, rowId, columnId },
+      },
+    });
+  } else {
+    let cell = await Cell.create({
+      ...cellData,
+      rowId,
+      columnId,
+    });
+
+    res.status(200).send({ message: "Success", data: { cell } });
+  }
 });
 
-const CellController = { createCell, updateCell, removeCell, duplicateCells };
+const CellController = {
+  createCell,
+  updateCell,
+  removeCell,
+  duplicateCells,
+  copyPasteCell,
+};
 
 export default CellController;

@@ -9,5 +9,6 @@ router.post("/:gridId/create", CellController.createCell);
 router.put("/:cellId/update", CellController.updateCell);
 router.delete("/:cellId/remove", CellController.removeCell);
 router.post("/:gridId/duplicate", CellController.duplicateCells);
+router.post("/:cellId/copypaste", CellController.copyPasteCell);
 
 export default router;

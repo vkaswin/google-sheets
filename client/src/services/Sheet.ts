@@ -39,3 +39,17 @@ export const getSheetList = (params: {
     params,
   });
 };
+
+export const removeSheetById = (sheetId: string) => {
+  return axios<{ message: string }>({
+    url: `${SHEET_URL}/${sheetId}/remove`,
+    method: "delete",
+  });
+};
+
+export const createSheet = () => {
+  return axios<{ message: string; data: { sheetId: string } }>({
+    url: `${SHEET_URL}/create`,
+    method: "post",
+  });
+};

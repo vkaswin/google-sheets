@@ -85,7 +85,7 @@ const ContextMenu = ({
         </button>
         <button
           className="flex justify-between items-center h-8 hover:bg-[#F1F3F4] text-mild-black font-medium px-3"
-          onClick={onCopy}
+          onClick={onPaste}
         >
           <span className="flex items-center gap-3">
             <i className="bx-paste text-xl"></i>

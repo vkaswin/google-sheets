@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import Pagination from "@/components/Pagination";
 import Avatar from "@/components/Avatar";
 import useAuth from "@/hooks/useAuth";
-import { getSheetList } from "@/services/Sheet";
+import { createSheet, getSheetList, removeSheetById } from "@/services/Sheet";
 import { getStaticUrl, debounce } from "@/utils";
 
 const SheetList = () => {
@@ -50,13 +50,27 @@ const SheetList = () => {
   };
 
   const handleCreateDocument = async () => {
-    console.log("create");
+    try {
+      let {
+        data: {
+          data: { sheetId },
+        },
+      } = await createSheet();
+      navigate(`/sheet/${sheetId}`);
+    } catch (error: any) {
+      toast.error(error?.message);
+    }
   };
 
-  const handleDeleteDocument = async (documentId: string) => {
+  const handleDeleteDocument = async (sheetId: string) => {
     if (!window.confirm("Are you sure to delete this form?")) return;
 
-    console.log("delete");
+    try {
+      await removeSheetById(sheetId);
+      getSheetDetails();
+    } catch (error: any) {
+      toast.error(error?.message);
+    }
   };
 
   const handlePageChange = (page: number) => {
@@ -123,7 +137,7 @@ const SheetList = () => {
                   <span>Created at</span>
                 </th>
                 <th className="w-[20%] text-center p-3">
-                  <span>Last updated at</span>
+                  <span>Last opened by me</span>
                 </th>
                 <th className="w-[10%] text-center p-3">
                   <span>Action</span>
@@ -138,68 +152,78 @@ const SheetList = () => {
                   </td>
                 </tr>
               ) : (
-                sheets.map(({ title, _id, createdAt, updatedAt }) => {
-                  return (
-                    <Fragment key={_id}>
-                      <tr
-                        className="h-14 transition-colors hover:bg-[#E5F4EA] cursor-pointer"
-                        onClick={() => navigateToSheet(_id)}
-                      >
-                        <td className="p-3">
-                          <div className="flex items-center gap-4 font-medium pl-4">
-                            <img
-                              className="w-6 h-6"
-                              src={getStaticUrl("/favicon.ico")}
-                            />
-                            <span>{title}</span>
-                          </div>
-                        </td>
-                        <td className="text-center p-3">
-                          <span className=" text-gray-500 text-sm">
-                            {moment
-                              .tz(createdAt, "Asia/Kolkata")
-                              .format("MMM D, YYYY")}
-                          </span>
-                        </td>
-                        <td className="text-center p-3">
-                          <span className="text-gray-500 text-sm">
-                            {moment.tz(updatedAt, "Asia/Kolkata").fromNow()}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          <div className="flex justify-center items-center">
-                            <Menu>
-                              <MenuButton
-                                className="w-8 h-8 hover:bg-[#dadce0] rounded-full"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <i className="bx-dots-vertical-rounded text-2xl text-gray-500"></i>
-                              </MenuButton>
-                              <Portal>
-                                <MenuList>
-                                  <MenuItem
-                                    className="flex gap-3 items-center"
-                                    onClick={() => handleDeleteDocument(_id)}
-                                  >
-                                    <i className="bx-trash text-xl"></i>
-                                    <span>Remove</span>
-                                  </MenuItem>
-                                  <MenuItem
-                                    className="flex gap-3 items-center"
-                                    onClick={() => navigateToSheet(_id, true)}
-                                  >
-                                    <i className="bx-link-external text-xl"></i>
-                                    <span>Open in new tab</span>
-                                  </MenuItem>
-                                </MenuList>
-                              </Portal>
-                            </Menu>
-                          </div>
-                        </td>
-                      </tr>
-                    </Fragment>
-                  );
-                })
+                sheets.map(
+                  ({ title, _id, createdAt, updatedAt, lastOpenedAt }) => {
+                    return (
+                      <Fragment key={_id}>
+                        <tr
+                          className="h-14 transition-colors hover:bg-[#E5F4EA] cursor-pointer"
+                          onClick={() => navigateToSheet(_id)}
+                        >
+                          <td className="p-3">
+                            <div className="flex items-center gap-4 font-medium pl-4">
+                              <img
+                                className="w-6 h-6"
+                                src={getStaticUrl("/favicon.ico")}
+                              />
+                              <span>{title}</span>
+                            </div>
+                          </td>
+                          <td className="text-center p-3">
+                            <span className=" text-gray-500 text-sm">
+                              {moment
+                                .tz(createdAt, "Asia/Kolkata")
+                                .format("MMM D, YYYY")}
+                            </span>
+                          </td>
+                          <td className="text-center p-3">
+                            <span className="text-gray-500 text-sm">
+                              {moment
+                                .tz(lastOpenedAt, "Asia/Kolkata")
+                                .fromNow()}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <div className="flex justify-center items-center">
+                              <Menu>
+                                <MenuButton
+                                  className="w-8 h-8 hover:bg-[#dadce0] rounded-full"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <i className="bx-dots-vertical-rounded text-2xl text-gray-500"></i>
+                                </MenuButton>
+                                <Portal>
+                                  <MenuList>
+                                    <MenuItem
+                                      className="flex gap-3 items-center"
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        handleDeleteDocument(_id);
+                                      }}
+                                    >
+                                      <i className="bx-trash text-xl"></i>
+                                      <span>Remove</span>
+                                    </MenuItem>
+                                    <MenuItem
+                                      className="flex gap-3 items-center"
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        navigateToSheet(_id, true);
+                                      }}
+                                    >
+                                      <i className="bx-link-external text-xl"></i>
+                                      <span>Open in new tab</span>
+                                    </MenuItem>
+                                  </MenuList>
+                                </Portal>
+                              </Menu>
+                            </div>
+                          </td>
+                        </tr>
+                      </Fragment>
+                    );
+                  }
+                )
               )}
             </tbody>
           </table>

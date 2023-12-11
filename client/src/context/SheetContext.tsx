@@ -21,7 +21,12 @@ import {
 } from "@/services/Grid";
 import { createColumn, updateColumnById } from "@/services/Column";
 import { createRow, updateRowById } from "@/services/Row";
-import { createCell, duplicateCells, updateCellById } from "@/services/Cell";
+import {
+  copyPasteCell,
+  createCell,
+  duplicateCells,
+  updateCellById,
+} from "@/services/Cell";
 
 const config: IConfig = {
   lineWidth: 2,
@@ -263,7 +268,13 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
         grids,
         title,
       });
-      if (!gridId) navigate({ search: `gridId=${grids[0]._id}` });
+
+      if (!gridId) {
+        navigate(
+          { search: `gridId=${grids[0]._id}` },
+          { replace: !sheetDetail }
+        );
+      }
     } catch (error: any) {
       toast.error(error?.message);
     } finally {
@@ -293,8 +304,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
   const setCellDetails = (cells: ICellDetail[]) => {
     for (let cell of cells) {
-      let cellId = `${cell.columnId},${cell.rowId}`;
-      setCellById(cellId, cell);
+      setCellById(cell);
     }
   };
 
@@ -371,7 +381,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
         } = await createCell(gridId, body);
 
         body._id = cellId;
-        setCellById(editCell.cellId, body);
+        setCellById(body);
         forceUpdate();
       }
     } catch (error: any) {
@@ -410,7 +420,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
         } = await createCell(gridId, body);
 
         body._id = cellId;
-        setCellById(selectedCell.cellId, body as ICellDetail);
+        setCellById(body as ICellDetail);
         forceUpdate();
       }
     } catch (error: any) {
@@ -427,9 +437,10 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     return cellDetails.current.get(id);
   };
 
-  const setCellById = (cellId: string, data: ICellDetail) => {
-    cellIds.current.set(cellId, data._id);
-    cellDetails.current.set(data._id, data);
+  const setCellById = (cell: ICellDetail) => {
+    let cellId = `${cell.columnId},${cell.rowId}`;
+    cellIds.current.set(cellId, cell._id);
+    cellDetails.current.set(cell._id, cell);
   };
 
   const removeCellById = (cellId: string) => {
@@ -642,6 +653,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
   const handleCopyCell = () => {
     if (!selectedCell) return;
+    setContextMenuRect(null);
     setCopyCellId(selectedCell.cellId);
   };
 
@@ -653,12 +665,28 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     if (!copyCellId || !selectedCell || copyCellId === selectedCell.cellId)
       return;
 
-    let copy = copyCellId.split(",").map((id) => +id);
-    let paste = selectedCell.cellId.split(",").map((id) => +id);
-    console.log(copy, paste);
+    let cellData = getCellById(copyCellId);
+
+    if (!cellData) {
+      setCopyCellId(null);
+      setContextMenuRect(null);
+      return;
+    }
+
+    let [columnId, rowId] = selectedCell.cellId.split(",").map((id) => +id);
 
     try {
-      setCopyCellId(null);
+      let {
+        data: {
+          data: { cell },
+        },
+      } = await copyPasteCell(cellData._id, { rowId, columnId });
+      forceUpdate();
+      setTimeout(() => {
+        setCellById(cell);
+        setCopyCellId(null);
+        setContextMenuRect(null);
+      }, 0);
     } catch (error: any) {
       toast.error(error?.message);
     }

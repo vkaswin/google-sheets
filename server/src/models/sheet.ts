@@ -15,6 +15,10 @@ const SheetSchema = new Schema(
       ref: "User",
       required: true,
     },
+    lastOpenedAt: {
+      type: Date,
+      default: () => new Date().toISOString(),
+    },
   },
   { timestamps: true }
 );

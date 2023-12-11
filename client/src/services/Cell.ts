@@ -24,3 +24,14 @@ export const duplicateCells = (gridId: string, data: IAutoFillData) => {
     data,
   });
 };
+
+export const copyPasteCell = (
+  cellId: string,
+  data: { rowId: number; columnId: number }
+) => {
+  return axios<{ message: string; data: { cell: ICellDetail } }>({
+    url: `${CELL_URL}/${cellId}/copypaste`,
+    method: "post",
+    data,
+  });
+};

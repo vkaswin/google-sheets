@@ -127,6 +127,7 @@ type ISheetList = {
   title: string;
   createdAt: string;
   updatedAt: string;
+  lastOpenedAt: string;
 }[];
 
 type IAutoFillDetail = {

@@ -1,15 +1,22 @@
 import Sheet from "../models/sheet";
 import Grid from "../models/grid";
+import Cell from "../models/cell";
+import Row from "../models/row";
+import Column from "../models/column";
 import { asyncHandler, CustomError } from "../utils";
 
 const createSheet = asyncHandler(async (req, res) => {
-  let grid = await Grid.create({});
+  let sheet = await Sheet.create({
+    createdBy: req.user._id,
+  });
 
-  let sheet = await Sheet.create({ grids: [grid._id] });
+  let grid = await Grid.create({ sheetId: sheet._id, createdBy: req.user._id });
+
+  await Sheet.findByIdAndUpdate(sheet._id, { $push: { grids: grid._id } });
 
   res.status(200).send({
-    data: { sheedId: sheet._id },
-    message: "Success",
+    data: { sheetId: sheet._id },
+    message: "Sheet has been created successfully",
   });
 });
 
@@ -24,6 +31,10 @@ const getSheetById = asyncHandler(async (req, res) => {
   if (!sheet) {
     throw new CustomError({ message: "Sheet not exist", status: 400 });
   }
+
+  await Sheet.findByIdAndUpdate(sheetId, {
+    $set: { lastOpenedAt: new Date().toISOString() },
+  });
 
   res.status(200).send({
     data: {
@@ -81,11 +92,36 @@ const getSheetList = asyncHandler(async (req, res) => {
   res.status(200).send({ data: { sheets, pageMeta }, message: "Success" });
 });
 
+const removeSheetById = asyncHandler(async (req, res) => {
+  let { sheetId } = req.params;
+
+  let sheet = await Sheet.findById(sheetId);
+
+  if (!sheet) {
+    throw new CustomError({ message: "Sheet not exist", status: 400 });
+  }
+
+  let gridIds = sheet.grids;
+
+  await Cell.deleteMany({ gridId: { $in: gridIds } });
+
+  await Row.deleteMany({ gridId: { $in: gridIds } });
+
+  await Column.deleteMany({ gridId: { $in: gridIds } });
+
+  await Grid.deleteMany({ _id: { $in: gridIds } });
+
+  await Sheet.findByIdAndDelete(sheetId);
+
+  res.status(200).send({ message: "Sheet has been deleted successfully" });
+});
+
 const SheetController = {
   createSheet,
   getSheetById,
   getSheetList,
   updateSheetById,
+  removeSheetById,
 };
 
 export default SheetController;
