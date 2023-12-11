@@ -13,9 +13,9 @@ import {
   Portal,
   Tooltip,
 } from "@chakra-ui/react";
-import ColorPicker from "./Grid/ColorPicker";
+import ColorPicker from "../../components/Grid/ColorPicker";
 
-const SheetList = () => {
+const BottomBar = () => {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const { sheetDetail, handleCreateGrid, handleDeleteGrid } = useSheet();
@@ -69,7 +69,7 @@ const SheetList = () => {
                     <i
                       className={classNames(
                         "bx-check text-xl text-dark-gray",
-                        isActive ? "visible" : "invisible"
+                        isActive ? "block" : "hidden"
                       )}
                     ></i>
                     <span
@@ -89,7 +89,7 @@ const SheetList = () => {
         className="flex overflow-x-auto hide-scrollbar"
         onWheel={handleScroll}
       >
-        {grids.map(({ _id, color, title }) => {
+        {grids.map(({ _id, color, title }, index) => {
           const isActive = _id === gridId;
           return (
             <div
@@ -121,7 +121,9 @@ const SheetList = () => {
                       </MenuButton>
                       <Portal>
                         <MenuList zIndex={999}>
-                          <MenuItem onClick={() => handleDeleteGrid(_id)}>
+                          <MenuItem
+                            onClick={() => handleDeleteGrid(_id, index)}
+                          >
                             Delete
                           </MenuItem>
                           <MenuItem>Duplicate</MenuItem>
@@ -150,4 +152,4 @@ const SheetList = () => {
   );
 };
 
-export default SheetList;
+export default BottomBar;

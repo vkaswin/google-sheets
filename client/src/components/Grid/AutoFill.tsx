@@ -1,20 +1,22 @@
-import { MutableRefObject, PointerEvent, useRef, useState } from "react";
+import { useState, useRef, PointerEvent, MutableRefObject } from "react";
 
-type IHighlightCellProps = {
+type IAutoFillProps = {
   cells: ICell[];
-  selectedCell: ICell;
   gridRef: MutableRefObject<HTMLDivElement | null>;
-  onAutoFillCell: (start: number[], end: number[], cellId: string) => void;
+  selectedCell: ICell;
+  onAutoFillCell: (data: IAutoFillData) => void;
+  getCellById: (cellId?: string) => ICellDetail | undefined;
   getCellIdByCoordiantes: (x: number, y: number) => string | null;
 };
 
-const HighlightCell = ({
-  cells,
+const AutoFill = ({
   gridRef,
+  cells,
   selectedCell,
+  getCellById,
   onAutoFillCell,
   getCellIdByCoordiantes,
-}: IHighlightCellProps) => {
+}: IAutoFillProps) => {
   const [pointerId, setPointerId] = useState<number | null>(null);
 
   const [autoFillDetail, setAutoFillDetail] = useState<IAutoFillDetail | null>(
@@ -34,32 +36,80 @@ const HighlightCell = ({
       rect: {
         width: selectedCell.width,
         height: selectedCell.height,
-        transform: "translate(0px,0px)",
+        translateX: 0,
+        translateY: 0,
       },
     });
   };
 
   const handleAutoFillCell = () => {
-    if (!autoFillDetail || !autoFillDetail.destCellId) return;
+    if (
+      !autoFillDetail ||
+      !autoFillDetail.destCellId ||
+      selectedCell.cellId === autoFillDetail.destCellId
+    )
+      return;
 
-    let order = autoFillDetail.srcCellId.localeCompare(
-      autoFillDetail.destCellId
-    );
+    let { translateX, translateY } = autoFillDetail.rect;
 
-    if (!order) return;
-
-    let start: number[];
-    let end: number[];
-
-    let dest = autoFillDetail.destCellId.split(",").map((id) => +id);
     let src = autoFillDetail.srcCellId.split(",").map((id) => +id);
+    let dest = autoFillDetail.destCellId.split(",").map((id) => +id);
 
-    start = order > 0 ? [dest[0], src[1]] : src;
-    end = order > 0 ? [src[0], dest[1]] : dest;
+    let createCells: { rowId: number; columnId: number }[] = [];
+    let updateCells: string[] = [];
+    let rowStart, rowEnd, colStart, colEnd;
 
-    console.log(autoFillDetail);
+    if (translateX >= 0 && translateY >= 0) {
+      rowStart = src[1];
+      rowEnd = dest[1];
+      colStart = src[0];
+      colEnd = dest[0];
+    } else if (translateX < 0 && translateY < 0) {
+      colStart = dest[0];
+      colEnd = src[0];
+      rowStart = dest[1];
+      rowEnd = src[1];
+    } else if (translateX < 0 && translateY === 0) {
+      rowStart = src[1];
+      rowEnd = dest[1];
+      colStart = dest[0];
+      colEnd = src[0];
+    } else if (translateX === 0 && translateY < 0) {
+      colStart = src[0];
+      colEnd = dest[0];
+      rowStart = dest[1];
+      rowEnd = src[1];
+    }
 
-    // onAutoFillCell(start, end, autoFillDetail.srcCellId);
+    if (
+      typeof colStart !== "number" ||
+      typeof colEnd !== "number" ||
+      typeof rowStart !== "number" ||
+      typeof rowEnd !== "number"
+    )
+      return;
+
+    for (let columnId = colStart; columnId <= colEnd; columnId++) {
+      for (let rowId = rowStart; rowId <= rowEnd; rowId++) {
+        let cellId = `${columnId},${rowId}`;
+        if (cellId === selectedCell.cellId) continue;
+        let cellData = getCellById(cellId);
+        if (cellData) updateCells.push(cellData._id);
+        else createCells.push({ rowId, columnId });
+      }
+    }
+
+    if (!updateCells.length && !createCells.length) return;
+
+    let cellData = getCellById(autoFillDetail.srcCellId);
+
+    if (!cellData) return;
+
+    onAutoFillCell({
+      updateCells,
+      createCells,
+      cellId: cellData._id,
+    });
   };
 
   const handlePointerUp = () => {
@@ -73,12 +123,10 @@ const HighlightCell = ({
   const handlePointerMove = (event: PointerEvent<HTMLSpanElement>) => {
     if (!pointerId || !gridRef.current || !autoFillDetail) return;
 
-    let { pageX, pageY } = event;
-
     let { left, top } = gridRef.current.getBoundingClientRect();
 
-    pageX = pageX - left;
-    pageY = pageY - top;
+    let pageX = event.pageX - left;
+    let pageY = event.pageY - top;
 
     let cellId = getCellIdByCoordiantes(pageX, pageY);
 
@@ -119,49 +167,14 @@ const HighlightCell = ({
       rect: {
         width,
         height,
-        transform: `translate(${translateX}px,${translateY}px)`,
+        translateX,
+        translateY,
       },
     });
   };
 
   return (
     <div className="absolute z-10">
-      <div
-        className="absolute border-t-2 border-blue"
-        style={{
-          width: selectedCell.width,
-          left: `calc(${selectedCell.x}px - var(--col-width))`,
-          top: `calc(${selectedCell.y}px - var(--row-height))`,
-        }}
-      ></div>
-      <div
-        className="absolute border-b-2 border-blue"
-        style={{
-          width: selectedCell.width,
-          left: `calc(${selectedCell.x}px - var(--col-width))`,
-          top: `calc(${
-            selectedCell.y + selectedCell.height
-          }px - var(--row-height))`,
-        }}
-      ></div>
-      <div
-        className="absolute border-l-2 border-blue"
-        style={{
-          height: selectedCell.height,
-          left: `calc(${selectedCell.x}px - var(--col-width))`,
-          top: `calc(${selectedCell.y}px - var(--row-height))`,
-        }}
-      ></div>
-      <div
-        className="absolute border-r-2 border-blue"
-        style={{
-          height: selectedCell.height,
-          left: `calc(${
-            selectedCell.x + selectedCell.width
-          }px - var(--col-width))`,
-          top: `calc(${selectedCell.y}px - var(--row-height))`,
-        }}
-      ></div>
       <span
         ref={autoFillRef}
         className="absolute -translate-x-[6px] -translate-y-[6px] border border-white bg-dark-blue w-3 h-3 rounded-full cursor-crosshair"
@@ -183,6 +196,9 @@ const HighlightCell = ({
           className="absolute border border-dashed border-black"
           style={{
             ...autoFillDetail.rect,
+            width: autoFillDetail.rect.width,
+            height: autoFillDetail.rect.height,
+            transform: `translate(${autoFillDetail.rect.translateX}px,${autoFillDetail.rect.translateY}px)`,
             left: `calc(${selectedCell.x}px - var(--col-width))`,
             top: `calc(${selectedCell.y}px - var(--row-height))`,
           }}
@@ -192,4 +208,4 @@ const HighlightCell = ({
   );
 };
 
-export default HighlightCell;
+export default AutoFill;

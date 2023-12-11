@@ -12,12 +12,13 @@ const createGrid = asyncHandler(async (req, res) => {
   let sheet = await Sheet.findById(sheetId);
 
   if (!sheet) {
-    throw new CustomError({ message: "Sheet not found", status: 400 });
+    throw new CustomError({ message: "Sheet not exist", status: 400 });
   }
 
   let grid = await Grid.create({
     sheetId,
     title: `Sheet ${sheet.grids.length + 1}`,
+    createdBy: req.user._id,
   });
 
   await Sheet.findByIdAndUpdate(sheetId, { $push: { grids: grid._id } });
@@ -39,7 +40,7 @@ const getGridById = asyncHandler(async (req, res) => {
   let grid = await Grid.findById(gridId, { title: 1, sheetId: 1, color: 1 });
 
   if (!grid) {
-    throw new CustomError({ message: "Grid not found", status: 400 });
+    throw new CustomError({ message: "Grid not exist", status: 400 });
   }
 
   let rows = await Row.find({ gridId }, { rowId: 1, height: 1 });
@@ -81,7 +82,7 @@ const searchGrid = asyncHandler(async (req, res) => {
   let grid = await Grid.findById(gridId);
 
   if (!grid) {
-    throw new CustomError({ message: "Grid not found", status: 400 });
+    throw new CustomError({ message: "Grid not exist", status: 400 });
   }
 
   let cells = await Cell.aggregate([
@@ -127,17 +128,27 @@ const removeGridById = asyncHandler(async (req, res) => {
     throw new CustomError({ message: "Sheet not exist", status: 400 });
   }
 
-  await Sheet.findByIdAndUpdate(grid.sheetId, { $pull: { grids: gridId } });
-
-  await Grid.findByIdAndDelete(gridId);
-
   await Cell.deleteMany({ gridId });
 
   await Row.deleteMany({ gridId });
 
   await Column.deleteMany({ gridId });
 
-  res.status(200).send({ message: "Grid has been deleted successfully" });
+  await Grid.findByIdAndDelete(gridId);
+
+  let isRemoveSheet = sheet.grids.length === 1;
+
+  if (isRemoveSheet) {
+    await Sheet.findByIdAndDelete(grid.sheetId);
+  } else {
+    await Sheet.findByIdAndUpdate(grid.sheetId, { $pull: { grids: gridId } });
+  }
+
+  res.status(200).send({
+    message: `${
+      isRemoveSheet ? "Sheet" : "Grid"
+    } has been deleted successfully`,
+  });
 });
 
 const GridController = { createGrid, getGridById, searchGrid, removeGridById };

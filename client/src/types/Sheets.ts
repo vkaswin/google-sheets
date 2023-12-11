@@ -135,7 +135,8 @@ type IAutoFillDetail = {
   rect: {
     width: number;
     height: number;
-    transform: string;
+    translateX: number;
+    translateY: number;
   };
 };
 
@@ -143,4 +144,10 @@ type IPageMeta = {
   page: number;
   total: number;
   totalPages: number;
+};
+
+type IAutoFillData = {
+  createCells: { rowId: number; columnId: number }[];
+  updateCells: string[];
+  cellId: string;
 };

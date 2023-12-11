@@ -22,7 +22,7 @@ const getSheetById = asyncHandler(async (req, res) => {
   });
 
   if (!sheet) {
-    throw new CustomError({ message: "Sheet not found", status: 400 });
+    throw new CustomError({ message: "Sheet not exist", status: 400 });
   }
 
   res.status(200).send({

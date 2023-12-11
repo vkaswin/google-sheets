@@ -8,7 +8,7 @@ const createColumn = asyncHandler(async (req, res) => {
   let grid = await Grid.findById(gridId);
 
   if (!grid) {
-    throw new CustomError({ message: "Gird not found", status: 400 });
+    throw new CustomError({ message: "Gird not exist", status: 400 });
   }
 
   req.body.gridId = gridId;
@@ -29,7 +29,7 @@ const updateColumn = asyncHandler(async (req, res) => {
   let row = await Column.findById(columnId);
 
   if (!row) {
-    throw new CustomError({ message: "Column not found", status: 400 });
+    throw new CustomError({ message: "Column not exist", status: 400 });
   }
 
   await Column.findByIdAndUpdate(columnId, { $set: req.body });

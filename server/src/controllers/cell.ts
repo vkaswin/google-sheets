@@ -8,7 +8,7 @@ const createCell = asyncHandler(async (req, res) => {
   let grid = await Grid.findById(gridId);
 
   if (!grid) {
-    throw new CustomError({ message: "Grid not found", status: 400 });
+    throw new CustomError({ message: "Grid not exist", status: 400 });
   }
 
   req.body.gridId = gridId;
@@ -24,7 +24,7 @@ const updateCell = asyncHandler(async (req, res) => {
   let cell = await Cell.findById(cellId);
 
   if (!cell) {
-    throw new CustomError({ message: "Cell not found", status: 400 });
+    throw new CustomError({ message: "Cell not exist", status: 400 });
   }
 
   await Cell.findByIdAndUpdate(cellId, { $set: req.body });
@@ -34,13 +34,13 @@ const updateCell = asyncHandler(async (req, res) => {
 
 const duplicateCells = asyncHandler(async (req, res) => {
   let { gridId } = req.params;
-  let { createCellList, updateCellList, cellId } = req.body;
+  let { createCells, updateCells, cellId } = req.body;
 
   if (
     !cellId ||
-    !Array.isArray(createCellList) ||
-    !Array.isArray(updateCellList) ||
-    (!createCellList.length && !updateCellList.length)
+    !Array.isArray(createCells) ||
+    !Array.isArray(updateCells) ||
+    (!createCells.length && !updateCells.length)
   )
     return res.status(200).send({ data: { cells: [], message: "Success" } });
 
@@ -65,16 +65,16 @@ const duplicateCells = asyncHandler(async (req, res) => {
 
   let cellDetail = cell.toObject();
 
-  let body = createCellList.map(({ rowId, columnId }) => {
+  let body = createCells.map(({ rowId, columnId }) => {
     return { ...cellDetail, rowId, columnId };
   });
 
   let cells = await Cell.create(body);
 
-  await Cell.updateMany({ _id: { $in: updateCellList } }, { $set: cell });
+  await Cell.updateMany({ _id: { $in: updateCells } }, { $set: cell });
 
   cells = cells.concat(
-    updateCellList.map((cellId) => {
+    updateCells.map((cellId) => {
       return { ...cellDetail, _id: cellId };
     }) as any
   );
@@ -83,6 +83,10 @@ const duplicateCells = asyncHandler(async (req, res) => {
 });
 
 const removeCell = asyncHandler(async (req, res) => {
+  res.end();
+});
+
+const copyPasteCell = asyncHandler(async (req, res) => {
   res.end();
 });
 

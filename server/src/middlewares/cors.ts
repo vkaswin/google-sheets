@@ -15,9 +15,11 @@ const cors: CORS = (req, res, next) => {
     res.setHeader("Access-Control-Allow-Methods", "*");
     res.setHeader("Access-Control-Allow-Headers", allowedHeaders.join(", "));
     res.setHeader("Access-Control-Allow-Credentials", "true");
+
+    return method == "OPTIONS" ? res.status(200).end() : next();
   }
 
-  method === "OPTIONS" ? res.status(200).end() : next();
+  return res.status(403).end();
 };
 
 export default cors;

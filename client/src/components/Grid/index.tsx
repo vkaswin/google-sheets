@@ -20,6 +20,7 @@ import EditCell from "./EditCell";
 import ContextMenu from "./ContextMenu";
 import Loader from "./Loader";
 import { convertToTitle } from "@/utils";
+import AutoFill from "./AutoFill";
 
 const Grid = () => {
   const gridRef = useRef<HTMLDivElement | null>(null);
@@ -42,6 +43,7 @@ const Grid = () => {
     selectedRow,
     highLightCells,
     contextMenuRect,
+    copiedCell,
     activeHighLightIndex,
     setGrid,
     getCellById,
@@ -50,6 +52,7 @@ const Grid = () => {
     setContextMenuRect,
     setSelectedCellId,
     setEditCell,
+    setCopyCellId,
     setSelectedColumnId,
     setSelectedRowId,
     handleDeleteCell,
@@ -70,6 +73,13 @@ const Grid = () => {
   useEffect(() => {
     checkFontsLoaded();
   }, []);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedCell, copiedCell]);
 
   useEffect(() => {
     if (!syncState) return;
@@ -518,8 +528,8 @@ const Grid = () => {
     // horizontalScroll.current.style.left = `${left + deltaX}px`;
   };
 
-  const handleScroll = (event: any) => {
-    let { deltaX, deltaY } = event as WheelEvent;
+  const handleScroll = (event: WheelEvent) => {
+    let { deltaX, deltaY } = event;
 
     if (deltaX === 0) handleVerticalScroll(deltaY);
     else handleHorizontalScroll(deltaX);
@@ -545,6 +555,8 @@ const Grid = () => {
   };
 
   const getCellIdByCoordiantes = (x: number, y: number) => {
+    let { rows, columns } = grid;
+
     let left = 0;
     let right = rows.length - 1;
     let rowId = null;
@@ -596,6 +608,7 @@ const Grid = () => {
     let { top } = gridRef.current.getBoundingClientRect();
 
     setSelectedCellId(null);
+    setCopyCellId(null);
     setEditCell({
       cellId,
       columnId,
@@ -643,6 +656,15 @@ const Grid = () => {
     });
   };
 
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (!selectedCell) return;
+
+    let { ctrlKey, key } = event;
+
+    if (ctrlKey && key === "c") handleCopyCell();
+    else if (ctrlKey && key === "v") handlePasteCell();
+  };
+
   return (
     <Fragment>
       <div
@@ -660,14 +682,19 @@ const Grid = () => {
         {selectedColumn && <HighLightColumn column={selectedColumn} />}
         {selectedRow && <HighLightRow row={selectedRow} />}
         <div className="absolute left-[var(--col-width)] top-[var(--row-height)] w-[calc(100%-var(--col-width))] h-[calc(100%-var(--row-height))] overflow-hidden">
-          {selectedCell && !editCell && (
-            <HighlightCell
-              cells={cells}
-              gridRef={gridRef}
-              selectedCell={selectedCell}
-              onAutoFillCell={handleAutoFillCell}
-              getCellIdByCoordiantes={getCellIdByCoordiantes}
-            />
+          {copiedCell && <HighlightCell cell={copiedCell} dashed />}
+          {selectedCell && !editCell && selectedCell !== copiedCell && (
+            <Fragment>
+              <HighlightCell cell={selectedCell} />
+              <AutoFill
+                cells={cells}
+                gridRef={gridRef}
+                selectedCell={selectedCell}
+                getCellById={getCellById}
+                onAutoFillCell={handleAutoFillCell}
+                getCellIdByCoordiantes={getCellIdByCoordiantes}
+              />
+            </Fragment>
           )}
           {selectedColumn && <ColumnOverLay column={selectedColumn} />}
           {selectedRow && <RowOverLay row={selectedRow} />}

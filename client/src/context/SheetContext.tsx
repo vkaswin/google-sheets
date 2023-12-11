@@ -86,6 +86,7 @@ type ISheetContext = {
   config: IConfig;
   isLoading: boolean;
   highLightCells: string[];
+  copiedCell: ICell | null;
   activeHighLightIndex: number | null;
   getCellById: (cellId?: string) => ICellDetail | undefined;
   getRowById: (rowId?: number) => IRowDetail | undefined;
@@ -102,18 +103,19 @@ type ISheetContext = {
   handleCutCell: () => void;
   handlePasteCell: () => void;
   handleEditorChange: () => void;
-  handleDeleteGrid: (gridId: string) => void;
+  handleDeleteGrid: (gridId: string, index: number) => void;
   handleSearchNext: () => void;
   handleSearchPrevious: () => void;
   handleFormatCell: (type: string, value: string) => void;
   handleCreateGrid: () => void;
   handleSearchSheet: (q: string) => void;
-  handleAutoFillCell: (start: number[], end: number[], cellId: string) => void;
+  handleAutoFillCell: (data: IAutoFillData) => void;
   setGrid: Dispatch<SetStateAction<IGrid>>;
   setContextMenuRect: Dispatch<SetStateAction<Pick<IRect, "x" | "y"> | null>>;
   setEditCell: Dispatch<SetStateAction<ICell | null>>;
   setSelectedCellId: Dispatch<SetStateAction<string | null>>;
   setSelectedRowId: Dispatch<SetStateAction<number | null>>;
+  setCopyCellId: Dispatch<SetStateAction<string | null>>;
   setSelectedColumnId: Dispatch<SetStateAction<number | null>>;
 };
 
@@ -157,6 +159,8 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     rows: [],
   });
 
+  const [copyCellId, setCopyCellId] = useState<string | null>(null);
+
   const rowDetails = useRef<Map<string, IRowDetail>>(new Map());
 
   const columnDetails = useRef<Map<string, IColumnDetail>>(new Map());
@@ -183,6 +187,11 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     let cell = grid.cells.find(({ cellId }) => cellId === selectedCellId);
     return cell || null;
   }, [grid.cells, selectedCellId]);
+
+  const copiedCell = useMemo(() => {
+    let cell = grid.cells.find(({ cellId }) => cellId === copyCellId);
+    return cell || null;
+  }, [grid.cells, copyCellId]);
 
   const selectedRow = useMemo(() => {
     let row = grid.rows.find(({ rowId }) => rowId === selectedRowId);
@@ -632,15 +641,27 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   };
 
   const handleCopyCell = () => {
-    console.log("copy");
+    if (!selectedCell) return;
+    setCopyCellId(selectedCell.cellId);
   };
 
   const handleCutCell = () => {
     console.log("cut");
   };
 
-  const handlePasteCell = () => {
-    console.log("paste");
+  const handlePasteCell = async () => {
+    if (!copyCellId || !selectedCell || copyCellId === selectedCell.cellId)
+      return;
+
+    let copy = copyCellId.split(",").map((id) => +id);
+    let paste = selectedCell.cellId.split(",").map((id) => +id);
+    console.log(copy, paste);
+
+    try {
+      setCopyCellId(null);
+    } catch (error: any) {
+      toast.error(error?.message);
+    }
   };
 
   const handleSearchNext = () => {
@@ -705,43 +726,16 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   };
 
   const handleAutoFillCell: ISheetContext["handleAutoFillCell"] = async (
-    start,
-    end,
-    cellId
+    data
   ) => {
     if (!gridId) return;
-
-    let cellDetail = getCellById(cellId);
-
-    if (!cellDetail) return;
-
-    let updateCellList: string[] = [];
-    let createCellList: Partial<ICellDetail>[] = [];
-
-    for (let columnId = start[0]; columnId <= end[0]; columnId++) {
-      for (let rowId = start[1]; rowId <= end[1]; rowId++) {
-        if (columnId === cellDetail.columnId && rowId === cellDetail.rowId)
-          continue;
-
-        let cellId = `${columnId},${rowId}`;
-        let cellData = getCellById(cellId);
-        if (cellData) updateCellList.push(cellData._id);
-        else createCellList.push({ rowId, columnId });
-      }
-    }
-
-    if (!updateCellList.length && !createCellList.length) return;
 
     try {
       let {
         data: {
           data: { cells },
         },
-      } = await duplicateCells(gridId, {
-        createCellList,
-        updateCellList,
-        cellId: cellDetail._id,
-      });
+      } = await duplicateCells(gridId, data);
       setCellDetails(cells);
       forceUpdate();
     } catch (error: any) {
@@ -749,16 +743,23 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     }
   };
 
-  const handleDeleteGrid = async (gridId: string) => {
+  const handleDeleteGrid: ISheetContext["handleDeleteGrid"] = async (
+    gridId,
+    index
+  ) => {
     if (!sheetDetail) return;
 
     try {
       await removeGridById(gridId);
       let details = { ...sheetDetail };
-      let index = details.grids.findIndex(({ _id }) => _id === gridId);
       details.grids.splice(index, 1);
       setSheetDetail(details);
-      navigate({ search: `gridId=${details.grids[0]._id}` });
+      navigate({
+        search:
+          details.grids.length === 0
+            ? "/sheet/list"
+            : `gridId=${details.grids[0]._id}`,
+      });
     } catch (error: any) {
       toast.error(error?.message);
     }
@@ -777,6 +778,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     selectedRow,
     contextMenuRect,
     isLoading,
+    copiedCell,
     activeHighLightIndex,
     highLightCells,
     setGrid,
@@ -802,6 +804,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     handleEditorChange,
     handleSearchSheet,
     setEditCell,
+    setCopyCellId,
     setSelectedCellId,
     setSelectedColumnId,
     setSelectedRowId,
