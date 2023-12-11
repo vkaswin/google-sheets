@@ -1,0 +1,1 @@
+import{j as o}from"./index-ba7c151b.js";const a=({row:{height:r,y:e}})=>{let t=`calc(${e}px - var(--row-height))`;return o.jsx("div",{className:"absolute top-[var(--col-height)] left-0 w-full border-dark-blue border-t border-b bg-light-sky-blue",style:{height:r,top:t}})};export{a as default};
