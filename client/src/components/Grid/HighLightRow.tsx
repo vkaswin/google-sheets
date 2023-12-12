@@ -1,8 +1,10 @@
 type IHighLightRowProps = {
+  scale: number;
   row: IRow;
 };
 
 const HighLightRow = ({
+  scale,
   row: { height, rowId, width, x, y },
 }: IHighLightRowProps) => {
   let top = `calc(${y}px - var(--row-height))`;
@@ -13,7 +15,12 @@ const HighLightRow = ({
         className="absolute flex justify-center items-center bg-dark-blue"
         style={{ left: x, top, width, height }}
       >
-        <span className="text-white text-xs font-medium">{rowId}</span>
+        <span
+          className="text-white font-medium"
+          style={{ fontSize: `${12 * scale}px` }}
+        >
+          {rowId}
+        </span>
       </div>
     </div>
   );

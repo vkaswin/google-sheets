@@ -95,7 +95,7 @@ const Grid = () => {
   useEffect(() => {
     if (!syncState) return;
     handleResizeGrid();
-  }, [syncState]);
+  }, [syncState, scale]);
 
   useEffect(() => {
     window.addEventListener("resize", handleResizeGrid);
@@ -159,7 +159,6 @@ const Grid = () => {
     let ctx = canvasRef.current.getContext("2d")!;
 
     ctx.clearRect(0, 0, clientWidth, clientHeight);
-    ctx.setTransform(scale, 0, 0, scale, 0, 0);
 
     paintCells(ctx, grid.cells);
     paintHeaders(grid.rows, grid.columns);
@@ -186,7 +185,7 @@ const Grid = () => {
     ctx.lineWidth = config.lineWidth;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = "12px Open Sans Medium";
+    ctx.font = `${12 * scale}px Open Sans Medium`;
     ctx.fillStyle = highlight ? "#000000" : "#575a5a";
     ctx.beginPath();
     ctx.moveTo(x, y + height);
@@ -207,7 +206,7 @@ const Grid = () => {
     ctx.lineWidth = config.lineWidth;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = "12px Open Sans Medium";
+    ctx.font = `${12 * scale}px Open Sans Medium`;
     ctx.fillStyle = highlight ? "#000000" : "#575a5a";
     ctx.beginPath();
     ctx.moveTo(x + width, y);
@@ -286,7 +285,7 @@ const Grid = () => {
       ctx.fillStyle = color;
       if (bold) fontStyle += "bold ";
       if (italic) fontStyle += "italic ";
-      fontStyle += `${size} ${config.fonts[font]}`;
+      fontStyle += `${+size.replace("px", "") * scale}px ${config.fonts[font]}`;
       ctx.font = fontStyle;
 
       let { width } = ctx.measureText(insert);
@@ -331,10 +330,10 @@ const Grid = () => {
     ctx.lineWidth = config.lineWidth - 0.5;
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.fillRect(0, 0, config.colWidth, config.rowHeight);
+    ctx.fillRect(0, 0, config.colWidth * scale, config.rowHeight * scale);
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.strokeRect(0, 1, config.colWidth, config.rowHeight - 1);
+    ctx.strokeRect(0, 1, config.colWidth * scale, config.rowHeight * scale - 1);
     ctx.stroke();
     ctx.restore();
   };
@@ -355,12 +354,12 @@ const Grid = () => {
     ctx.strokeStyle = config.strokeStyle;
     ctx.lineWidth = config.lineWidth - 0.5;
     ctx.beginPath();
-    ctx.moveTo(0, config.rowHeight);
+    ctx.moveTo(0, config.rowHeight * scale);
     ctx.lineTo(0, canvasRef.current.clientHeight);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(config.colWidth, config.rowHeight);
-    ctx.lineTo(config.colWidth, canvasRef.current.clientHeight);
+    ctx.moveTo(config.colWidth * scale, config.rowHeight * scale);
+    ctx.lineTo(config.colWidth * scale, canvasRef.current.clientHeight);
     ctx.stroke();
     ctx.restore();
   };
@@ -381,11 +380,11 @@ const Grid = () => {
     ctx.beginPath();
     ctx.strokeStyle = config.strokeStyle;
     ctx.lineWidth = config.lineWidth - 0.5;
-    ctx.moveTo(config.colWidth, config.rowHeight);
-    ctx.lineTo(canvasRef.current.clientWidth, config.rowHeight);
+    ctx.moveTo(config.colWidth * scale, config.rowHeight * scale);
+    ctx.lineTo(canvasRef.current.clientWidth, config.rowHeight * scale);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(config.colWidth, 1);
+    ctx.moveTo(config.colWidth * scale, 1);
     ctx.lineTo(canvasRef.current.clientWidth, 1);
     ctx.stroke();
     ctx.restore();
@@ -398,8 +397,8 @@ const Grid = () => {
   };
 
   const renderGrid: IRenderGrid = ({
-    offsetX = config.colWidth,
-    offsetY = config.rowHeight,
+    offsetX = config.colWidth * scale,
+    offsetY = config.rowHeight * scale,
     rowStart = 1,
     colStart = 1,
   }) => {
@@ -412,15 +411,15 @@ const Grid = () => {
     let cellData: ICell[] = [];
 
     for (let i = rowStart, y = offsetY; y < height; i++) {
-      let height = getRowById(i)?.height || config.cellHeight;
+      let height = (getRowById(i)?.height || config.cellHeight) * scale;
 
-      if (y + height > config.rowHeight) {
+      if (y + height > config.rowHeight * scale) {
         rowData.push({
           y,
           x: 0,
           rowId: i,
-          height: height,
-          width: config.colWidth,
+          height,
+          width: config.colWidth * scale,
         });
       }
 
@@ -428,15 +427,15 @@ const Grid = () => {
     }
 
     for (let i = colStart, x = offsetX; x < width; i++) {
-      let width = getColumnById(i)?.width || config.cellWidth;
+      let width = (getColumnById(i)?.width || config.cellWidth) * scale;
 
-      if (x + width > config.colWidth) {
+      if (x + width > config.colWidth * scale) {
         columnData.push({
           x,
           y: 0,
           columnId: i,
           width,
-          height: config.rowHeight,
+          height: config.rowHeight * scale,
         });
       }
 
@@ -477,12 +476,12 @@ const Grid = () => {
       y += -deltaY;
       rowId--;
 
-      while (rowId > 0 && y > config.rowHeight) {
-        y -= getRowById(rowId)?.height ?? config.cellHeight;
+      while (rowId > 0 && y > config.rowHeight * scale) {
+        y -= (getRowById(rowId)?.height || config.cellHeight) * scale;
         rowId--;
       }
 
-      let offsetY = Math.min(config.rowHeight, y);
+      let offsetY = Math.min(config.rowHeight * scale, y);
 
       renderGrid({
         offsetX: x,
@@ -517,13 +516,13 @@ const Grid = () => {
       x += -deltaX;
       columnId--;
 
-      while (columnId > 0 && x > config.colWidth) {
-        x -= getColumnById(columnId)?.width ?? config.cellWidth;
+      while (columnId > 0 && x > config.colWidth * scale) {
+        x -= (getColumnById(columnId)?.width || config.cellWidth) * scale;
         columnId--;
       }
 
       renderGrid({
-        offsetX: Math.min(config.colWidth, x),
+        offsetX: Math.min(config.colWidth * scale, x),
         offsetY: y,
         rowStart: rowId,
         colStart: columnId + 1,
@@ -696,8 +695,10 @@ const Grid = () => {
         <canvas ref={canvasRef}></canvas>
         <ScrollBar ref={verticalScroll} axis="y" />
         <ScrollBar ref={horizontalScroll} axis="x" />
-        {selectedColumn && <HighLightColumn column={selectedColumn} />}
-        {selectedRow && <HighLightRow row={selectedRow} />}
+        {selectedColumn && (
+          <HighLightColumn scale={scale} column={selectedColumn} />
+        )}
+        {selectedRow && <HighLightRow scale={scale} row={selectedRow} />}
         <div className="absolute left-[var(--col-width)] top-[var(--row-height)] w-[calc(100%-var(--col-width))] h-[calc(100%-var(--row-height))] overflow-hidden">
           {copiedCell && <HighLightCell cell={copiedCell} dashed />}
           {selectedCell && !editCell && selectedCell !== copiedCell && (

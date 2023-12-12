@@ -2,10 +2,12 @@ import { useMemo } from "react";
 import { convertToTitle } from "@/utils";
 
 type IHighLightColumnProps = {
+  scale: number;
   column: IColumn;
 };
 
 const HighLightColumn = ({
+  scale,
   column: { columnId, height, width, x, y },
 }: IHighLightColumnProps) => {
   let left = `calc(${x}px - var(--col-width))`;
@@ -20,7 +22,12 @@ const HighLightColumn = ({
         className="absolute flex justify-center items-center bg-dark-blue"
         style={{ left, top: y, width, height }}
       >
-        <span className="text-white text-xs font-medium">{title}</span>
+        <span
+          className="text-white font-medium"
+          style={{ fontSize: `${12 * scale}px` }}
+        >
+          {title}
+        </span>
       </div>
     </div>
   );

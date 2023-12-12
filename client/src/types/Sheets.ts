@@ -107,6 +107,7 @@ type IConfig = {
   rowHeight: number;
   customFonts: string[];
   fonts: Record<string, string>;
+  scale: number[];
 };
 
 type ISheetGrid = {

@@ -74,6 +74,7 @@ type ISheetContext = {
   handleSearchSheet: (q: string) => void;
   handleAutoFillCell: (data: IAutoFillData) => void;
   setGrid: Dispatch<SetStateAction<IGrid>>;
+  setScale: Dispatch<SetStateAction<number>>;
   setContextMenuRect: Dispatch<SetStateAction<Pick<IRect, "x" | "y"> | null>>;
   setEditCell: Dispatch<SetStateAction<ICell | null>>;
   setSelectedCellId: Dispatch<SetStateAction<string | null>>;
@@ -116,7 +117,7 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
 
   const [sheetDetail, setSheetDetail] = useState<ISheetDetail | null>(null);
 
-  const [scale, setScale] = useState(1.5);
+  const [scale, setScale] = useState(1);
 
   const [grid, setGrid] = useState<IGrid>({
     cells: [],
@@ -808,6 +809,7 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
         activeHighLightIndex,
         highLightCells,
         setGrid,
+        setScale,
         getCellById,
         getRowById,
         getColumnById,

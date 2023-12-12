@@ -45,4 +45,5 @@ export const config: IConfig = {
     rubik: "Rubik",
     ubuntu: "Ubuntu",
   },
+  scale: [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
 };

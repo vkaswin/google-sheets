@@ -18,6 +18,7 @@ import { debounce } from "@/utils";
 
 const activeClassName = "bg-light-blue rounded";
 const btnClassName = "flex justify-center items-center w-[24px] h-[24px]";
+const hoverClassName = "hover:bg-[#DFE4EB] p-1 rounded transition-colors";
 
 const DEFAULT_ACTIVE_STYLE: IActiveStyle = {
   bold: false,
@@ -35,11 +36,13 @@ const ToolBar = () => {
 
   const {
     quill,
+    scale,
     config,
     editCell,
     selectedCell,
     activeHighLightIndex,
     highLightCells,
+    setScale,
     getCellById,
     handleSearchSheet,
     handleFormatCell,
@@ -127,6 +130,51 @@ const ToolBar = () => {
           </button>
         </div>
         <Divider /> */}
+        <div className="flex items-center gap-3 px-4">
+          <Menu placement="bottom-start">
+            {({ isOpen }) => (
+              <Fragment>
+                <Tooltip label="Zoom" placement="bottom" className="tooltip">
+                  <MenuButton className={classNames("w-15", hoverClassName)}>
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm font-medium">
+                        {scale * 100}%
+                      </span>
+                      <i
+                        className={classNames(
+                          "bx-caret-down transition-transform",
+                          isOpen ? "rotate-180" : "rotate-0"
+                        )}
+                      ></i>
+                    </div>
+                  </MenuButton>
+                </Tooltip>
+                <Portal>
+                  <Box>
+                    <MenuList
+                      minW={0}
+                      className="relative bg-white w-fit"
+                      zIndex={999}
+                    >
+                      {config.scale.map((value, index) => {
+                        return (
+                          <MenuItem
+                            key={index}
+                            className={`ql-font-${value} text-sm font-medium py-1 px-4`}
+                            onClick={() => setScale(value)}
+                          >
+                            {value * 100}%
+                          </MenuItem>
+                        );
+                      })}
+                    </MenuList>
+                  </Box>
+                </Portal>
+              </Fragment>
+            )}
+          </Menu>
+        </div>
+        <Divider />
         <div>
           <Menu placement="bottom-start">
             {({ isOpen }) => (
@@ -137,7 +185,7 @@ const ToolBar = () => {
                       <span>{config.fonts[activeStyle.font as string]}</span>
                       <i
                         className={classNames(
-                          "bx-chevron-down transition-transform",
+                          "bx-caret-down transition-transform",
                           isOpen ? "rotate-180" : "rotate-0"
                         )}
                       ></i>
@@ -170,7 +218,7 @@ const ToolBar = () => {
         <div className="flex items-center gap-3 px-4 text-xl">
           <Tooltip className="tooltip" label="Bold (Ctrl+B)">
             <button
-              className={classNames(btnClassName, {
+              className={classNames(btnClassName, hoverClassName, {
                 [activeClassName]: activeStyle.bold,
               })}
               disabled={!editCell}
@@ -181,7 +229,7 @@ const ToolBar = () => {
           </Tooltip>
           <Tooltip className="tooltip" label="Italic (Ctrl+I)">
             <button
-              className={classNames(btnClassName, {
+              className={classNames(btnClassName, hoverClassName, {
                 [activeClassName]: activeStyle.italic,
               })}
               disabled={!editCell}
@@ -192,7 +240,7 @@ const ToolBar = () => {
           </Tooltip>
           <Tooltip className="tooltip" label="Underline (Ctrl+U)">
             <button
-              className={classNames(btnClassName, {
+              className={classNames(btnClassName, hoverClassName, {
                 [activeClassName]: activeStyle.underline,
               })}
               disabled={!editCell}
@@ -203,7 +251,7 @@ const ToolBar = () => {
           </Tooltip>
           <Tooltip className="tooltip" label="Strikethrough (Ctrl+S)">
             <button
-              className={classNames(btnClassName, {
+              className={classNames(btnClassName, hoverClassName, {
                 [activeClassName]: activeStyle.strike,
               })}
               disabled={!editCell}
@@ -223,12 +271,16 @@ const ToolBar = () => {
                     <Box>
                       <PopoverTrigger>
                         <button
-                          className={classNames(btnClassName, "flex-col")}
+                          className={classNames(
+                            btnClassName,
+                            hoverClassName,
+                            "flex-col h-fit"
+                          )}
                           disabled={!editCell}
                         >
                           <i className="bx-font"></i>
                           <span
-                            className="w-full h-2 shadow-sm"
+                            className="w-5 h-1 shadow-sm"
                             style={{ backgroundColor: activeStyle.color }}
                           ></span>
                         </button>
@@ -259,12 +311,16 @@ const ToolBar = () => {
                     <Box>
                       <PopoverTrigger>
                         <button
-                          className={classNames(btnClassName, "flex-col")}
+                          className={classNames(
+                            btnClassName,
+                            hoverClassName,
+                            "flex-col h-fit"
+                          )}
                           disabled={!selectedCell}
                         >
                           <i className="bxs-color-fill"></i>
                           <span
-                            className="w-full h-2 shadow-sm"
+                            className="w-5 h-1 shadow-sm"
                             style={{ backgroundColor: activeStyle.background }}
                           ></span>
                         </button>
@@ -292,7 +348,7 @@ const ToolBar = () => {
         <div className="flex items-center gap-3 px-4 text-xl">
           <Tooltip className="tooltip" label="Remove format">
             <button
-              className={btnClassName}
+              className={classNames(btnClassName, hoverClassName)}
               onClick={handleRemoveFormat}
               disabled={!editCell}
             >
