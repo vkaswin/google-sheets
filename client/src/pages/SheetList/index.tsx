@@ -1,13 +1,20 @@
 import { Fragment, useEffect, useRef, useState, ChangeEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Menu, MenuList, MenuButton, Portal, MenuItem } from "@chakra-ui/react";
-import moment from "moment-timezone";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { toast } from "react-toastify";
 import useAuth from "@/hooks/useAuth";
 import Pagination from "@/components/Pagination";
 import Avatar from "@/components/Avatar";
 import { createSheet, getSheetList, removeSheetById } from "@/services/Sheet";
 import { getStaticUrl, debounce } from "@/utils";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(relativeTime);
 
 const SheetList = () => {
   const [sheets, setSheets] = useState<ISheetList>([]);
@@ -171,16 +178,14 @@ const SheetList = () => {
                           </td>
                           <td className="text-center p-3">
                             <span className=" text-gray-500 text-sm">
-                              {moment
+                              {dayjs
                                 .tz(createdAt, "Asia/Kolkata")
                                 .format("MMM D, YYYY")}
                             </span>
                           </td>
                           <td className="text-center p-3">
                             <span className="text-gray-500 text-sm">
-                              {moment
-                                .tz(lastOpenedAt, "Asia/Kolkata")
-                                .fromNow()}
+                              {dayjs.tz(lastOpenedAt, "Asia/Kolkata").fromNow()}
                             </span>
                           </td>
                           <td className="p-3">
