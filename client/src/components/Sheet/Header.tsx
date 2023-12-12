@@ -1,7 +1,7 @@
 import { ChangeEvent } from "react";
 import { Link } from "react-router-dom";
-import useAuth from "@/hooks/useAuth";
-import useSheet from "@/hooks/useSheet";
+import { useAuth } from "@/hooks/useAuth";
+import { useSheet } from "@/hooks/useSheet";
 import Avatar from "@/components/Avatar";
 import { debounce, getStaticUrl } from "@/utils";
 

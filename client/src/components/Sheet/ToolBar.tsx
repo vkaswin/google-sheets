@@ -12,7 +12,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@chakra-ui/react";
-import useSheet from "@/hooks/useSheet";
+import { useSheet } from "@/hooks/useSheet";
 import ColorPicker from "../Grid/ColorPicker";
 import { debounce } from "@/utils";
 

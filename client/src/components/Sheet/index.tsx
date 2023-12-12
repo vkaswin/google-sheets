@@ -4,7 +4,7 @@ import ToolBar from "./ToolBar";
 import BottomBar from "./BottomBar";
 import Grid from "@/components/Grid";
 import Loader from "@/components/Loader";
-import useSheet from "@/hooks/useSheet";
+import { useSheet } from "@/hooks/useSheet";
 
 const Sheet = () => {
   const { isSheetLoading } = useSheet();

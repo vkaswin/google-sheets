@@ -1,5 +1,6 @@
 import Cell from "../models/cell";
 import Grid from "../models/grid";
+import Row from "../models/row";
 import { CustomError, asyncHandler } from "../utils";
 
 const createCell = asyncHandler(async (req, res) => {
@@ -83,7 +84,17 @@ const duplicateCells = asyncHandler(async (req, res) => {
 });
 
 const removeCell = asyncHandler(async (req, res) => {
-  res.end();
+  let { cellId } = req.params;
+
+  let cell = await Cell.findById(cellId);
+
+  if (!cell) {
+    throw new CustomError({ message: "Cell not exist", status: 400 });
+  }
+
+  await Cell.findByIdAndDelete(cellId);
+
+  res.status(200).send({ message: "Cell has been deleted successfully" });
 });
 
 const copyPasteCell = asyncHandler(async (req, res) => {
@@ -134,12 +145,112 @@ const copyPasteCell = asyncHandler(async (req, res) => {
   }
 });
 
+const insertColumn = asyncHandler(async (req, res) => {
+  let { gridId } = req.params;
+  let { columnId, direction } = req.body;
+
+  columnId = +columnId;
+
+  if (!columnId) {
+    return res.status(400).send({ message: "ColumnId is required" });
+  }
+
+  let grid = await Grid.findById(gridId);
+
+  if (!grid) {
+    throw new CustomError({ message: "Grid not exist", status: 400 });
+  }
+
+  if (direction !== "left" && direction !== "right")
+    return res.status(400).send({ message: "Invalid direction" });
+
+  await Cell.updateMany(
+    {
+      gridId,
+      columnId: { [direction === "right" ? "$gt" : "$gte"]: columnId },
+    },
+    { $inc: { columnId: 1 } }
+  );
+
+  res
+    .status(200)
+    .send({ message: `Column has been inserted ${direction} successfully` });
+});
+
+const insertRow = asyncHandler(async (req, res) => {
+  let { gridId } = req.params;
+  let { rowId, direction } = req.body;
+
+  rowId = +rowId;
+
+  if (!rowId) {
+    return res.status(400).send({ message: "RowId is required" });
+  }
+
+  let grid = await Grid.findById(gridId);
+
+  if (!grid) {
+    throw new CustomError({ message: "Grid not exist", status: 400 });
+  }
+
+  if (direction !== "left" && direction !== "right")
+    return res.status(400).send({ message: "Invalid direction" });
+
+  await Cell.updateMany(
+    {
+      gridId,
+      rowId: { [direction === "bottom" ? "$gt" : "$gte"]: rowId },
+    },
+    { $inc: { rowId: 1 } }
+  );
+
+  res.status(200).send({ message: "Row has been inserted successfully" });
+});
+
+const removeRow = asyncHandler(async (req, res) => {
+  let { gridId } = req.params;
+  let { rowId } = req.body;
+
+  rowId = +rowId;
+
+  let grid = await Grid.findById(gridId);
+
+  if (!grid) {
+    throw new CustomError({ message: "Grid not exist", status: 400 });
+  }
+
+  await Cell.deleteMany({ gridId, rowId });
+
+  res.status(200).send({ message: "Row has been deleted successfully" });
+});
+
+const removeColumn = asyncHandler(async (req, res) => {
+  let { gridId } = req.params;
+  let { columnId } = req.body;
+
+  columnId = +columnId;
+
+  let grid = await Grid.findById(gridId);
+
+  if (!grid) {
+    throw new CustomError({ message: "Grid not exist", status: 400 });
+  }
+
+  await Cell.deleteMany({ gridId, columnId });
+
+  res.status(200).send({ message: "Column has been deleted successfully" });
+});
+
 const CellController = {
   createCell,
   updateCell,
   removeCell,
   duplicateCells,
   copyPasteCell,
+  insertColumn,
+  insertRow,
+  removeColumn,
+  removeRow,
 };
 
 export default CellController;

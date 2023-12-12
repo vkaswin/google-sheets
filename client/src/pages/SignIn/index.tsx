@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import useAuth from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import Input from "@/components/Input";
 
 import styles from "./SignIn.module.scss";

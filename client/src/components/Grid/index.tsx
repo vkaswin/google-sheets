@@ -5,8 +5,10 @@ import {
   WheelEvent,
   Fragment,
   useLayoutEffect,
+  CSSProperties,
+  useMemo,
 } from "react";
-import useSheet from "@/hooks/useSheet";
+import { useSheet } from "@/hooks/useSheet";
 import ColumnOverLay from "./ColumnOverLay";
 import RowOverLay from "./RowOverLay";
 import RowResizer from "./RowResizer";
@@ -114,6 +116,15 @@ const Grid = () => {
   useLayoutEffect(() => {
     paintGrid();
   }, [grid]);
+
+  const gridStyle = useMemo(() => {
+    return {
+      "--row-height": `${config.rowHeight * scale}px`,
+      "--col-width": `${config.colWidth * scale}px`,
+      "--cell-width": `${config.cellWidth * scale}px`,
+      "--cell-height": `${config.cellHeight * scale}px`,
+    } as CSSProperties;
+  }, [scale]);
 
   const changeCanvasDimension = () => {
     if (!canvasRef.current || !gridRef.current) return;
@@ -679,6 +690,7 @@ const Grid = () => {
         onMouseDown={handleClickGrid}
         onContextMenu={handleContextMenu}
         onDoubleClick={handleDoubleClickGrid}
+        style={gridStyle}
       >
         {isGridLoading && <Loader />}
         <canvas ref={canvasRef}></canvas>

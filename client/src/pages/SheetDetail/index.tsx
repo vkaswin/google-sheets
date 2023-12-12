@@ -1,4 +1,4 @@
-import SheetProvider from "@/context/SheetContext";
+import { SheetProvider } from "@/hooks/useSheet";
 import Sheet from "@/components/Sheet";
 
 const SheetDetail = () => {

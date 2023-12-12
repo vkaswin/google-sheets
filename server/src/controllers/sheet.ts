@@ -101,15 +101,15 @@ const removeSheetById = asyncHandler(async (req, res) => {
     throw new CustomError({ message: "Sheet not exist", status: 400 });
   }
 
-  let gridIds = sheet.grids;
+  let query = { gridId: { $in: sheet.grids } };
 
-  await Cell.deleteMany({ gridId: { $in: gridIds } });
+  await Cell.deleteMany(query);
 
-  await Row.deleteMany({ gridId: { $in: gridIds } });
+  await Row.deleteMany(query);
 
-  await Column.deleteMany({ gridId: { $in: gridIds } });
+  await Column.deleteMany(query);
 
-  await Grid.deleteMany({ _id: { $in: gridIds } });
+  await Grid.deleteMany({ _id: { $in: sheet.grids } });
 
   await Sheet.findByIdAndDelete(sheetId);
 

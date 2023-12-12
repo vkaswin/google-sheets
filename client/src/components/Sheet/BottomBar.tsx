@@ -1,6 +1,6 @@
 import { Fragment, WheelEvent, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import useSheet from "@/hooks/useSheet";
+import { useSheet } from "@/hooks/useSheet";
 import classNames from "classnames";
 import {
   Menu,

@@ -6,7 +6,7 @@ import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { toast } from "react-toastify";
-import useAuth from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import Pagination from "@/components/Pagination";
 import Avatar from "@/components/Avatar";
 import { createSheet, getSheetList, removeSheetById } from "@/services/Sheet";

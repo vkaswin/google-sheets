@@ -35,3 +35,37 @@ export const copyPasteCell = (
     data,
   });
 };
+
+export const insertColumn = (
+  gridId: string,
+  data: { direction: IDirection; columnId: number }
+) => {
+  return axios({
+    url: `${CELL_URL}/${gridId}/insert/column`,
+    method: "put",
+    data,
+  });
+};
+
+export const deleteCellById = (cellId: string) => {
+  return axios<{ message: string }>({
+    url: `${CELL_URL}/${cellId}/cell`,
+    method: "delete",
+  });
+};
+
+export const deleteColumn = (gridId: string, columnId: number) => {
+  return axios({
+    url: `${CELL_URL}/${gridId}/column`,
+    method: "delete",
+    data: { columnId },
+  });
+};
+
+export const deleteRow = (gridId: string, rowId: number) => {
+  return axios({
+    url: `${CELL_URL}/${gridId}/row`,
+    method: "delete",
+    data: { rowId },
+  });
+};

@@ -3,6 +3,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useContext,
   useMemo,
   ReactNode,
   Dispatch,
@@ -10,8 +11,9 @@ import {
 } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import Quill from "quill";
-import { debounce } from "@/utils";
 import { toast } from "react-toastify";
+import { config } from "@/constants";
+import { debounce } from "@/utils";
 import { getSheetById, updateSheetById } from "@/services/Sheet";
 import {
   createGrid,
@@ -25,57 +27,12 @@ import {
   copyPasteCell,
   createCell,
   duplicateCells,
+  insertColumn,
   updateCellById,
+  deleteCellById,
+  deleteColumn,
+  deleteRow,
 } from "@/services/Cell";
-
-const config: IConfig = {
-  lineWidth: 2,
-  strokeStyle: "#C4C7C5",
-  cellHeight: 25,
-  cellWidth: 100,
-  colWidth: 46,
-  rowHeight: 25,
-  customFonts: [
-    "open-sans",
-    "barlow-condensed",
-    "caveat",
-    "crimson-text",
-    "dancing-script",
-    "inter",
-    "lato",
-    "lobster",
-    "montserrat",
-    "nunito-sans",
-    "oswald",
-    "pacifico",
-    "poppins",
-    "quicksand",
-    "roboto",
-    "roboto-mono",
-    "rubik",
-    "ubuntu",
-  ],
-  fonts: {
-    "open-sans": "Open Sans",
-    "barlow-condensed": "Barlow Condensed",
-    caveat: "Caveat",
-    "crimson-text": "Crimson Text",
-    "dancing-script": "Dancing Script",
-    inter: "Inter",
-    lato: "Lato",
-    lobster: "Lobster",
-    montserrat: "Montserrat",
-    "nunito-sans": "Nunito Sans",
-    oswald: "Oswald",
-    pacifico: "Pacifico",
-    poppins: "Poppins",
-    quicksand: "Quicksand",
-    roboto: "Roboto",
-    "roboto-mono": "Roboto Mono",
-    rubik: "Rubik",
-    ubuntu: "Ubuntu",
-  },
-};
 
 type ISheetContext = {
   quill: Quill | null;
@@ -129,9 +86,9 @@ type ISheetProviderProps = {
   children: ReactNode;
 };
 
-export const SheetContext = createContext({} as ISheetContext);
+const SheetContext = createContext({} as ISheetContext);
 
-const SheetProvider = ({ children }: ISheetProviderProps) => {
+export const SheetProvider = ({ children }: ISheetProviderProps) => {
   const [quill, setQuill] = useState<Quill | null>(null);
 
   const [syncState, setSyncState] = useState(0);
@@ -159,7 +116,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
   const [sheetDetail, setSheetDetail] = useState<ISheetDetail | null>(null);
 
-  const [scale, setScale] = useState(1);
+  const [scale, setScale] = useState(1.5);
 
   const [grid, setGrid] = useState<IGrid>({
     cells: [],
@@ -545,80 +502,113 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     }
   };
 
-  const handleDeleteCell = () => {
+  const handleDeleteCell = async () => {
     if (!selectedCell) return;
-    let id = cellIds.current.get(selectedCell.cellId);
-    if (!id) return;
-    removeCellById(id);
-    forceUpdate();
-    setContextMenuRect(null);
+
+    let cellId = selectedCell.cellId;
+    let cellData = getCellById(selectedCell.cellId);
+
+    if (!cellData || !window.confirm("Are you sure to delete the cell?"))
+      return;
+
+    try {
+      await deleteCellById(cellData._id);
+      removeCellById(cellId);
+      forceUpdate();
+      setContextMenuRect(null);
+    } catch (error: any) {
+      toast.error(error?.message);
+    }
   };
 
-  const handleDeleteRow = () => {
+  const handleDeleteRow = async () => {
+    if (!gridId || !window.confirm("Are you sure to delete the row?")) return;
+
     let rowId = selectedCell?.rowId || selectedRow?.rowId;
 
     if (!rowId) return;
 
-    for (let [_id, cellData] of cellDetails.current) {
-      if (cellData.rowId !== rowId) continue;
-      let cellId = `${cellData.columnId},${cellData.rowId}`;
-      cellIds.current.delete(cellId);
-      removeCellById(_id);
-    }
+    try {
+      await deleteRow(gridId, rowId);
 
-    forceUpdate();
-    setContextMenuRect(null);
-  };
-
-  const handleDeleteColumn = () => {
-    let columnId = selectedCell?.columnId || selectedColumn?.columnId;
-
-    if (!columnId) return;
-
-    for (let [_id, cellData] of cellDetails.current) {
-      if (cellData.columnId !== columnId) continue;
-      let cellId = `${cellData.columnId},${cellData.rowId}`;
-      cellIds.current.delete(cellId);
-      removeCellById(_id);
-    }
-
-    forceUpdate();
-    setContextMenuRect(null);
-  };
-
-  const handleInsertColumn = (direction: IDirection) => {
-    let columnId = selectedCell?.columnId || selectedColumn?.columnId;
-
-    if (!columnId) return;
-
-    for (let [_id, cellData] of cellDetails.current) {
-      if (
-        direction === "right"
-          ? cellData.columnId <= columnId
-          : cellData.columnId < columnId
-      )
-        continue;
-
-      let oldCellId = `${cellData.columnId},${cellData.rowId}`;
-      let newColumnId = cellData.columnId + 1;
-      let newCellId = `${newColumnId},${cellData.rowId}`;
-
-      cellIds.current.delete(oldCellId);
-      cellIds.current.set(newCellId, _id);
-
-      let columnData = getColumnById(cellData.columnId);
-
-      if (columnData) {
-        removeColumnById(cellData.columnId);
-        columnData.columnId = newColumnId;
-        setColumnById(columnData);
+      for (let [_, cellData] of cellDetails.current) {
+        if (cellData.rowId !== rowId) continue;
+        let cellId = `${cellData.columnId},${cellData.rowId}`;
+        removeCellById(cellId);
       }
 
-      cellData.columnId = newColumnId;
+      forceUpdate();
+      setContextMenuRect(null);
+    } catch (error: any) {
+      toast.error(error?.message);
     }
+  };
 
-    forceUpdate();
-    setContextMenuRect(null);
+  const handleDeleteColumn = async () => {
+    if (!gridId || !window.confirm("Are you sure to delete the column?"))
+      return;
+
+    let columnId = selectedCell?.columnId || selectedColumn?.columnId;
+
+    if (!columnId) return;
+
+    try {
+      await deleteColumn(gridId, columnId);
+
+      for (let [_, cellData] of cellDetails.current) {
+        if (cellData.columnId !== columnId) continue;
+        let cellId = `${cellData.columnId},${cellData.rowId}`;
+        removeCellById(cellId);
+      }
+
+      forceUpdate();
+      setContextMenuRect(null);
+    } catch (error: any) {
+      toast.error(error?.message);
+    }
+  };
+
+  const handleInsertColumn = async (direction: IDirection) => {
+    if (!gridId) return;
+
+    let columnId = selectedCell?.columnId || selectedColumn?.columnId;
+
+    if (!columnId) return;
+
+    try {
+      await insertColumn(gridId, { direction, columnId });
+
+      for (let [_id, cellData] of cellDetails.current) {
+        if (
+          direction === "right"
+            ? cellData.columnId <= columnId
+            : cellData.columnId < columnId
+        )
+          continue;
+
+        let oldCellId = `${cellData.columnId},${cellData.rowId}`;
+        let newColumnId = cellData.columnId + 1;
+        let newCellId = `${newColumnId},${cellData.rowId}`;
+
+        cellIds.current.delete(oldCellId);
+        cellIds.current.set(newCellId, _id);
+
+        let columnData = getColumnById(cellData.columnId);
+
+        if (columnData) {
+          removeColumnById(cellData.columnId);
+          columnData.columnId = newColumnId;
+          setColumnById(columnData);
+        }
+
+        cellData.columnId = newColumnId;
+      }
+
+      forceUpdate();
+      setContextMenuRect(null);
+    } catch (error: any) {
+      toast.error(error?.message);
+    }
   };
 
   const handleInsertRow = (direction: IDirection) => {
@@ -686,12 +676,11 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
           data: { cell },
         },
       } = await copyPasteCell(cellData._id, { rowId, columnId });
+
       forceUpdate();
-      setTimeout(() => {
-        setCellById(cell);
-        setCopyCellId(null);
-        setContextMenuRect(null);
-      }, 0);
+      setCellById(cell);
+      setCopyCellId(null);
+      setContextMenuRect(null);
     } catch (error: any) {
       toast.error(error?.message);
     }
@@ -780,7 +769,8 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     gridId,
     index
   ) => {
-    if (!sheetDetail) return;
+    if (!sheetDetail || !window.confirm("Are you sure to delete the grid?"))
+      return;
 
     try {
       await removeGridById(gridId);
@@ -798,57 +788,61 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     }
   };
 
-  const context: ISheetContext = {
-    quill,
-    grid,
-    scale,
-    sheetDetail,
-    config,
-    syncState,
-    editCell,
-    selectedCell,
-    selectedColumn,
-    selectedRow,
-    contextMenuRect,
-    isSheetLoading,
-    isGridLoading,
-    copiedCell,
-    activeHighLightIndex,
-    highLightCells,
-    setGrid,
-    getCellById,
-    getRowById,
-    getColumnById,
-    handleResizeColumn,
-    handleResizeRow,
-    handleInsertColumn,
-    handleDeleteCell,
-    handleDeleteColumn,
-    handleDeleteRow,
-    handleInsertRow,
-    handleFormatCell,
-    handleCopyCell,
-    handleCutCell,
-    handlePasteCell,
-    handleCreateGrid,
-    handleDeleteGrid,
-    handleSearchNext,
-    handleSearchPrevious,
-    handleTitleChange,
-    handleEditorChange,
-    handleSearchSheet,
-    setEditCell,
-    setCopyCellId,
-    setSelectedCellId,
-    setSelectedColumnId,
-    setSelectedRowId,
-    setContextMenuRect,
-    handleAutoFillCell,
-  };
-
   return (
-    <SheetContext.Provider value={context}>{children}</SheetContext.Provider>
+    <SheetContext.Provider
+      value={{
+        quill,
+        grid,
+        scale,
+        sheetDetail,
+        config,
+        syncState,
+        editCell,
+        selectedCell,
+        selectedColumn,
+        selectedRow,
+        contextMenuRect,
+        isSheetLoading,
+        isGridLoading,
+        copiedCell,
+        activeHighLightIndex,
+        highLightCells,
+        setGrid,
+        getCellById,
+        getRowById,
+        getColumnById,
+        handleResizeColumn,
+        handleResizeRow,
+        handleInsertColumn,
+        handleDeleteCell,
+        handleDeleteColumn,
+        handleDeleteRow,
+        handleInsertRow,
+        handleFormatCell,
+        handleCopyCell,
+        handleCutCell,
+        handlePasteCell,
+        handleCreateGrid,
+        handleDeleteGrid,
+        handleSearchNext,
+        handleSearchPrevious,
+        handleTitleChange,
+        handleEditorChange,
+        handleSearchSheet,
+        setEditCell,
+        setCopyCellId,
+        setSelectedCellId,
+        setSelectedColumnId,
+        setSelectedRowId,
+        setContextMenuRect,
+        handleAutoFillCell,
+      }}
+    >
+      {children}
+    </SheetContext.Provider>
   );
 };
 
-export default SheetProvider;
+export const useSheet = () => {
+  return useContext(SheetContext);
+};

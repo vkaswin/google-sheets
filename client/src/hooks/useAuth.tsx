@@ -1,5 +1,6 @@
 import {
   createContext,
+  useContext,
   ReactNode,
   useEffect,
   useState,
@@ -24,9 +25,9 @@ type IAuthContext = {
   logout: () => void;
 };
 
-export const AuthContext = createContext({} as IAuthContext);
+const AuthContext = createContext({} as IAuthContext);
 
-const AuthProvider = ({ children }: AuthProviderProps) => {
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   let [user, setUser] = useState<IUser>();
 
   let navigate = useNavigate();
@@ -92,4 +93,6 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   );
 };
 
-export default AuthProvider;
+export const useAuth = () => {
+  return useContext(AuthContext);
+};
