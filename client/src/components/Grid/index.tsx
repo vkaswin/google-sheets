@@ -5,24 +5,21 @@ import {
   WheelEvent,
   Fragment,
   useLayoutEffect,
-  lazy,
 } from "react";
 import useSheet from "@/hooks/useSheet";
-
-const ColumnResizer = lazy(() => import("./ColumnResizer"));
-const RowResizer = lazy(() => import("./RowResizer"));
-const HighLightSearchCells = lazy(() => import("./HighLightSearchCells"));
-const HighLightCell = lazy(() => import("./HighLightCell"));
-const HighLightColumn = lazy(() => import("./HighLightColumn"));
-const HighLightRow = lazy(() => import("./HighLightRow"));
-const ColumnOverLay = lazy(() => import("./ColumnOverLay"));
-const RowOverLay = lazy(() => import("./RowOverLay"));
-const ScrollBar = lazy(() => import("./ScrollBar"));
-const EditCell = lazy(() => import("./EditCell"));
-const ContextMenu = lazy(() => import("./ContextMenu"));
-const AutoFill = lazy(() => import("./AutoFill"));
-const Loader = lazy(() => import("./Loader"));
-
+import ColumnOverLay from "./ColumnOverLay";
+import RowOverLay from "./RowOverLay";
+import RowResizer from "./RowResizer";
+import ColumnResizer from "./ColumnResizer";
+import AutoFill from "./AutoFill";
+import HighLightRow from "./HighLightRow";
+import HighLightColumn from "./HighLightColumn";
+import HighLightSearchCells from "./HighLightSearchCells";
+import ScrollBar from "./ScrollBar";
+import Loader from "@/components/Loader";
+import EditCell from "./EditCell";
+import ContextMenu from "./ContextMenu";
+import HighLightCell from "./HighLightCell";
 import { convertToTitle } from "@/utils";
 
 const Grid = () => {
@@ -38,7 +35,7 @@ const Grid = () => {
     grid,
     config,
     scale,
-    isLoading,
+    isGridLoading,
     syncState,
     editCell,
     selectedCell,
@@ -74,7 +71,16 @@ const Grid = () => {
   let { rows, columns, cells } = grid;
 
   useEffect(() => {
-    checkFontsLoaded();
+    changeCanvasDimension();
+
+    document.fonts.addEventListener(
+      "loadingdone",
+      () => {
+        if (isGridLoading) return;
+        handleResizeGrid();
+      },
+      { once: true }
+    );
   }, []);
 
   useEffect(() => {
@@ -109,19 +115,15 @@ const Grid = () => {
     paintGrid();
   }, [grid]);
 
-  const checkFontsLoaded = async () => {
-    await document.fonts.ready;
-    handleResizeGrid();
+  const changeCanvasDimension = () => {
+    if (!canvasRef.current || !gridRef.current) return;
+    let { clientWidth, clientHeight } = gridRef.current;
+    canvasRef.current.width = clientWidth;
+    canvasRef.current.height = clientHeight;
   };
 
-  const handleResizeGrid = () => {
-    if (!gridRef.current || !canvasRef.current) return;
-
-    let { clientWidth, clientHeight } = gridRef.current;
-
-    let canvas = canvasRef.current;
-    canvas.width = clientWidth;
-    canvas.height = clientHeight;
+  const handleResizeGrid = (event?: Event) => {
+    if (event && event.type === "resize") changeCanvasDimension();
 
     let { rowId, y } = rows[0] ?? {};
     let { columnId, x } = columns[0] ?? {};
@@ -390,15 +392,15 @@ const Grid = () => {
     rowStart = 1,
     colStart = 1,
   }) => {
-    if (!gridRef.current) return;
+    if (!canvasRef.current) return;
 
-    let { clientWidth, clientHeight } = gridRef.current;
+    let { width, height } = canvasRef.current;
 
     let rowData: IRow[] = [];
     let columnData: IColumn[] = [];
     let cellData: ICell[] = [];
 
-    for (let i = rowStart, y = offsetY; y < clientHeight; i++) {
+    for (let i = rowStart, y = offsetY; y < height; i++) {
       let height = getRowById(i)?.height || config.cellHeight;
 
       if (y + height > config.rowHeight) {
@@ -414,7 +416,7 @@ const Grid = () => {
       y += height;
     }
 
-    for (let i = colStart, x = offsetX; x < clientWidth; i++) {
+    for (let i = colStart, x = offsetX; x < width; i++) {
       let width = getColumnById(i)?.width || config.cellWidth;
 
       if (x + width > config.colWidth) {
@@ -678,7 +680,7 @@ const Grid = () => {
         onContextMenu={handleContextMenu}
         onDoubleClick={handleDoubleClickGrid}
       >
-        {isLoading && <Loader />}
+        {isGridLoading && <Loader />}
         <canvas ref={canvasRef}></canvas>
         <ScrollBar ref={verticalScroll} axis="y" />
         <ScrollBar ref={horizontalScroll} axis="x" />

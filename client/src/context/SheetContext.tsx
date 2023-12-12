@@ -89,7 +89,8 @@ type ISheetContext = {
   selectedColumn: IColumn | null;
   contextMenuRect: Pick<IRect, "x" | "y"> | null;
   config: IConfig;
-  isLoading: boolean;
+  isSheetLoading: boolean;
+  isGridLoading: boolean;
   highLightCells: string[];
   copiedCell: ICell | null;
   activeHighLightIndex: number | null;
@@ -152,7 +153,9 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
 
   const [highLightCells, setHighLightCells] = useState<string[]>([]);
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isSheetLoading, setIsSheetLoading] = useState(true);
+
+  const [isGridLoading, setIsGridLoading] = useState(true);
 
   const [sheetDetail, setSheetDetail] = useState<ISheetDetail | null>(null);
 
@@ -211,8 +214,9 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   }, [grid.columns, selectedColumnId]);
 
   useEffect(() => {
+    if (quill || isSheetLoading) return;
     initQuill();
-  }, []);
+  }, [isSheetLoading]);
 
   useEffect(() => {
     getSheetDetails();
@@ -256,6 +260,8 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   const getSheetDetails = async () => {
     if (!sheetId) return;
 
+    setIsSheetLoading(true);
+
     try {
       let {
         data: {
@@ -275,10 +281,10 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
           { replace: !sheetDetail }
         );
       }
+
+      setIsSheetLoading(false);
     } catch (error: any) {
       toast.error(error?.message);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -295,10 +301,9 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
       } = await getGridById(gridId);
       setGridDetails(rows, columns, cells);
       forceUpdate();
+      setIsGridLoading(false);
     } catch (error: any) {
       toast.error(error?.message);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -338,7 +343,7 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
   };
 
   const resetGrid = () => {
-    setIsLoading(true);
+    setIsGridLoading(true);
     setEditCell(null);
     setContextMenuRect(null);
     setSelectedCellId(null);
@@ -805,7 +810,8 @@ const SheetProvider = ({ children }: ISheetProviderProps) => {
     selectedColumn,
     selectedRow,
     contextMenuRect,
-    isLoading,
+    isSheetLoading,
+    isGridLoading,
     copiedCell,
     activeHighLightIndex,
     highLightCells,

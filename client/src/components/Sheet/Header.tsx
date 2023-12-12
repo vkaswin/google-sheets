@@ -1,8 +1,8 @@
-import { ChangeEvent, lazy } from "react";
+import { ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 import useSheet from "@/hooks/useSheet";
-const Avatar = lazy(() => import("@/components/Avatar"));
+import Avatar from "@/components/Avatar";
 import { debounce, getStaticUrl } from "@/utils";
 
 const Header = () => {

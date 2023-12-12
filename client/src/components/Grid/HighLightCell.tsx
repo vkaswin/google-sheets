@@ -5,7 +5,7 @@ type IHighlightCellProps = {
   dashed?: boolean;
 };
 
-const HighlightCell = ({ cell, dashed = false }: IHighlightCellProps) => {
+const HighLightCell = ({ cell, dashed = false }: IHighlightCellProps) => {
   return (
     <div className={classNames("absolute", dashed ? "z-20" : "z-10")}>
       <div
@@ -52,4 +52,4 @@ const HighlightCell = ({ cell, dashed = false }: IHighlightCellProps) => {
   );
 };
 
-export default HighlightCell;
+export default HighLightCell;

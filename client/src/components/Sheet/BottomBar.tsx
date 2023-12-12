@@ -13,7 +13,7 @@ import {
   Portal,
   Tooltip,
 } from "@chakra-ui/react";
-import ColorPicker from "../../components/Grid/ColorPicker";
+import ColorPicker from "../Grid/ColorPicker";
 
 const BottomBar = () => {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
