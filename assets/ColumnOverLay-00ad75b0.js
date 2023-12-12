@@ -1,1 +1,0 @@
-import{j as t}from"./index-ba7c151b.js";const a=({column:{width:l,x:r}})=>{let e=`calc(${r}px - var(--col-width))`;return t.jsx("div",{className:"absolute top-[var(--col-height)] left-0 w-[var(--col-width)] border-dark-blue border-r border-l bg-light-sky-blue h-full",style:{width:l,left:e}})};export{a as default};

@@ -1,1 +1,0 @@
-import{b as t,S as r}from"./index-ba7c151b.js";const a=e=>t({url:`${r}/${e}/detail`,method:"get"}),u=(e,o)=>t({url:`${r}/${e}/update`,method:"put",data:o}),d=e=>t({url:`${r}/list`,method:"get",params:e}),h=e=>t({url:`${r}/${e}/remove`,method:"delete"}),n=()=>t({url:`${r}/create`,method:"post"});export{d as a,n as c,a as g,h as r,u};
