@@ -33,6 +33,11 @@ const Grid = () => {
 
   const horizontalScroll = useRef<HTMLDivElement | null>(null);
 
+  const scrollPosition = useRef({
+    top: 0,
+    left: 0,
+  });
+
   const {
     grid,
     config,
@@ -117,13 +122,19 @@ const Grid = () => {
     paintGrid();
   }, [grid]);
 
-  const gridStyle = useMemo(() => {
-    return {
+  useEffect(() => {
+    let styles: Record<string, string> = {
       "--row-height": `${config.rowHeight * scale}px`,
       "--col-width": `${config.colWidth * scale}px`,
       "--cell-width": `${config.cellWidth * scale}px`,
       "--cell-height": `${config.cellHeight * scale}px`,
-    } as CSSProperties;
+      "--scrollbar-size": `${config.scrollBarSize * scale}px`,
+      "--scrollbar-thumb-size": `${config.scrollThumbSize * scale}px`,
+    };
+
+    for (let key in styles) {
+      document.documentElement.style.setProperty(key, styles[key]);
+    }
   }, [scale]);
 
   const changeCanvasDimension = () => {
@@ -466,7 +477,7 @@ const Grid = () => {
   };
 
   const handleVerticalScroll = (deltaY: number) => {
-    if (!gridRef || !rows.length || !columns.length) return;
+    if (!gridRef.current || !rows.length || !columns.length) return;
 
     let { rowId, y } = rows[0];
     let { columnId, x } = columns[0];
@@ -499,14 +510,21 @@ const Grid = () => {
       });
     }
 
-    // if (!verticalScroll.current) return;
+    let scrollTop = Math.max(0, scrollPosition.current.top + deltaY);
 
-    // let top = +verticalScroll.current.style.top.replace("px", "");
-    // verticalScroll.current.style.top = `${top + deltaY}px`;
+    scrollPosition.current.top = scrollTop;
+
+    if (!verticalScroll.current) return;
+
+    let { height } = gridRef.current.getBoundingClientRect();
+
+    verticalScroll.current.style.top = `${
+      scrollTop % (height - config.scrollBarSize - config.scrollThumbSize)
+    }px`;
   };
 
   const handleHorizontalScroll = (deltaX: number) => {
-    if (!gridRef || !rows.length || !columns.length) return;
+    if (!gridRef.current || !rows.length || !columns.length) return;
 
     let { rowId, y } = rows[0];
     let { columnId, x } = columns[0];
@@ -537,10 +555,17 @@ const Grid = () => {
       });
     }
 
-    // if (!horizontalScroll.current) return;
+    let scrollLeft = Math.max(0, scrollPosition.current.left + deltaX);
 
-    // let left = +horizontalScroll.current.style.left.replace("px", "");
-    // horizontalScroll.current.style.left = `${left + deltaX}px`;
+    scrollPosition.current.left = scrollLeft;
+
+    if (!horizontalScroll.current) return;
+
+    let { width } = gridRef.current.getBoundingClientRect();
+
+    horizontalScroll.current.style.left = `${
+      scrollLeft % (width - config.scrollBarSize - config.scrollThumbSize)
+    }px`;
   };
 
   const handleScroll = (event: WheelEvent) => {
@@ -652,7 +677,12 @@ const Grid = () => {
   };
 
   const handleNavigateSearch = () => {
-    if (!highLightCells.length || activeHighLightIndex === null) return;
+    if (
+      !gridRef.current ||
+      !highLightCells.length ||
+      activeHighLightIndex === null
+    )
+      return;
 
     let cellData = getCellById(highLightCells[activeHighLightIndex]);
 
@@ -689,12 +719,19 @@ const Grid = () => {
         onMouseDown={handleClickGrid}
         onContextMenu={handleContextMenu}
         onDoubleClick={handleDoubleClickGrid}
-        style={gridStyle}
       >
         {isGridLoading && <Loader />}
         <canvas ref={canvasRef}></canvas>
-        <ScrollBar ref={verticalScroll} axis="y" />
-        <ScrollBar ref={horizontalScroll} axis="x" />
+        <ScrollBar
+          ref={verticalScroll}
+          axis="y"
+          onScroll={handleVerticalScroll}
+        />
+        <ScrollBar
+          ref={horizontalScroll}
+          axis="x"
+          onScroll={handleHorizontalScroll}
+        />
         {selectedColumn && (
           <HighLightColumn scale={scale} column={selectedColumn} />
         )}

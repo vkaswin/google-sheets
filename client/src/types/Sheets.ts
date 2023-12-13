@@ -104,6 +104,8 @@ type IConfig = {
   cellHeight: number;
   cellWidth: number;
   colWidth: number;
+  scrollBarSize: number;
+  scrollThumbSize: number;
   rowHeight: number;
   customFonts: string[];
   fonts: Record<string, string>;

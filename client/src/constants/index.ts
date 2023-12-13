@@ -5,6 +5,8 @@ export const config: IConfig = {
   cellWidth: 100,
   colWidth: 46,
   rowHeight: 25,
+  scrollBarSize: 12,
+  scrollThumbSize: 48,
   customFonts: [
     "open-sans",
     "barlow-condensed",

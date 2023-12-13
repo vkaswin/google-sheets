@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useSheet } from "@/hooks/useSheet";
 import classNames from "classnames";
 import {
+  Box,
   Menu,
   MenuButton,
   MenuItem,
@@ -44,7 +45,7 @@ const BottomBar = () => {
   let { grids = [] } = sheetDetail || {};
 
   return (
-    <div className="fixed flex gap-4 left-0 bottom-0 w-full h-[var(--bottom-bar-height)] pl-4 bg-white after:absolute after:top-[-1px] after:right-0 after:w-[var(--scrollbar-size)] after:h-[1px] after:bg-light-gray z-50">
+    <div className="fixed flex gap-4 left-0 bottom-0 w-full h-[var(--bottom-bar-height)] pl-4 bg-white after:absolute after:-top-[var(--scrollbar-size)] after:right-0 after:w-[var(--scrollbar-size)] after:h-[var(--scrollbar-size)] after:border-b-light-gray after:border after:bg-white z-50">
       <div className="flex items-center gap-3">
         <button
           onClick={handleCreateGrid}
@@ -128,16 +129,23 @@ const BottomBar = () => {
                           </MenuItem>
                           <MenuItem>Duplicate</MenuItem>
                           <MenuItem>Rename</MenuItem>
-                          <Popover trigger="hover" placement="right-start">
-                            <PopoverTrigger>
-                              <MenuItem>Change color</MenuItem>
-                            </PopoverTrigger>
-                            <Portal>
-                              <PopoverContent>
-                                <ColorPicker onClick={handleChangeColor} />
-                              </PopoverContent>
-                            </Portal>
-                          </Popover>
+                          <MenuItem>
+                            <Popover trigger="hover" placement="right">
+                              <PopoverTrigger>
+                                <span className="w-full">Change color</span>
+                              </PopoverTrigger>
+                              <Portal>
+                                <Box
+                                  zIndex={999}
+                                  className="relative w-full h-full"
+                                >
+                                  <PopoverContent boxSize="fit-content">
+                                    <ColorPicker onClick={handleChangeColor} />
+                                  </PopoverContent>
+                                </Box>
+                              </Portal>
+                            </Popover>
+                          </MenuItem>
                         </MenuList>
                       </Portal>
                     </Fragment>

@@ -150,39 +150,42 @@ const ToolBar = () => {
                   </MenuButton>
                 </Tooltip>
                 <Portal>
-                  <Box>
-                    <MenuList
-                      minW={0}
-                      className="relative bg-white w-fit"
-                      zIndex={999}
-                    >
-                      {config.scale.map((value, index) => {
-                        return (
-                          <MenuItem
-                            key={index}
-                            className={`ql-font-${value} text-sm font-medium py-1 px-4`}
-                            onClick={() => setScale(value)}
-                          >
-                            {value * 100}%
-                          </MenuItem>
-                        );
-                      })}
-                    </MenuList>
-                  </Box>
+                  <MenuList
+                    minW={0}
+                    className="relative bg-white w-fit"
+                    zIndex={999}
+                  >
+                    {config.scale.map((value, index) => {
+                      return (
+                        <MenuItem
+                          key={index}
+                          className={`ql-font-${value} text-sm font-medium py-1 px-4`}
+                          onClick={() => setScale(value)}
+                        >
+                          {value * 100}%
+                        </MenuItem>
+                      );
+                    })}
+                  </MenuList>
                 </Portal>
               </Fragment>
             )}
           </Menu>
         </div>
         <Divider />
-        <div>
+        <div className="px-4">
           <Menu placement="bottom-start">
             {({ isOpen }) => (
               <Fragment>
                 <Tooltip label="Font" placement="bottom" className="tooltip">
-                  <MenuButton className="w-40" disabled={!editCell}>
-                    <div className="flex justify-between items-center gap-4 pl-4 pr-2">
-                      <span>{config.fonts[activeStyle.font as string]}</span>
+                  <MenuButton
+                    className={classNames("w-44", hoverClassName)}
+                    disabled={!editCell}
+                  >
+                    <div className="flex justify-between items-center gap-4 pl-2 pr-2">
+                      <span className="text-sm">
+                        {config.fonts[activeStyle.font as string]}
+                      </span>
                       <i
                         className={classNames(
                           "bx-caret-down transition-transform",
@@ -272,9 +275,9 @@ const ToolBar = () => {
                       <PopoverTrigger>
                         <button
                           className={classNames(
-                            btnClassName,
+                            "flex justify-center items-center",
                             hoverClassName,
-                            "flex-col h-fit"
+                            "flex-col w-8 h-8"
                           )}
                           disabled={!editCell}
                         >
@@ -312,9 +315,9 @@ const ToolBar = () => {
                       <PopoverTrigger>
                         <button
                           className={classNames(
-                            btnClassName,
+                            "flex justify-center items-center",
                             hoverClassName,
-                            "flex-col h-fit"
+                            "flex-col w-8 h-8"
                           )}
                           disabled={!selectedCell}
                         >

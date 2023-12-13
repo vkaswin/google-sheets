@@ -6,9 +6,6 @@
   --header-height: 60px;
   --toolbar-height: 50px;
   --bottom-bar-height: 36px;
-  --cell-height: 25px;
-  --cell-width: 100px;
-  --scrollbar-size: 13px;
   --grid-width: 100%;
   --grid-height: calc(
     100% -
