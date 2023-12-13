@@ -179,13 +179,15 @@ const SheetList = () => {
                           <td className="text-center p-3">
                             <span className=" text-gray-500 text-sm">
                               {dayjs
-                                .tz(createdAt, "Asia/Kolkata")
+                                .tz(new Date(createdAt), "Asia/Kolkata")
                                 .format("MMM D, YYYY")}
                             </span>
                           </td>
                           <td className="text-center p-3">
                             <span className="text-gray-500 text-sm">
-                              {dayjs.tz(lastOpenedAt, "Asia/Kolkata").fromNow()}
+                              {dayjs
+                                .tz(new Date(lastOpenedAt), "Asia/Kolkata")
+                                .fromNow()}
                             </span>
                           </td>
                           <td className="p-3">

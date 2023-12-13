@@ -65,7 +65,6 @@ type ISheetContext = {
   handleCopyCell: () => void;
   handleCutCell: () => void;
   handlePasteCell: () => void;
-  handleEditorChange: () => void;
   handleDeleteGrid: (gridId: string, index: number) => void;
   handleSearchNext: () => void;
   handleSearchPrevious: () => void;
@@ -172,9 +171,8 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
   }, [grid.columns, selectedColumnId]);
 
   useEffect(() => {
-    if (quill || isSheetLoading) return;
-    initQuill();
-  }, [isSheetLoading]);
+    registerQuillFormat();
+  }, []);
 
   useEffect(() => {
     getSheetDetails();
@@ -185,16 +183,24 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
   }, [gridId]);
 
   useEffect(() => {
-    if (!quill || !editCell) return;
+    return handleEditCellChange();
+  }, [editCell]);
+
+  const handleEditCellChange = () => {
+    if (!editCell) return;
     let cell = getCellById(editCell.cellId);
+    const quill = new Quill("#editor");
     quill.setContents(cell?.content as any);
-    focusTextEditor();
-    let handler = debounce(handleEditorChange, 500);
+    let handler = debounce(handleEditorChange.bind(undefined, quill), 500);
     quill.on("text-change", handler);
+    focusTextEditor();
+    setQuill(quill);
+
     return () => {
       quill.off("text-change", handler);
+      setQuill(null);
     };
-  }, [editCell]);
+  };
 
   const focusTextEditor = () => {
     const selection = getSelection();
@@ -207,12 +213,10 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
     quill.root.focus();
   };
 
-  const initQuill = () => {
+  const registerQuillFormat = () => {
     const fontFormat = Quill.import("formats/font");
     fontFormat.whitelist = config.customFonts;
     Quill.register(fontFormat, true);
-    const quill = new Quill("#editor");
-    setQuill(quill);
   };
 
   const getSheetDetails = async () => {
@@ -312,8 +316,8 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
     setGrid({ cells: [], columns: [], rows: [] });
   };
 
-  const handleEditorChange = async () => {
-    if (!quill || !editCell || !gridId) return;
+  const handleEditorChange = async (quill: Quill) => {
+    if (!editCell || !gridId) return;
 
     try {
       let text = quill.getText();
@@ -829,7 +833,6 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
         handleSearchNext,
         handleSearchPrevious,
         handleTitleChange,
-        handleEditorChange,
         handleSearchSheet,
         setEditCell,
         setCopyCellId,

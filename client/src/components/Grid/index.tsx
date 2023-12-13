@@ -773,7 +773,9 @@ const Grid = () => {
           onResize={handleResizeRow}
         />
       </div>
-      <EditCell cell={editCell} data={getCellById(editCell?.cellId)} />
+      {editCell && (
+        <EditCell cell={editCell} data={getCellById(editCell?.cellId)} />
+      )}
       {contextMenuRect && (
         <ContextMenu
           rect={contextMenuRect}
