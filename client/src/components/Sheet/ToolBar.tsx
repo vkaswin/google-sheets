@@ -92,14 +92,7 @@ const ToolBar = () => {
       setActiveStyle({ ...activeStyle, [type]: value });
     } else {
       quill.format(type, value);
-      if (
-        type === "bold" ||
-        type === "italic" ||
-        type === "strike" ||
-        type === "underline"
-      ) {
-        setActiveStyle({ ...activeStyle, [type]: value });
-      }
+      setActiveStyle({ ...activeStyle, [type]: value });
     }
   };
 
