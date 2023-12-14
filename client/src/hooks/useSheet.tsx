@@ -66,7 +66,7 @@ type ISheetContext = {
   handleCopyCell: () => void;
   handleCutCell: () => void;
   handlePasteCell: () => void;
-  handleDeleteGrid: (gridId: string, index: number) => void;
+  handleDeleteGrid: (index: number, gridId: string) => void;
   handleSearchNext: () => void;
   handleSearchPrevious: () => void;
   handleFormatCell: (type: string, value: string) => void;
@@ -778,8 +778,8 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
   };
 
   const handleDeleteGrid: ISheetContext["handleDeleteGrid"] = async (
-    gridId,
-    index
+    index,
+    gridId
   ) => {
     if (!sheetDetail || !window.confirm("Are you sure to delete the grid?"))
       return;
