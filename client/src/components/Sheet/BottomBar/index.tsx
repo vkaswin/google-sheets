@@ -1,5 +1,5 @@
 import { WheelEvent, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { useSheet } from "@/hooks/useSheet";
 import classNames from "classnames";
 import {
@@ -53,23 +53,25 @@ const BottomBar = () => {
             </MenuButton>
           </Tooltip>
           <Portal>
-            <MenuList zIndex={999}>
+            <MenuList zIndex={999} className="max-h-60 overflow-y-auto">
               {grids.map(({ _id, title, color = "transperant" }) => {
                 let isActive = _id === gridId;
                 return (
-                  <MenuItem key={_id} className="flex items-center gap-2">
-                    <i
-                      className={classNames(
-                        "bx-check text-xl text-dark-gray",
-                        isActive ? "block" : "hidden"
-                      )}
-                    ></i>
-                    <span
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: color }}
-                    ></span>
-                    <span key={_id}>{title}</span>
-                  </MenuItem>
+                  <Link key={_id} to={{ search: `gridId=${_id}` }}>
+                    <MenuItem className="flex items-center gap-2">
+                      <i
+                        className={classNames(
+                          "bx-check text-xl text-dark-gray",
+                          isActive ? "opacity-100" : "opacity-0"
+                        )}
+                      ></i>
+                      <span
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: color }}
+                      ></span>
+                      <span key={_id}>{title}</span>
+                    </MenuItem>
+                  </Link>
                 );
               })}
             </MenuList>

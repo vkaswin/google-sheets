@@ -15,6 +15,7 @@ import {
 import { useSheet } from "@/hooks/useSheet";
 import ColorPicker from "./Grid/ColorPicker";
 import { debounce } from "@/utils";
+import { config } from "@/constants";
 
 const activeClassName = "bg-light-blue rounded";
 const btnClassName = "flex justify-center items-center w-[24px] h-[24px]";
@@ -24,10 +25,11 @@ const DEFAULT_ACTIVE_STYLE: IActiveStyle = {
   bold: false,
   strike: false,
   italic: false,
-  font: "open-sans",
+  font: config.defaultFont,
   underline: false,
   background: "#ffffff",
   color: "#000000",
+  size: config.defaultFontSize,
 };
 
 const ToolBar = () => {
@@ -37,7 +39,6 @@ const ToolBar = () => {
   const {
     quill,
     scale,
-    config,
     editCell,
     selectedCell,
     activeHighLightIndex,
@@ -65,6 +66,7 @@ const ToolBar = () => {
     if (!selectedCell) return;
     setActiveStyle({
       ...DEFAULT_ACTIVE_STYLE,
+      font: config.defaultFont,
       background: background || DEFAULT_ACTIVE_STYLE.background,
     });
   }, [selectedCell]);
@@ -72,7 +74,15 @@ const ToolBar = () => {
   const handleSelectionChange = () => {
     if (!quill) return;
 
-    let { bold, strike, font, underline, color, italic } = quill.getFormat();
+    let {
+      bold,
+      strike,
+      font,
+      underline,
+      color,
+      italic,
+      size = config.defaultFontSize,
+    } = quill.getFormat();
 
     setActiveStyle({
       bold: !!bold,
@@ -81,6 +91,7 @@ const ToolBar = () => {
       italic: !!italic,
       font: font || DEFAULT_ACTIVE_STYLE.font,
       color: color || DEFAULT_ACTIVE_STYLE.color,
+      size,
     });
   };
 
@@ -166,7 +177,7 @@ const ToolBar = () => {
           </Menu>
         </div>
         <Divider />
-        <div className="px-4">
+        <div className="flex gap-3 px-4">
           <Menu placement="bottom-start">
             {({ isOpen }) => (
               <Fragment>
@@ -209,6 +220,52 @@ const ToolBar = () => {
               </Fragment>
             )}
           </Menu>
+          <div className="flex items-center gap-3">
+            <Menu placement="bottom-start">
+              {({ isOpen }) => (
+                <Fragment>
+                  <Tooltip
+                    label="Font Size"
+                    placement="bottom"
+                    className="tooltip"
+                  >
+                    <MenuButton className={classNames("w-15", hoverClassName)}>
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm font-medium">
+                          {activeStyle.size}
+                        </span>
+                        <i
+                          className={classNames(
+                            "bx-caret-down transition-transform",
+                            isOpen ? "rotate-180" : "rotate-0"
+                          )}
+                        ></i>
+                      </div>
+                    </MenuButton>
+                  </Tooltip>
+                  <Portal>
+                    <MenuList
+                      minW={0}
+                      className="relative bg-white w-fit max-h-56 overflow-y-auto"
+                      zIndex={999}
+                    >
+                      {config.fontSizes.map((value, index) => {
+                        return (
+                          <MenuItem
+                            key={index}
+                            className="text-sm font-medium py-1 px-4"
+                            onClick={() => formatText("size", value)}
+                          >
+                            {value}
+                          </MenuItem>
+                        );
+                      })}
+                    </MenuList>
+                  </Portal>
+                </Fragment>
+              )}
+            </Menu>
+          </div>
         </div>
         <Divider />
         <div className="flex items-center gap-3 px-4 text-xl">

@@ -92,6 +92,7 @@ type IActiveStyle = {
   underline: boolean;
   background: string;
   color: string;
+  size: string;
 };
 
 type IDirection = "top" | "bottom" | "left" | "right";
@@ -104,12 +105,15 @@ type IConfig = {
   cellHeight: number;
   cellWidth: number;
   colWidth: number;
+  defaultFont: string;
+  defaultFontSize: string;
   scrollBarSize: number;
   scrollThumbSize: number;
   rowHeight: number;
   customFonts: string[];
   fonts: Record<string, string>;
   scale: number[];
+  fontSizes: string[];
 };
 
 type ISheetGrid = {

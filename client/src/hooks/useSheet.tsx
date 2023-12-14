@@ -46,7 +46,6 @@ type ISheetContext = {
   selectedRow: IRow | null;
   selectedColumn: IColumn | null;
   contextMenuRect: Pick<IRect, "x" | "y"> | null;
-  config: IConfig;
   isSheetLoading: boolean;
   isGridLoading: boolean;
   highLightCells: string[];
@@ -201,6 +200,7 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
     let handler = debounce(handleEditorChange.bind(undefined, quill), 500);
     quill.on("text-change", handler);
     focusTextEditor();
+    console.log(quill);
     setQuill(quill);
 
     return () => {
@@ -221,9 +221,12 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
   };
 
   const registerQuillFormat = () => {
-    const fontFormat = Quill.import("formats/font");
-    fontFormat.whitelist = config.customFonts;
-    Quill.register(fontFormat, true);
+    const Font = Quill.import("formats/font");
+    const Size = Quill.import("attributors/style/size");
+    Size.whitelist = config.fontSizes;
+    Font.whitelist = config.customFonts;
+    Quill.register(Font, true);
+    Quill.register(Size, true);
   };
 
   const getSheetDetails = async () => {
@@ -837,7 +840,6 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
         grid,
         scale,
         sheetDetail,
-        config,
         syncState,
         editCell,
         selectedCell,

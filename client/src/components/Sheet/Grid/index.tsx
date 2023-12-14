@@ -20,6 +20,7 @@ import Loader from "@/components/Loader";
 import EditCell from "./EditCell";
 import ContextMenu from "./ContextMenu";
 import HighLightCell from "./HighLightCell";
+import { config } from "@/constants";
 import { convertToTitle } from "@/utils";
 
 const Grid = () => {
@@ -38,7 +39,6 @@ const Grid = () => {
 
   const {
     grid,
-    config,
     scale,
     isGridLoading,
     syncState,
@@ -263,14 +263,14 @@ const Grid = () => {
   ) => {
     if (!canvasRef.current || !content?.length) return;
 
-    const fontOffset = 20;
-    let offsetX = x + 5;
-    let offsetY = y + fontOffset;
+    let arr: any[] = [{ maxFont: 0, content: [] }];
+
+    let offsetX = x;
 
     for (let ops of content) {
       if (ops.insert === "\n") {
-        offsetY += fontOffset;
-        offsetX = x + 5;
+        offsetX = x;
+        arr.push({ maxFont: 0, content: [] });
         continue;
       }
 
@@ -281,13 +281,11 @@ const Grid = () => {
           bold = false,
           italic = false,
           underline = false,
-          font = "open-sans",
-          size = "15px",
+          font = config.defaultFont,
+          size = config.defaultFontSize,
         } = {},
         insert,
       } = ops;
-
-      ctx.save();
 
       let fontStyle = "";
 
@@ -297,22 +295,72 @@ const Grid = () => {
       fontStyle += `${+size.replace("px", "") * scale}px ${config.fonts[font]}`;
       ctx.font = fontStyle;
 
-      let { width } = ctx.measureText(insert);
+      let { width, fontBoundingBoxDescent, actualBoundingBoxAscent } =
+        ctx.measureText(insert);
 
-      ctx.fillText(insert, offsetX, offsetY);
+      let fontSize = fontBoundingBoxDescent + actualBoundingBoxAscent;
 
-      if (underline || strike) {
-        ctx.save();
-        ctx.lineWidth = 0.7;
-        ctx.strokeStyle = color || "#000000";
-        if (underline) ctx.strokeRect(offsetX, offsetY + 2, width, 0);
-        if (strike) ctx.strokeRect(offsetX, offsetY - 5, width, 0);
-        ctx.restore();
-      }
+      let data: any = {
+        fontStyle,
+        offsetX,
+        color,
+        text: insert,
+        underline,
+        strike,
+        width,
+        fontSize,
+      };
+
+      arr[arr.length - 1].maxFont = Math.max(
+        arr[arr.length - 1].maxFont,
+        fontSize
+      );
+
+      arr[arr.length - 1].content.push(data);
 
       offsetX += width;
+    }
 
-      ctx.restore();
+    let offsetY = y;
+
+    for (let { maxFont, content } of arr) {
+      offsetY += maxFont;
+
+      for (let props of content) {
+        let {
+          offsetX,
+          fontStyle,
+          color,
+          text,
+          underline,
+          strike,
+          width,
+          fontSize,
+        } = props;
+
+        ctx.save();
+        ctx.fillStyle = color;
+        ctx.font = fontStyle;
+        ctx.fillText(text, offsetX, offsetY);
+        ctx.restore();
+
+        if (underline || strike) {
+          ctx.save();
+          ctx.strokeStyle = color || "#000000";
+
+          if (underline) {
+            ctx.lineWidth = 1;
+            ctx.strokeRect(offsetX, offsetY + 2, width, 0);
+          }
+
+          if (strike) {
+            ctx.lineWidth = 1;
+            ctx.strokeRect(offsetX, offsetY - fontSize / 2 + 3, width, 0);
+          }
+
+          ctx.restore();
+        }
+      }
     }
   };
 

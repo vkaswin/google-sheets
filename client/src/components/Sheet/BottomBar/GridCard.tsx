@@ -10,9 +10,9 @@ import {
   PopoverTrigger,
   Portal,
 } from "@chakra-ui/react";
-import ColorPicker from "@/components/Sheet/Grid/ColorPicker";
+import { Link } from "react-router-dom";
 import classNames from "classnames";
-import { useNavigate } from "react-router-dom";
+import ColorPicker from "@/components/Sheet/Grid/ColorPicker";
 
 type IGridCardProps = {
   grid: ISheetGrid;
@@ -30,8 +30,6 @@ const GridCard = ({
   const [isEdit, setIsEdit] = useState(false);
 
   const editorRef = useRef<HTMLDivElement | null>(null);
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isEdit) return;
@@ -58,7 +56,8 @@ const GridCard = ({
   let isActive = gridId === _id;
 
   return (
-    <div
+    <Link
+      to={{ search: `gridId=${_id}` }}
       className={classNames(
         "relative min-w-fit flex gap-2 justify-center items-center font-medium px-3 transition-colors cursor-pointer",
         {
@@ -66,7 +65,6 @@ const GridCard = ({
           "hover:bg-mild-gray": !isActive,
         }
       )}
-      onClick={() => navigate({ search: `gridId=${_id}` })}
     >
       {isActive && (
         <span
@@ -131,7 +129,7 @@ const GridCard = ({
           })}
         ></i>
       )}
-    </div>
+    </Link>
   );
 };
 

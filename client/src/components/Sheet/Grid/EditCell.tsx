@@ -34,7 +34,7 @@ const EditCell = ({ cell, data }: IEditCellProps) => {
     >
       <div
         id="editor"
-        className="w-full text-black text-[15px] outline outline-2 outline-dark-blue px-[5px]"
+        className="w-full text-black text-[15px] outline outline-2 outline-dark-blue px-[5px] leading-tight"
         style={{ background }}
       ></div>
       <div className="absolute -top-7 left-0 bg-blue text-xs font-medium text-white rounded-sm px-2 py-1">
