@@ -14,12 +14,13 @@ import {
   Portal,
   Tooltip,
 } from "@chakra-ui/react";
-import ColorPicker from "../Grid/ColorPicker";
+import ColorPicker from "./Grid/ColorPicker";
 
 const BottomBar = () => {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const { sheetDetail, handleCreateGrid, handleDeleteGrid } = useSheet();
+  const { sheetDetail, handleCreateGrid, handleDeleteGrid, handleUpdateGrid } =
+    useSheet();
 
   const navigate = useNavigate();
 
@@ -36,10 +37,6 @@ const BottomBar = () => {
       behavior: "smooth",
       left: event.deltaY,
     });
-  };
-
-  const handleChangeColor = (colorCode: string) => {
-    console.log(colorCode);
   };
 
   let { grids = [] } = sheetDetail || {};
@@ -111,47 +108,64 @@ const BottomBar = () => {
                 ></span>
               )}
               <span className="text-sm">{title}</span>
-              <Menu placement="top">
-                {({ isOpen }) => {
-                  return (
-                    <Fragment>
-                      <MenuButton onClick={(e) => e.stopPropagation()}>
-                        <i
-                          className={isOpen ? "bx-caret-up" : "bx-caret-down"}
-                        ></i>
-                      </MenuButton>
-                      <Portal>
-                        <MenuList zIndex={999}>
-                          <MenuItem
-                            onClick={() => handleDeleteGrid(_id, index)}
-                          >
-                            Delete
-                          </MenuItem>
-                          <MenuItem>Duplicate</MenuItem>
-                          <MenuItem>Rename</MenuItem>
-                          <MenuItem>
-                            <Popover trigger="hover" placement="right">
-                              <PopoverTrigger>
-                                <span className="w-full">Change color</span>
-                              </PopoverTrigger>
-                              <Portal>
-                                <Box
-                                  zIndex={999}
-                                  className="relative w-full h-full"
-                                >
-                                  <PopoverContent boxSize="fit-content">
-                                    <ColorPicker onClick={handleChangeColor} />
-                                  </PopoverContent>
-                                </Box>
-                              </Portal>
-                            </Popover>
-                          </MenuItem>
-                        </MenuList>
-                      </Portal>
-                    </Fragment>
-                  );
-                }}
-              </Menu>
+              {gridId === _id ? (
+                <Menu placement="top">
+                  {({ isOpen }) => {
+                    return (
+                      <Fragment>
+                        <MenuButton onClick={(e) => e.stopPropagation()}>
+                          <i
+                            className={isOpen ? "bx-caret-up" : "bx-caret-down"}
+                          ></i>
+                        </MenuButton>
+                        <Portal>
+                          <MenuList zIndex={999}>
+                            <MenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteGrid(_id, index);
+                              }}
+                            >
+                              Delete
+                            </MenuItem>
+                            <MenuItem onClick={(e) => e.stopPropagation()}>
+                              Duplicate
+                            </MenuItem>
+                            <MenuItem onClick={(e) => e.stopPropagation()}>
+                              Rename
+                            </MenuItem>
+                            <MenuItem onClick={(e) => e.stopPropagation()}>
+                              <Popover trigger="hover" placement="right">
+                                <PopoverTrigger>
+                                  <span className="w-full">Change color</span>
+                                </PopoverTrigger>
+                                <Portal>
+                                  <Box
+                                    zIndex={999}
+                                    className="relative w-full h-full"
+                                  >
+                                    <PopoverContent boxSize="fit-content">
+                                      <ColorPicker
+                                        onClick={(color) =>
+                                          handleUpdateGrid(index, _id, {
+                                            color,
+                                          })
+                                        }
+                                      />
+                                    </PopoverContent>
+                                  </Box>
+                                </Portal>
+                              </Popover>
+                            </MenuItem>
+                          </MenuList>
+                        </Portal>
+                      </Fragment>
+                    );
+                  }}
+                </Menu>
+              ) : (
+                <i className="bx-caret-down"></i>
+              )}
             </div>
           );
         })}

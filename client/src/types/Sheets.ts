@@ -155,3 +155,10 @@ type IAutoFillData = {
   updateCells: string[];
   cellId: string;
 };
+
+type IGridData = {
+  grid: ISheetGrid;
+  rows: IRowDetail[];
+  columns: IColumnDetail[];
+  cells: ICellDetail[];
+};

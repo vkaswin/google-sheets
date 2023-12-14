@@ -151,6 +151,26 @@ const removeGridById = asyncHandler(async (req, res) => {
   });
 });
 
-const GridController = { createGrid, getGridById, searchGrid, removeGridById };
+const updateGridById = asyncHandler(async (req, res) => {
+  let { gridId } = req.params;
+
+  let grid = await Grid.findById(gridId, { title: 1, sheetId: 1, color: 1 });
+
+  if (!grid) {
+    throw new CustomError({ message: "Grid not exist", status: 400 });
+  }
+
+  await Grid.findByIdAndUpdate(gridId, { $set: req.body });
+
+  res.status(200).send({ message: "Grid has been updated successfully" });
+});
+
+const GridController = {
+  createGrid,
+  getGridById,
+  searchGrid,
+  removeGridById,
+  updateGridById,
+};
 
 export default GridController;

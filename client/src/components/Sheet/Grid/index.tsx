@@ -5,8 +5,6 @@ import {
   WheelEvent,
   Fragment,
   useLayoutEffect,
-  CSSProperties,
-  useMemo,
 } from "react";
 import { useSheet } from "@/hooks/useSheet";
 import ColumnOverLay from "./ColumnOverLay";
@@ -519,7 +517,7 @@ const Grid = () => {
     let { height } = gridRef.current.getBoundingClientRect();
 
     verticalScroll.current.style.top = `${
-      scrollTop % (height - config.scrollBarSize - config.scrollThumbSize)
+      scrollTop % (height - (config.scrollBarSize - config.scrollThumbSize))
     }px`;
   };
 
@@ -564,7 +562,7 @@ const Grid = () => {
     let { width } = gridRef.current.getBoundingClientRect();
 
     horizontalScroll.current.style.left = `${
-      scrollLeft % (width - config.scrollBarSize - config.scrollThumbSize)
+      scrollLeft % (width - (config.scrollBarSize - config.scrollThumbSize))
     }px`;
   };
 

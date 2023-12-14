@@ -1,13 +1,6 @@
 import axios from "./axios";
 import { GRID_URL } from "./config";
 
-type IGridData = {
-  grid: ISheetGrid;
-  rows: IRowDetail[];
-  columns: IColumnDetail[];
-  cells: ICellDetail[];
-};
-
 export const getGridById = (gridId: string) => {
   return axios<{ message: string; data: IGridData }>({
     url: `${GRID_URL}/${gridId}/detail`,
@@ -34,5 +27,13 @@ export const removeGridById = (gridId: string) => {
   return axios<{ message: string }>({
     url: `${GRID_URL}/${gridId}/remove`,
     method: "delete",
+  });
+};
+
+export const updateGridById = (gridId: string, data: Partial<ISheetGrid>) => {
+  return axios<{ message: string }>({
+    url: `${GRID_URL}/${gridId}/update`,
+    method: "put",
+    data,
   });
 };

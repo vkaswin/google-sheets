@@ -13,7 +13,7 @@ import {
   PopoverTrigger,
 } from "@chakra-ui/react";
 import { useSheet } from "@/hooks/useSheet";
-import ColorPicker from "../Grid/ColorPicker";
+import ColorPicker from "./Grid/ColorPicker";
 import { debounce } from "@/utils";
 
 const activeClassName = "bg-light-blue rounded";
@@ -42,12 +42,12 @@ const ToolBar = () => {
     selectedCell,
     activeHighLightIndex,
     highLightCells,
-    setScale,
     getCellById,
     handleSearchSheet,
     handleFormatCell,
     handleSearchNext,
     handleSearchPrevious,
+    handleScaleChange,
   } = useSheet();
 
   let { background } = getCellById(selectedCell?.cellId) || {};
@@ -153,7 +153,7 @@ const ToolBar = () => {
                         <MenuItem
                           key={index}
                           className={`ql-font-${value} text-sm font-medium py-1 px-4`}
-                          onClick={() => setScale(value)}
+                          onClick={() => handleScaleChange(value)}
                         >
                           {value * 100}%
                         </MenuItem>

@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import Header from "./Header";
 import ToolBar from "./ToolBar";
 import BottomBar from "./BottomBar";
-import Grid from "@/components/Grid";
+import Grid from "@/components/Sheet/Grid";
 import Loader from "@/components/Loader";
 import { useSheet } from "@/hooks/useSheet";
 

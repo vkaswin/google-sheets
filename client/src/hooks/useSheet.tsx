@@ -20,6 +20,7 @@ import {
   getGridById,
   searchGrid,
   removeGridById,
+  updateGridById,
 } from "@/services/Grid";
 import { createColumn, updateColumnById } from "@/services/Column";
 import { createRow, updateRowById } from "@/services/Row";
@@ -72,6 +73,12 @@ type ISheetContext = {
   handleCreateGrid: () => void;
   handleSearchSheet: (q: string) => void;
   handleAutoFillCell: (data: IAutoFillData) => void;
+  handleScaleChange: (scale: number) => void;
+  handleUpdateGrid: (
+    index: number,
+    gridId: string,
+    data: Partial<ISheetGrid>
+  ) => void;
   setGrid: Dispatch<SetStateAction<IGrid>>;
   setScale: Dispatch<SetStateAction<number>>;
   setContextMenuRect: Dispatch<SetStateAction<Pick<IRect, "x" | "y"> | null>>;
@@ -793,6 +800,36 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
     }
   };
 
+  const handleScaleChange: ISheetContext["handleScaleChange"] = (value) => {
+    let val = value / scale;
+    let gridDetails = { ...grid };
+    let row = gridDetails.rows[0];
+    let column = gridDetails.columns[0];
+    row.x *= val;
+    row.y *= val;
+    column.x *= val;
+    column.y *= val;
+    setGrid(gridDetails);
+    setScale(value);
+  };
+
+  const handleUpdateGrid: ISheetContext["handleUpdateGrid"] = async (
+    index,
+    gridId,
+    data
+  ) => {
+    if (!sheetDetail) return;
+
+    try {
+      await updateGridById(gridId, data);
+      let details = { ...sheetDetail };
+      details.grids[index] = { ...details.grids[index], ...data };
+      setSheetDetail(details);
+    } catch (error: any) {
+      toast.error(error?.message);
+    }
+  };
+
   return (
     <SheetContext.Provider
       value={{
@@ -834,6 +871,8 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
         handleSearchPrevious,
         handleTitleChange,
         handleSearchSheet,
+        handleScaleChange,
+        handleUpdateGrid,
         setEditCell,
         setCopyCellId,
         setSelectedCellId,
