@@ -48,9 +48,7 @@ let routes: RouteObject[] = [
   },
   {
     path: "sheet/:sheetId",
-    element: (
-      <ProtectedRoute children={<SheetsDetail />} isAuthenticated={false} />
-    ),
+    element: <ProtectedRoute children={<SheetsDetail />} />,
   },
   { path: "*", element: <PageNotFound /> },
 ];
