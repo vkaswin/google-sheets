@@ -24,7 +24,7 @@ html {
 }
 
 body {
-  @apply font-regular h-full overflow-hidden;
+  @apply font-regular h-full;
 }
 
 input[type="number"]::-webkit-outer-spin-button,

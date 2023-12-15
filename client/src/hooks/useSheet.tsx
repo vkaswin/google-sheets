@@ -8,6 +8,7 @@ import {
   ReactNode,
   Dispatch,
   SetStateAction,
+  useLayoutEffect,
 } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import Quill from "quill";
@@ -222,6 +223,7 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
   };
 
   const registerQuillFormat = () => {
+    document.body.classList.add("overflow-hidden");
     const Font = Quill.import("formats/font");
     const Size = Quill.import("attributors/style/size");
     Size.whitelist = config.fontSizes;

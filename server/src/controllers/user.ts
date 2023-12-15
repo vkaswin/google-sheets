@@ -23,6 +23,7 @@ const signUp = asyncHandler(async (req, res) => {
     _id: user._id,
     name: user.name,
     email: user.email,
+    colorCode: user.colorCode,
   });
 
   res.status(200).send({
