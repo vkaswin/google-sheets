@@ -3,12 +3,15 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useSheet } from "@/hooks/useSheet";
 import Avatar from "@/components/Avatar";
+import useTitle from "@/hooks/useTitle";
 import { debounce, getStaticUrl } from "@/utils";
 
 const Header = () => {
   const { user, logout } = useAuth();
 
   const { sheetDetail, handleTitleChange } = useSheet();
+
+  useTitle(sheetDetail?.title);
 
   const handleChange = debounce((event: ChangeEvent<HTMLInputElement>) => {
     handleTitleChange(event.target.innerText);
