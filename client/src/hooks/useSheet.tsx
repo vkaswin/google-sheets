@@ -35,6 +35,7 @@ import {
   deleteCellById,
   deleteColumn,
   deleteRow,
+  insertRow,
 } from "@/services/Cell";
 
 type ISheetContext = {
@@ -195,6 +196,11 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
     return handleEditCellChange();
   }, [editCell]);
 
+  useEffect(() => {
+    if (!quill) return;
+    focusTextEditor();
+  }, [quill]);
+
   const handleEditCellChange = () => {
     if (!editCell) return;
     let cell = getCellById(editCell.cellId);
@@ -202,9 +208,7 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
     quill.setContents(cell?.content as any);
     let handler = debounce(handleEditorChange.bind(undefined, quill), 500);
     quill.on("text-change", handler);
-    focusTextEditor();
     setQuill(quill);
-
     return () => {
       quill.off("text-change", handler);
       setQuill(null);
@@ -629,39 +633,47 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
     }
   };
 
-  const handleInsertRow = (direction: IDirection) => {
+  const handleInsertRow = async (direction: IDirection) => {
+    if (!gridId) return;
+
     let rowId = selectedCell?.rowId || selectedRow?.rowId;
 
     if (!rowId) return;
 
-    for (let [_id, cellData] of cellDetails.current) {
-      if (
-        direction === "bottom"
-          ? cellData.rowId <= rowId
-          : cellData.rowId < rowId
-      )
-        continue;
+    try {
+      await insertRow(gridId, { direction, rowId });
 
-      let oldCellId = `${cellData.columnId},${cellData.rowId}`;
-      let newRowId = cellData.rowId + 1;
-      let newCellId = `${cellData.columnId},${newRowId}`;
+      for (let [_id, cellData] of cellDetails.current) {
+        if (
+          direction === "bottom"
+            ? cellData.rowId <= rowId
+            : cellData.rowId < rowId
+        )
+          continue;
 
-      cellIds.current.delete(oldCellId);
-      cellIds.current.set(newCellId, _id);
+        let oldCellId = `${cellData.columnId},${cellData.rowId}`;
+        let newRowId = cellData.rowId + 1;
+        let newCellId = `${cellData.columnId},${newRowId}`;
 
-      let rowData = getRowById(cellData.rowId);
+        cellIds.current.delete(oldCellId);
+        cellIds.current.set(newCellId, _id);
 
-      if (rowData) {
-        removeRowById(cellData.rowId);
-        rowData.rowId = newRowId;
-        setRowById(rowData);
+        let rowData = getRowById(cellData.rowId);
+
+        if (rowData) {
+          removeRowById(cellData.rowId);
+          rowData.rowId = newRowId;
+          setRowById(rowData);
+        }
+
+        cellData.rowId = newRowId;
       }
 
-      cellData.rowId = newRowId;
+      forceUpdate();
+      setContextMenuRect(null);
+    } catch (error: any) {
+      toast.error(error?.message);
     }
-
-    forceUpdate();
-    setContextMenuRect(null);
   };
 
   const handleCopyCell = () => {

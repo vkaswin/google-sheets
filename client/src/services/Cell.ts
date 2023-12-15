@@ -47,6 +47,17 @@ export const insertColumn = (
   });
 };
 
+export const insertRow = (
+  gridId: string,
+  data: { direction: IDirection; rowId: number }
+) => {
+  return axios({
+    url: `${CELL_URL}/${gridId}/insert/row`,
+    method: "put",
+    data,
+  });
+};
+
 export const deleteCellById = (cellId: string) => {
   return axios<{ message: string }>({
     url: `${CELL_URL}/${cellId}/cell`,

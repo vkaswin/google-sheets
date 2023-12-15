@@ -193,7 +193,7 @@ const insertRow = asyncHandler(async (req, res) => {
     throw new CustomError({ message: "Grid not exist", status: 400 });
   }
 
-  if (direction !== "left" && direction !== "right")
+  if (direction !== "top" && direction !== "bottom")
     return res.status(400).send({ message: "Invalid direction" });
 
   await Cell.updateMany(

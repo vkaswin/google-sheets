@@ -23,13 +23,24 @@ const createSheet = asyncHandler(async (req, res) => {
 const getSheetById = asyncHandler(async (req, res) => {
   let { sheetId } = req.params;
 
-  let sheet = await Sheet.findById(sheetId, { grids: 1, title: 1 }).populate({
+  let sheet = await Sheet.findById(sheetId, {
+    grids: 1,
+    title: 1,
+    createdBy: 1,
+  }).populate({
     path: "grids",
     select: { title: 1, color: 1, sheetId: 1 },
   });
 
   if (!sheet) {
     throw new CustomError({ message: "Sheet not exist", status: 400 });
+  }
+
+  if (sheet.createdBy.toString() !== req.user._id) {
+    throw new CustomError({
+      message: "You don't have access to view and edit the sheet",
+      status: 400,
+    });
   }
 
   await Sheet.findByIdAndUpdate(sheetId, {

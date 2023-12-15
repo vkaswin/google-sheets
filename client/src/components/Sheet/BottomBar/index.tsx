@@ -1,4 +1,4 @@
-import { WheelEvent, useRef } from "react";
+import { WheelEvent, useRef, useEffect, useLayoutEffect } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { useSheet } from "@/hooks/useSheet";
 import classNames from "classnames";
@@ -28,6 +28,12 @@ const BottomBar = () => {
   const searchParams = new URLSearchParams(location.search);
 
   const gridId = searchParams.get("gridId");
+
+  useLayoutEffect(() => {
+    const element = document.querySelector(`[data-gridid="${gridId}"]`);
+    if (!element) return;
+    element.scrollIntoView({ behavior: "smooth", inline: "nearest" });
+  }, [gridId]);
 
   const handleScroll = (event: WheelEvent<HTMLDivElement>) => {
     if (!scrollContainerRef.current) return;
@@ -85,7 +91,7 @@ const BottomBar = () => {
       </div>
       <div
         ref={scrollContainerRef}
-        className="flex overflow-x-auto hide-scrollbar"
+        className="flex overflow-hidden"
         onWheel={handleScroll}
       >
         {grids.map((grid, index) => {

@@ -67,6 +67,7 @@ const GridCard = ({
           "hover:bg-mild-gray": !isActive,
         }
       )}
+      data-gridid={_id}
     >
       {isActive && (
         <span
