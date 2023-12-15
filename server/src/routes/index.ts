@@ -16,7 +16,13 @@ router.use("/api/column", ColumnRoutes);
 router.use("/api/cell", CellRoutes);
 
 router.get("/api/health-check", (req, res) => {
-  res.status(200).send({ message: "Success" });
+  res.status(200).send({
+    status: "success",
+    data: {
+      message: "Service is running smoothly",
+      version: "1.0.0",
+    },
+  });
 });
 
 export default router;
