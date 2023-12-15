@@ -20,7 +20,7 @@ const HighLightSearchCells = ({
 
   return (
     <Fragment>
-      {cells.map(({ cellId, columnId, height, rowId, width, x, y }) => {
+      {cells.map(({ cellId, height, width, x, y }) => {
         let cellData = getCellById(cellId);
 
         if (!cellData || !cellIds.has(cellData._id)) return null;

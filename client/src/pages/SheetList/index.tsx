@@ -159,78 +159,76 @@ const SheetList = () => {
                   </td>
                 </tr>
               ) : (
-                sheets.map(
-                  ({ title, _id, createdAt, updatedAt, lastOpenedAt }) => {
-                    return (
-                      <Fragment key={_id}>
-                        <tr
-                          className="h-14 transition-colors hover:bg-[#E5F4EA] cursor-pointer"
-                          onClick={() => navigateToSheet(_id)}
-                        >
-                          <td className="p-3">
-                            <div className="flex items-center gap-4 font-medium pl-4">
-                              <img
-                                className="w-6 h-6"
-                                src={getStaticUrl("/favicon.ico")}
-                              />
-                              <span>{title}</span>
-                            </div>
-                          </td>
-                          <td className="text-center p-3">
-                            <span className=" text-gray-500 text-sm">
-                              {dayjs
-                                .tz(new Date(createdAt), "Asia/Kolkata")
-                                .format("MMM D, YYYY")}
-                            </span>
-                          </td>
-                          <td className="text-center p-3">
-                            <span className="text-gray-500 text-sm">
-                              {dayjs
-                                .tz(new Date(lastOpenedAt), "Asia/Kolkata")
-                                .fromNow()}
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <div className="flex justify-center items-center">
-                              <Menu>
-                                <MenuButton
-                                  className="w-8 h-8 hover:bg-[#dadce0] rounded-full"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <i className="bx-dots-vertical-rounded text-2xl text-gray-500"></i>
-                                </MenuButton>
-                                <Portal>
-                                  <MenuList>
-                                    <MenuItem
-                                      className="flex gap-3 items-center"
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        handleDeleteDocument(_id);
-                                      }}
-                                    >
-                                      <i className="bx-trash text-xl"></i>
-                                      <span>Remove</span>
-                                    </MenuItem>
-                                    <MenuItem
-                                      className="flex gap-3 items-center"
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        navigateToSheet(_id, true);
-                                      }}
-                                    >
-                                      <i className="bx-link-external text-xl"></i>
-                                      <span>Open in new tab</span>
-                                    </MenuItem>
-                                  </MenuList>
-                                </Portal>
-                              </Menu>
-                            </div>
-                          </td>
-                        </tr>
-                      </Fragment>
-                    );
-                  }
-                )
+                sheets.map(({ title, _id, createdAt, lastOpenedAt }) => {
+                  return (
+                    <Fragment key={_id}>
+                      <tr
+                        className="h-14 transition-colors hover:bg-[#E5F4EA] cursor-pointer"
+                        onClick={() => navigateToSheet(_id)}
+                      >
+                        <td className="p-3">
+                          <div className="flex items-center gap-4 font-medium pl-4">
+                            <img
+                              className="w-6 h-6"
+                              src={getStaticUrl("/favicon.ico")}
+                            />
+                            <span>{title}</span>
+                          </div>
+                        </td>
+                        <td className="text-center p-3">
+                          <span className=" text-gray-500 text-sm">
+                            {dayjs
+                              .tz(new Date(createdAt), "Asia/Kolkata")
+                              .format("MMM D, YYYY")}
+                          </span>
+                        </td>
+                        <td className="text-center p-3">
+                          <span className="text-gray-500 text-sm">
+                            {dayjs
+                              .tz(new Date(lastOpenedAt), "Asia/Kolkata")
+                              .fromNow()}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <div className="flex justify-center items-center">
+                            <Menu>
+                              <MenuButton
+                                className="w-8 h-8 hover:bg-[#dadce0] rounded-full"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <i className="bx-dots-vertical-rounded text-2xl text-gray-500"></i>
+                              </MenuButton>
+                              <Portal>
+                                <MenuList>
+                                  <MenuItem
+                                    className="flex gap-3 items-center"
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      handleDeleteDocument(_id);
+                                    }}
+                                  >
+                                    <i className="bx-trash text-xl"></i>
+                                    <span>Remove</span>
+                                  </MenuItem>
+                                  <MenuItem
+                                    className="flex gap-3 items-center"
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      navigateToSheet(_id, true);
+                                    }}
+                                  >
+                                    <i className="bx-link-external text-xl"></i>
+                                    <span>Open in new tab</span>
+                                  </MenuItem>
+                                </MenuList>
+                              </Portal>
+                            </Menu>
+                          </div>
+                        </td>
+                      </tr>
+                    </Fragment>
+                  );
+                })
               )}
             </tbody>
           </table>

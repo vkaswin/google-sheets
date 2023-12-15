@@ -20,7 +20,6 @@ type IContextMenuProps = {
 const ContextMenu = ({
   rect,
   onCopy,
-  onCut,
   onPaste,
   onDeleteCell,
   onDeleteRow,
@@ -63,7 +62,7 @@ const ContextMenu = ({
       {...attributes.popper}
     >
       <div className="flex flex-col py-3 font-medium">
-        <button
+        {/* <button
           className="flex justify-between items-center h-8 hover:bg-[#F1F3F4] text-mild-black font-medium px-3"
           onClick={onCut}
         >
@@ -72,7 +71,7 @@ const ContextMenu = ({
             Cut
           </span>
           <span>Ctrl+X</span>
-        </button>
+        </button> */}
         <button
           className="flex justify-between items-center h-8 hover:bg-[#F1F3F4] text-mild-black font-medium px-3"
           onClick={onCopy}

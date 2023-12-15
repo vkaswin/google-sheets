@@ -255,12 +255,7 @@ const Grid = () => {
     ctx.restore();
   };
 
-  const paintCellContent: IPaintCellContent = (
-    ctx,
-    content,
-
-    { height, width, x, y }
-  ) => {
+  const paintCellContent: IPaintCellContent = (ctx, content, { x, y }) => {
     if (!canvasRef.current || !content?.length) return;
 
     let arr: any[] = [{ maxFont: 0, content: [] }];
@@ -364,10 +359,7 @@ const Grid = () => {
     }
   };
 
-  const paintCell: IPaintCell = (
-    ctx,
-    { cellId, rowId, columnId, height, width, x, y }
-  ) => {
+  const paintCell: IPaintCell = (ctx, { cellId, height, width, x, y }) => {
     let { background = "#FFFFFF", content = [] } = getCellById(cellId) ?? {};
 
     let rect = { x, y, width, height };

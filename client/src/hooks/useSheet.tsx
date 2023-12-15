@@ -202,7 +202,6 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
     let handler = debounce(handleEditorChange.bind(undefined, quill), 500);
     quill.on("text-change", handler);
     focusTextEditor();
-    console.log(quill);
     setQuill(quill);
 
     return () => {
@@ -270,7 +269,7 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
     try {
       let {
         data: {
-          data: { cells, columns, rows, grid },
+          data: { cells, columns, rows },
         },
       } = await getGridById(gridId);
       setGridDetails(rows, columns, cells);
@@ -670,7 +669,7 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
   };
 
   const handleCutCell = () => {
-    console.log("cut");
+    // console.log("cut cell");
   };
 
   const handlePasteCell = async () => {

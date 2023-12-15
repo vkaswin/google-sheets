@@ -38,32 +38,6 @@ export const debounce = <T>(
   };
 };
 
-export const throttle = (fn: Function, t: number) => {
-  let wait = false;
-  let pendingArgs: any[] | null = null;
-
-  let timerFunc = () => {
-    if (pendingArgs) {
-      fn(...pendingArgs);
-      pendingArgs = null;
-      setTimeout(timerFunc, t);
-    } else {
-      wait = false;
-    }
-  };
-
-  return (...args: any[]) => {
-    if (wait) {
-      pendingArgs = args;
-      return;
-    }
-
-    fn(...args);
-    wait = true;
-    setTimeout(timerFunc, t);
-  };
-};
-
 export const getStaticUrl = (path: string) => {
   return `${
     process.env.NODE_ENV === "production" ? "/google-sheets" : ""
@@ -84,38 +58,4 @@ export const convertToTitle = (n: number) => {
   }
 
   return s;
-};
-
-export const clickOutside = <T extends HTMLElement>({
-  ref,
-  onClose,
-  doNotClose = () => false,
-}: {
-  ref: T;
-  onClose?: () => void;
-  doNotClose?: (element: T) => boolean | undefined;
-}): Function => {
-  const removeEventListener = () => {
-    document.removeEventListener("click", handleClickOutside);
-  };
-
-  const handleClickOutside = (event: MouseEvent) => {
-    let { target } = event;
-    if (ref.contains(target as T) || doNotClose(target as T)) return;
-
-    onClose?.();
-    removeEventListener();
-  };
-
-  setTimeout(() => {
-    document.addEventListener("click", handleClickOutside);
-  }, 0);
-
-  return removeEventListener;
-};
-
-export const sleep = (delay: number) => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, delay);
-  });
 };

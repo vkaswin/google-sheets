@@ -23,7 +23,7 @@ type IGridCardProps = {
 };
 
 const GridCard = ({
-  grid: { _id, color, sheetId, title },
+  grid: { _id, color, title },
   gridId,
   onDeleteGrid,
   onUpdateGrid,

@@ -8,7 +8,7 @@ type PaginationProps = {
 };
 
 const Pagination = ({
-  pageMeta: { total, totalPages, page },
+  pageMeta: { totalPages, page },
   onPageChange,
 }: PaginationProps) => {
   return (
