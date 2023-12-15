@@ -288,17 +288,15 @@ const Grid = () => {
       } = ops;
 
       let fontStyle = "";
+      let fontSize = +size.replace("px", "") * scale;
 
       ctx.fillStyle = color;
       if (bold) fontStyle += "bold ";
       if (italic) fontStyle += "italic ";
-      fontStyle += `${+size.replace("px", "") * scale}px ${config.fonts[font]}`;
+      fontStyle += `${fontSize}px ${config.fonts[font]}`;
       ctx.font = fontStyle;
 
-      let { width, fontBoundingBoxDescent, actualBoundingBoxAscent } =
-        ctx.measureText(insert);
-
-      let fontSize = fontBoundingBoxDescent + actualBoundingBoxAscent;
+      let width = ctx.measureText(insert).width;
 
       let data: any = {
         fontStyle,
@@ -349,13 +347,15 @@ const Grid = () => {
           ctx.strokeStyle = color || "#000000";
 
           if (underline) {
-            ctx.lineWidth = 1;
-            ctx.strokeRect(offsetX, offsetY + 2, width, 0);
+            let offset = 2 * scale;
+            ctx.lineWidth = 1 * scale;
+            ctx.strokeRect(offsetX, offsetY + offset, width, 0);
           }
 
           if (strike) {
-            ctx.lineWidth = 1;
-            ctx.strokeRect(offsetX, offsetY - fontSize / 2 + 3, width, 0);
+            let offset = 3 * scale;
+            ctx.lineWidth = 1 * scale;
+            ctx.strokeRect(offsetX, offsetY - fontSize / 2 + offset, width, 0);
           }
 
           ctx.restore();

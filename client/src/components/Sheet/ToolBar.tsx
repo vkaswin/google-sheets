@@ -91,17 +91,16 @@ const ToolBar = () => {
       italic: !!italic,
       font: font || DEFAULT_ACTIVE_STYLE.font,
       color: color || DEFAULT_ACTIVE_STYLE.color,
-      size,
+      size: Array.isArray(size) && size.length ? size[size.length - 1] : size,
     });
   };
 
   const formatText: IFormatText = (type, value) => {
-    if (!quill) return;
-
     if (type === "background" || type === "align") {
       handleFormatCell(type, value as string);
       setActiveStyle({ ...activeStyle, [type]: value });
     } else {
+      if (!quill) return;
       quill.format(type, value);
       setActiveStyle({ ...activeStyle, [type]: value });
     }
@@ -229,7 +228,10 @@ const ToolBar = () => {
                     placement="bottom"
                     className="tooltip"
                   >
-                    <MenuButton className={classNames("w-15", hoverClassName)}>
+                    <MenuButton
+                      className={classNames("w-15", hoverClassName)}
+                      disabled={!editCell}
+                    >
                       <div className="flex items-center gap-1">
                         <span className="text-sm font-medium">
                           {activeStyle.size}

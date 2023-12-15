@@ -37,3 +37,10 @@ export const updateGridById = (gridId: string, data: Partial<ISheetGrid>) => {
     data,
   });
 };
+
+export const duplicateGridById = (gridId: string) => {
+  return axios<{ message: string; data: { grid: ISheetGrid } }>({
+    url: `${GRID_URL}/${gridId}/duplicate`,
+    method: "post",
+  });
+};

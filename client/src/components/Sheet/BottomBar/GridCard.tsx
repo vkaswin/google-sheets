@@ -19,6 +19,7 @@ type IGridCardProps = {
   gridId: string | null;
   onDeleteGrid: () => void;
   onUpdateGrid: (data: Partial<ISheetGrid>) => void;
+  onDuplicateGrid: () => void;
 };
 
 const GridCard = ({
@@ -26,6 +27,7 @@ const GridCard = ({
   gridId,
   onDeleteGrid,
   onUpdateGrid,
+  onDuplicateGrid,
 }: IGridCardProps) => {
   const [isEdit, setIsEdit] = useState(false);
 
@@ -94,7 +96,7 @@ const GridCard = ({
                 <Portal>
                   <MenuList zIndex={999}>
                     <MenuItem onClick={() => onDeleteGrid()}>Delete</MenuItem>
-                    <MenuItem>Duplicate</MenuItem>
+                    <MenuItem onClick={onDuplicateGrid}>Duplicate</MenuItem>
                     <MenuItem onClick={() => setIsEdit(true)}>Rename</MenuItem>
                     <MenuItem>
                       <Popover trigger="hover" placement="right">

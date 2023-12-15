@@ -15,8 +15,13 @@ import GridCard from "./GridCard";
 const BottomBar = () => {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const { sheetDetail, handleCreateGrid, handleDeleteGrid, handleUpdateGrid } =
-    useSheet();
+  const {
+    sheetDetail,
+    handleCreateGrid,
+    handleDeleteGrid,
+    handleUpdateGrid,
+    handleDuplicateGrid,
+  } = useSheet();
 
   const location = useLocation();
 
@@ -91,6 +96,7 @@ const BottomBar = () => {
               gridId={gridId}
               onDeleteGrid={() => handleDeleteGrid(index, grid._id)}
               onUpdateGrid={(data) => handleUpdateGrid(index, grid._id, data)}
+              onDuplicateGrid={() => handleDuplicateGrid(grid._id)}
             />
           );
         })}

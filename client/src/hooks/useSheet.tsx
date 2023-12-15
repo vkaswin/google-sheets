@@ -21,6 +21,7 @@ import {
   searchGrid,
   removeGridById,
   updateGridById,
+  duplicateGridById,
 } from "@/services/Grid";
 import { createColumn, updateColumnById } from "@/services/Column";
 import { createRow, updateRowById } from "@/services/Row";
@@ -73,6 +74,7 @@ type ISheetContext = {
   handleSearchSheet: (q: string) => void;
   handleAutoFillCell: (data: IAutoFillData) => void;
   handleScaleChange: (scale: number) => void;
+  handleDuplicateGrid: (gridId: string) => void;
   handleUpdateGrid: (
     index: number,
     gridId: string,
@@ -833,6 +835,25 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
     }
   };
 
+  const handleDuplicateGrid: ISheetContext["handleDuplicateGrid"] = async (
+    gridId
+  ) => {
+    if (!sheetDetail) return;
+
+    try {
+      let {
+        data: {
+          data: { grid },
+        },
+      } = await duplicateGridById(gridId);
+      let details = { ...sheetDetail };
+      details.grids.push(grid);
+      navigate({ search: `gridId=${grid._id}` });
+    } catch (error: any) {
+      toast.error(error?.message);
+    }
+  };
+
   return (
     <SheetContext.Provider
       value={{
@@ -873,6 +894,7 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
         handleSearchPrevious,
         handleTitleChange,
         handleSearchSheet,
+        handleDuplicateGrid,
         handleScaleChange,
         handleUpdateGrid,
         setEditCell,

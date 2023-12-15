@@ -10,6 +10,7 @@ router.get("/:gridId/detail", GridController.getGridById);
 router.get("/:gridId/search", GridController.searchGrid);
 
 router.post("/:sheetId/create", GridController.createGrid);
+router.post("/:gridId/duplicate", GridController.duplicateGridById);
 
 router.put("/:gridId/update", GridController.updateGridById);
 
