@@ -60,3 +60,14 @@ button:disabled {
   --ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+::-webkit-scrollbar {
+  width: 7px;
+}
+::-webkit-scrollbar-track {
+  background: white;
+}
+::-webkit-scrollbar-thumb {
+  background: lightgray;
+  border-radius: 10px;
+}
