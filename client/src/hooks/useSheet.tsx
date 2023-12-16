@@ -597,6 +597,9 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
 
     if (!columnId) return;
 
+    let newCellIds: { _id: string; cellId: string }[] = [];
+    let newColumnIds: { _id: string; columnId: number }[] = [];
+
     try {
       await insertColumn(gridId, { direction, columnId });
 
@@ -613,17 +616,25 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
         let newCellId = `${newColumnId},${cellData.rowId}`;
 
         cellIds.current.delete(oldCellId);
-        cellIds.current.set(newCellId, _id);
+        newCellIds.push({ _id, cellId: newCellId });
 
         let columnData = getColumnById(cellData.columnId);
 
         if (columnData) {
-          removeColumnById(cellData.columnId);
+          columnIds.current.delete(columnData.columnId);
           columnData.columnId = newColumnId;
-          setColumnById(columnData);
+          newColumnIds.push({ _id: columnData._id, columnId: newColumnId });
         }
 
         cellData.columnId = newColumnId;
+      }
+
+      for (let { _id, cellId } of newCellIds) {
+        cellIds.current.set(cellId, _id);
+      }
+
+      for (let { _id, columnId } of newColumnIds) {
+        columnIds.current.set(columnId, _id);
       }
 
       forceUpdate();
@@ -639,6 +650,9 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
     let rowId = selectedCell?.rowId || selectedRow?.rowId;
 
     if (!rowId) return;
+
+    let newCellIds: { _id: string; cellId: string }[] = [];
+    let newRowIds: { _id: string; rowId: number }[] = [];
 
     try {
       await insertRow(gridId, { direction, rowId });
@@ -656,17 +670,25 @@ export const SheetProvider = ({ children }: ISheetProviderProps) => {
         let newCellId = `${cellData.columnId},${newRowId}`;
 
         cellIds.current.delete(oldCellId);
-        cellIds.current.set(newCellId, _id);
+        newCellIds.push({ _id, cellId: newCellId });
 
         let rowData = getRowById(cellData.rowId);
 
         if (rowData) {
-          removeRowById(cellData.rowId);
+          rowIds.current.delete(rowData.rowId);
           rowData.rowId = newRowId;
-          setRowById(rowData);
+          newRowIds.push({ _id: rowData._id, rowId: newRowId });
         }
 
         cellData.rowId = newRowId;
+      }
+
+      for (let { _id, cellId } of newCellIds) {
+        cellIds.current.set(cellId, _id);
+      }
+
+      for (let { _id, rowId } of newRowIds) {
+        rowIds.current.set(rowId, _id);
       }
 
       forceUpdate();
